@@ -1,0 +1,1241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Weakly nonlinear analysis of a reaction-diffusion model for demyelinating lesions in Multiple Sclerosis</title>
+				<funder>
+					<orgName type="full">National Institute of Advanced Mathematics (INdAM), Italy</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">University of Parma (Italy)</orgName>
+				</funder>
+				<funder ref="#_2gZdQzM">
+					<orgName type="full">MUR-Italian Ministry of Universities</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Naples Federico II (Italy)</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">University of Parma</orgName>
+				</funder>
+				<funder ref="#_FpyK57W">
+					<orgName type="full">Portuguese</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Italian National Group of Mathematical Physics</orgName>
+				</funder>
+				<funder ref="#_4Hqpn2p">
+					<orgName type="full">Portuguese national funds (OE)</orgName>
+				</funder>
+				<funder ref="#_JgeanUA #_MDmjTA6 #_yV8vmF4 #_KgdNHyk">
+					<orgName type="full">unknown</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2026-03-10">March 10, 2026</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Romina</forename><surname>Travaglini</surname></persName>
+							<email>travaglini@altamatematica.it</email>
+							<affiliation key="aff0">
+								<orgName type="institution">INDAM -National Institute for Advanced Mathematics &quot;Francesco Severi</orgName>
+								<address>
+									<addrLine>Piazzale Aldo Moro 5</addrLine>
+									<postCode>00185</postCode>
+									<settlement>Roma</settlement>
+									<country key="IT">Italy</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Mathematical, Physical and Computer Science</orgName>
+								<orgName type="institution">University of Parma Parco Area delle Scienze 53/A</orgName>
+								<address>
+									<postCode>43124</postCode>
+									<settlement>Parma</settlement>
+									<country key="IT">Italy</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Rossella</forename><surname>Della Marca</surname></persName>
+							<email>rossella.dellamarca@unina.it</email>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Mathematics and Applications &quot;R. Caccioppoli&quot;</orgName>
+								<orgName type="institution">University of Naples &quot;Federico II&quot;</orgName>
+								<address>
+									<addrLine>Via Cintia, Monte S. Angelo</addrLine>
+									<postCode>I-80126</postCode>
+									<settlement>Napoli</settlement>
+									<country key="IT">Italy</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Weakly nonlinear analysis of a reaction-diffusion model for demyelinating lesions in Multiple Sclerosis</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2026-03-10">March 10, 2026</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">620BB90E00EF3D761CFA38875DB6F6C7</idno>
+					<idno type="arXiv">arXiv:2603.06628v1[q-bio.TO]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2026-03-10T18:10+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Multiple Sclerosis is a chronic autoimmune disorder characterized by the degradation of the myelin sheath in the central nervous system, leading to neurological impairments. In this work, we analyze a reaction-diffusion model derived from kinetic theory to study the formation of demyelinating lesions. We perform a Turing instability analysis and a weakly nonlinear analysis to investigate different spatial patterns that may emerge. Our study examines how key parameters, including the squeezing probability of immune cells and the chemotactic response, impact pattern formation. Numerical simulations confirm the analytical results, revealing the emergence of distinct spatial structures.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text>
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Multiple Sclerosis (MS) is a chronic neurological disorder in which the immune system mistakenly attacks the brain and spinal cord. It is estimated that over 1.8 million people are affected by MS worldwide <ref type="bibr" target="#b42">[43]</ref>. The main pathological feature of MS is damage to the myelin sheath, which surrounds axons in the central nervous system and facilitates the transmission of nerve impulses. These lesions can be detected using magnetic resonance imaging, appearing as focal plaques in the white matter. The symptoms of MS involve a gradual worsening of physical and neurological functions. As the disease progresses, individuals may experience muscle weakness, coordination issues, numbness, vision problems, and cognitive changes. These impairments tend to worsen over time as myelin damage disrupts nerve function. The severity and progression of symptoms can vary between individuals, with some individuals experiencing relapses followed by periods of partial recovery, while others may experience a steady decline. Further details about the clinical overview of MS can be found in <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b24">25]</ref> and references therein.</p><p>The biological mechanisms underlying MS are mainly recognized as those involving immune cells, which are T-cells, B-cells, macrophages, and microglia. These cells can become dysfunctionally activated against myelin-producing cells (oligodendrocytes) or myelin itself, triggering an autoimmune cascade. This inflammatory process is driven by the production of proinflammatory cytokines, molecules produced by immune cells, able to attract themselves and stimulate their clonal expansion.</p><p>It is important to note that self-reactive immune cells can also be found in nonpathological conditions <ref type="bibr" target="#b9">[10]</ref>. In such cases, the action of specific cells, known as immunosuppressors, can inhibit or eliminate activated immune cells or those cells presenting the antigen able to activate them. What is observed in autoimmune conditions like MS is that the number and effectiveness of these natural killers are compromised <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b43">44]</ref>.</p><p>Mathematical modeling represents a powerful framework for understanding the underlying dynamics of MS. On one hand, different models, based on ordinary differential equations <ref type="bibr" target="#b12">[13]</ref>, stochastic dynamics <ref type="bibr" target="#b5">[6]</ref>, and systems of partial differential equations (PDE) <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b22">23]</ref>, have been developed to replicate key pathological features. In particular, the systems of PDE proposed have been extensively analyzed using Turing instability and weakly nonlinear analysis. These studies have led to the identification of spatial patterns that mimic myelin lesions typically seen in MS, specifically for type III lesions and Balo's concentric lesions. These lesions are characterized by extensive oligodendrocyte loss, limited T-cell presence, and a lack of remyelination.</p><p>On the other hand, the kinetic theory of active particles has been revealed to be effectively applicable to the autoimmune process modeling <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b23">24]</ref>. This approach has enabled the derivation of macroscopic descriptions of key biological phenomena by starting from the mesoscopic level of cell interactions and cytokine-induced migration <ref type="bibr" target="#b29">[30]</ref>. It has been adapted to the specific case of MS <ref type="bibr" target="#b30">[31]</ref>, offering insights into inflammation, lesion development, and disease progression in the presence of the remyelination process, also including treatment terms <ref type="bibr" target="#b35">[36]</ref>. The reaction-diffusion models derived in these works are analyzed through a Turing instability analysis to inquire about pattern formation.</p><p>Our present aim is to advance the study of demyelinating lesion formation by performing a weakly nonlinear analysis of a reduced reaction-diffusion system derived from the model introduced in <ref type="bibr" target="#b30">[31]</ref>, and initially explored in one dimension. In contrast to other models that treat oligodendrocyte loss as an indirect proxy for demyelination <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b22">23]</ref>, the formulation presented in <ref type="bibr" target="#b30">[31]</ref> incorporates an explicit state variable representing the fraction of destroyed myelin, enabling a direct and biologically precise description of demyelinating lesions. Although a two-dimensional analysis of a related model was carried out in <ref type="bibr" target="#b35">[36]</ref>, that study documented pattern emergence without employing weakly nonlinear techniques. Here, we extend that framework by modeling explicit myelin destruction to two dimensions and applying a weakly nonlinear analysis. Thereby, we establish a novel analytical approach to investigate how key mechanistic parameters-such as squeezing probability and chemotactic sensitivity-govern the spatial organization of demyelinated areas. This methodology captures structured patterns reminiscent of histopathological findings in MS, ranging from elongated plaques <ref type="bibr" target="#b27">[28,</ref><ref type="bibr" target="#b32">33]</ref> to focal or concentric lesions <ref type="bibr" target="#b34">[35,</ref><ref type="bibr" target="#b37">38]</ref>. Consequently, it offers new insights into the emergence of atypical lesion morphologies that cannot be captured in one-dimensional models or in two-dimensional simulations alone without weakly nonlinear analysis.</p><p>The chapter is organized as follows: in Section 2, we recall the reaction-diffusion model for MS proposed in <ref type="bibr" target="#b30">[31]</ref> and perform a reduction of it. The pattern formation is inquired in Section 3, by performing Turing and weakly nonlinear analysis. Section 4 shows numerical simulations that confirm the results obtained analytically. In Section 5, some concluding remarks are provided.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">The model</head><p>Let us start by recalling the macroscopic reaction-diffusion model derived in <ref type="bibr" target="#b30">[31]</ref>. The model describes the formation and restoration of myelin plaques in Multiple Sclerosis and has the following shape:</p><formula xml:id="formula_0">∂ A(t, x) ∂t = α + p AR A(t, x) R(t, x) -d AS A(t, x) S(t, x) -d A A(t, x), ∂ S(t, x) ∂t = p SA S(t, x) A(t, x) -d S S(t, x), ∂ R(t, x) ∂t = ∇ x • [D R ϕ 0 ( R(t, x))∇ x R(t, x) -χ ϕ 1 ( R(t, x)) R(t, x) ∇ x C] + p RA R(t, x) A(t, x) -d RS R(t, x) S(t, x) -d R R(t, x), ∂C(t, x) ∂t = D C ∆ x C(t, x) + p C A(x, t) R(x, t) -d C C(x, t), ∂E(t, x) ∂t = ( Ē -E(t, x)) d ER R(t, x) r + R(t, x) R(t, x) -r E E(t, x).<label>(1)</label></formula><p>The involved quantities are macroscopic densities for: self-antigen presenting cells (A) that can activate the self-reactive immune cells against the myelin; immunosuppressive cells (S) that can inhibit or eliminate activated both self-antigen presenting cells and immune cells; self-reactive immune cells (R); cytokines (C) produced by immune cells when activated by the self-antigen presenting cells; and destroyed fraction of myelin (E). The variables depend on t ∈ R + 0 and x ∈ Γ x , where Γ x is a bounded domain in R 2 . We underline that the kinetic description provided in <ref type="bibr" target="#b30">[31]</ref> and in the previous works like <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b23">24]</ref> also include conservative dynamics, whose effects are not observable at the macroscopic level. System (1), indeed, accounts only for the non-conservative processes, which are described below.</p><p>The proliferative processes participating in the evolution of A are represented by a constant input source α depending on external factors <ref type="bibr" target="#b33">[34]</ref> and proliferative interactions with R. The proliferation of S and R comes from interactions with A, while S destructively interacts with A and R. The production of cytokines comes from the interaction between A and R. Lastly, the consumption of myelin by R is coupled with its restoration by oligodendrocytes, and the last equation in (1) comes from the different time scales considered in <ref type="bibr" target="#b30">[31]</ref>. Here, Ē represents the total amount of myelin, which we consider constant in space and time. We also take into account the natural decay of cell populations and cytokines. We take as positive constants all the proliferative and destructive interaction rates, p ij and d ij , respectively, the decay rates d i , with i ∈ {A, S, R, C, E} and j ∈ {A, S, R}, the cytokines production rate p C , the saturation constant involved in demyelination r, and the remyelination rate r E . Moreover, model (1) incorporates: the diffusive dynamics for R, whose coefficient is the constant D R multiplied by the function ϕ 0 depending on the density; the diffusive dynamics for C, which has a constant diffusion coefficient D C ; the chemotactic motion of R towards regions where the concentration of cytokines is higher, with a sensitivity function ϕ 1 and the maximal chemotactic rate χ. The functions ϕ 0 and ϕ 1 are taken as follows <ref type="bibr" target="#b41">[42]</ref> </p><formula xml:id="formula_1">ϕ 1 (y) = 1 - y R γ 1 [0, R] , ϕ 0 (y) = ϕ 1 (y) -y ϕ ′ 1 (y).<label>(2)</label></formula><p>The function ϕ 1 is referred to as the squeezing probability, i.e., the probability of a cell finding space at its neighboring site. Typically, this probability decreases linearly with the cell density at that site. Here, we consider a rather general form for ϕ 1 by assuming that the squeezing exponent γ in (2) can be greater than or equal to one. The term 1 is the characteristic function and R is the maximal density of self-reactive immune cells. We report in Table <ref type="table" target="#tab_0">1</ref> all the variables and parameters of model ( <ref type="formula" target="#formula_0">1</ref>)-(2) along with their description. The purpose of the present work is to investigate the formation of lesions in the myelin sheath, caused by the inflammation which is, in turn, induced by the interplay between self-reactive immune cells and cytokines. To this aim, we assume that the populations of self-antigen-presenting cells and immunosuppressive cells are in an equilibrium state, i.e., their temporal derivatives are zero. Consequently, we may derive a reduced form of the system (1), as stated in the following proposition.</p><p>Proposition 1. Let us suppose that the time derivatives of the two populations of selfantigen presenting cells A(t, x) and immunosuppressive cells S(t, x) are zero for all x ∈ Γ x and that the two populations are not constantly equal to zero. Then, the system (1) can be reduced to three equations for the quantities R(t, x), C(t, x), and E(t, x), and rewritten in the dimensionless form</p><formula xml:id="formula_2">∂R ∂t = ∇ x • (Φ 0 (R) ∇ x R -ξ Φ 1 (R) ∇ x C) + R (1 -R), ∂C ∂t = δ∆ x C + β R -τ C, ∂E ∂t = θ R 2 Ω + R (1 -E) -ζ E.<label>(3)</label></formula><p>Proof. By equalizing to zero the first two equations of system (1), we get</p><formula xml:id="formula_3">A(t, x) = d S p SA , S(t, x) = α p SA -d A d S d S d AS + p AR d AS R(t, x),<label>(4)</label></formula><p>by assuming that S(t, x) ̸ = 0 and A(t, x) ̸ = 0. We report here that the relations above may be obtained starting from the kinetic description and considering different time scales for the different processes. Nevertheless, we leave this computation for future work. By plugging the expressions ( <ref type="formula" target="#formula_3">4</ref>) into (1), we get</p><formula xml:id="formula_4">∂ A(t, x) ∂t = 0,<label>(5)</label></formula><formula xml:id="formula_5">∂ S(t, x) ∂t = 0, ∂ R(t, x) ∂t = ∇ x • [D R ϕ 0 (R(t, x)) ∇ x R(t, x) -χ ϕ 1 (R(t, x)) R(t, x) ∇ x C] -d RS R(t, x) α p SA -d A d S d S d AS + p AR d AS R(t, x) + R(t, x) p RA d S p SA -d R , ∂C(t, x) ∂t = D C ∆ x C(t, x) + p C d S p SA R(x, t) -d C C(x, t), ∂E(t, x) ∂t = ( Ē -E(t, x)) d ER R(t, x) r + R(t, x) R(t, x) -r E E(t, x).</formula><p>Thus, defining the coefficients</p><formula xml:id="formula_6">λ = p RA d S p SA + d RS d A d S -αp SA d S d AS -d R , µ = p AR d RS d AS , ψ = p C d S p SA ,</formula><p>we obtain a system of equations, uncoupled from the first two, for the densities R, C, E</p><formula xml:id="formula_7">∂R(t, x) ∂t = ∇ x • [D R ϕ 0 (R(t, x))∇ x R(t, x) -χ ϕ 1 (R(t, x)) R(t, x) ∇ x C] + R(t, x) (λ -µR(t, x)) ∂C(t, x) ∂t = D C ∆ x C(t, x) + ψ R(x, t) -d C C(x, t), ∂E(t, x) ∂t = ( Ē -E(t, x)) d ER R(t, x) r + R(t, x) R(t, x) -r E E(t, x).<label>(6)</label></formula><p>At this point, we find it convenient to perform the change of variables</p><formula xml:id="formula_8">t = λ t, x = λ D R x,</formula><p>in this way, the partial derivatives are</p><formula xml:id="formula_9">∂ ∂t = λ ∂ ∂ t , ∇ x = λ D R ∇ x, ∆ x = λ D R ∆ x,</formula><p>so that ( <ref type="formula" target="#formula_7">6</ref>) becomes (omitting the dependence on space and time)</p><formula xml:id="formula_10">∂R ∂ t = ∇ x • ϕ 0 (R) ∇ xR - χ D R ϕ 1 (R) R ∇ xC + R 1 - µ λ R , ∂C ∂ t = D C D R ∆ xC + ψ λ R - d C λ C, ∂E ∂ t = d ER λ ( Ē -E) R 2 r + R - r E λ E,</formula><p>where we have divided both sides of each equation by λ. The system above can now be written in the dimensionless form by setting</p><formula xml:id="formula_11">R = µ λ R, C = µ d C λ ψ C, Ẽ = E Ē ,</formula><p>with ψ the maximal cytokines production rate for R-cell, providing</p><formula xml:id="formula_12">∂ R ∂ t = ∇ x • ϕ 0 λ µ R ∇ x R - χ D R ψ d C ϕ 1 λ µ R R ∇ x C + R 1 -R , ∂ C ∂ t = D C D R ∆ x C + ψ d C ψ λ R - d C λ C, ∂ Ẽ ∂ t = d ER µ (1 -Ẽ) R2 r µ λ + R - r E λ Ẽ.</formula><p>We can now define the new coefficients of the model as</p><formula xml:id="formula_13">ξ = χ ψ D R d C , δ = D C D M , β = ψ d C ψ λ , τ = d C λ , θ = d ER µ , Ω = r µ λ , ζ = r E λ ,</formula><p>moreover, we have</p><formula xml:id="formula_14">ϕ 1 λ µ R = 1 - λ µ R R γ 1 U (1 -γ),</formula><p>where U is the interval 0 ≤ λ R/µ ≤ R , and</p><formula xml:id="formula_15">ϕ 0 λ µ R = ϕ 1 λ µ R - λ µ R d ϕ 1 d R λ µ R = ϕ 1 λ µ R - R d ϕ 1 d R λ µ R .</formula><p>Thus, we introduce the quantity R = µ R/λ and functions</p><formula xml:id="formula_16">Φ 1 (y) = 1 - y R γ 1 [0,R] (1 -γ), Φ 0 (y) = Φ 1 (y) -y Φ ′ 1 (y).<label>(7)</label></formula><p>At this point, by renaming the non-dimensional variables and densities removing the tilde, we get the system in (3), and this completes the proof.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>□ 3 Pattern formation analysis</head><p>In this section, we investigate the properties of the parameters of system (3) to lead to the formation of spatial patterns. To this aim, we add to system (3) the non-negative initial data:</p><formula xml:id="formula_17">W(0, x) = W 0 (x) ≥ 0, with W = (R, C, E) and R 0 ≤ R, E 0 &lt; 1.</formula><p>We do not consider a maximum level of cytokines, as their production can vary considerably throughout the course of Multiple Sclerosis <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b16">17]</ref>. We also impose zero-flux conditions at the boundary:</p><formula xml:id="formula_18">(Φ 0 (R) ∇ x R -ξ Φ 1 (R)R ∇ x C) • n = 0, ∇ x C • n = 0,<label>(8)</label></formula><p>being n the external unit normal to the boundary ∂Γ x . We remark that zero-flux boundary conditions are used to prevent external inputs, allowing patterns to emerge intrinsically from the system. This aligns with classical Turing instability results in biological systems <ref type="bibr" target="#b28">[29]</ref>, where spatial structures arise from internal dynamics rather than boundary effects. From a biological point of view, this is reasonable because, in the brain, the blood-brain barrier effectively isolates the tissue from the external environment. In the context of Multiple Sclerosis, we assume that autoreactive lymphocytes have already infiltrated the central nervous system through the barrier, so the subsequent evolution of demyelinating plaques occurs within this closed environment.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Turing instability</head><p>We want to investigate the capability of the model to describe the formation of plaques in the brain constituted by destroyed myelin. Hence, we perform a Turing instability analysis <ref type="bibr" target="#b36">[37]</ref> of system (3) with boundary conditions <ref type="bibr" target="#b7">(8)</ref>.</p><p>The necessary conditions for Turing instability to occur are that the system without spatial gradients has a spatially homogeneous steady state, which turns unstable when adding diffusive and chemotactic terms.</p><p>By straightforward computations, we may detect the only nonzero equilibrium of system (3), given by</p><formula xml:id="formula_19">W 1 = 1, β τ , θ θ + ζ (1 + Ω) ,</formula><p>which is admissible provided that R &gt; 1. By linearizing the system (3) around the equilibrium W 1 , we have</p><formula xml:id="formula_20">∂W ∂t = D ∆ x W + J W on (0, ∞) × Γ x ,<label>(9)</label></formula><p>the diffusion matrix D and the Jacobian J write</p><formula xml:id="formula_21">D =    Φ0 -ξ Φ1 0 0 δ 0 0 0 0    , Φl = Φ l (1), l = 0, 1,</formula><p>and</p><formula xml:id="formula_22">J =     -1 0 0 β -τ 0 ζ θ (1 + 2Ω) (1 + Ω)(ζ + θ + ζ Ω) 0 - ζ + θ + ζ Ω 1 + Ω     ,</formula><p>respectively. It is immediate to check that the equilibrium W 1 is locally asymptotically stable in spatially homogeneous conditions, i.e., when the diffusive and chemotactic processes do not come into play in system (3). Indeed, the characteristic polynomial of the Jacobian is</p><formula xml:id="formula_23">P (λ) = -(1 + λ)(λ + τ ) λ + ζ + θ + ζ Ω 1 + Ω , so that the eigenvalues are {-1, -τ, -(ζ + θ + ζ Ω)/(1 + Ω)} .</formula><p>Since all eigenvalues have negative real parts, by the standard linearization theory for ordinary differential equations (see, e.g., <ref type="bibr" target="#b1">[2]</ref>), the equilibrium W 1 is asymptotically stable. Considering the full system (9), we expand the solution in a Fourier series:</p><formula xml:id="formula_24">W(x, t) = k c k e λ k t W k (x),<label>(10)</label></formula><p>where the eigenfunctions W k (x) solve the time-independent problem</p><formula xml:id="formula_25">∆ x W k + k 2 W k = 0, on Γ x , n • ∇ x W k = 0, on ∂Γ x .</formula><p>Substituting (10) into <ref type="bibr" target="#b8">(9)</ref> shows that, for each wavenumber k, the growth rate λ k is an eigenvalue of the matrix J -k 2 D.</p><p>Thus, instability occurs if there exists a range of wavenumbers</p><formula xml:id="formula_26">[k 1 , k 2 ] such that Re(λ k ) &gt; 0 for k ∈ [k 1 , k 2 ]. For our system, the eigenvalues of J -k 2 D are λ 0 k = - ζ + θ + ζ Ω 1 + Ω , λ ± k = 1 2 -1 -τ -k 2 (δ + Φ0 ) ± -1 -τ -k 2 (δ + Φ0 ) 2 -4 h(k 2 ) ,</formula><p>where</p><formula xml:id="formula_27">h(k 2 ) = - (1 + Ω) Det (J -k 2 D) ζ + θ + ζ Ω = k 4 δ Φ0 + k 2 Λ + τ, Λ = δ + τ Φ0 -β ξ Φ1 .</formula><p>Since λ 0 k &lt; 0, instability can only arise from λ ± k . This requires h(k 2 ) &lt; 0 for some k 2 and corresponds to imposing Λ &lt; 0 and Λ 2 -4δ Φ0 τ &gt; 0.</p><p>The first condition gives ξ &gt; (δ + τ Φ0 )/(β Φ1 ), while the second condition leads to two possibilities:</p><formula xml:id="formula_28">ξ &lt; δ + τ Φ0 -2 δ τ Φ0 β Φ1 or ξ &gt; δ + τ Φ0 + 2 δ τ Φ0 β Φ1 .</formula><p>This leads to the Turing instability condition</p><formula xml:id="formula_29">ξ &gt; ξ c := δ + τ Φ0 + 2 δ τ Φ0 β Φ1 . (<label>11</label></formula><formula xml:id="formula_30">)</formula><p>The corresponding critical wavenumber such that h(k 2 ) = 0 is</p><formula xml:id="formula_31">k 2 c = Λ 2 -4δ τ Φ0 -Λ c 2δ Φ0 = τ δ Φ0</formula><p>, where</p><formula xml:id="formula_32">Λ c = δ + τ Φ0 -β ξ c Φ1 . (<label>12</label></formula><formula xml:id="formula_33">)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Weakly nonlinear analysis</head><p>Once the conditions on parameters leading to the formation of spatial patterns are outlined, we want to reproduce a richer scenario beyond what Turing analysis alone can achieve. Specifically, we perform a two-dimensional weakly nonlinear analysis of the problem, that relies on the fact that, when the control parameter ξ approaches its critical threshold, the system's dynamics evolve more slowly. This property makes it possible to study pattern formation through the use of amplitude equations. More precisely, as discussed for instance in <ref type="bibr" target="#b39">[40]</ref>, each possible steady-state configuration of the reaction-diffusion system corresponds to a planform defined by m pairs of wave vectors (k j , -k j ), For critical modes, those satisfying |k j | = k c , the solution can be written as</p><formula xml:id="formula_34">U = m j=1 A j (t) e i k j •x + A j (t) e -i k j •x ,<label>(13)</label></formula><p>where A j denotes the complex amplitude vector associated with the mode k j , and A j is its complex conjugate. Depending on the value of m and the geometric relations among the wave vectors, different pattern symmetries can be investigated. In this work, we focus on the case m = 2. Our aim is, then, to recover an analytical shape for the amplitudes A j when the system evolves from a perturbation of the equilibrium state, thus, we start by performing a Taylor expansion of system (3) up to the third order around the equilibrium W 1 , getting</p><formula xml:id="formula_35">∂U ∂t = L U + H[U] + O(U 3 ), for U =   u v w   = W -W 1 ,<label>(14)</label></formula><p>where</p><formula xml:id="formula_36">L = D∆ x + J and H[U] is                  -u 2 + Φ′ 0 + 1 2 Φ′′ 0 u u ∆ x u + Φ′ 0 + Φ′′ 0 u ||∇ x u|| 2 + -ξ Φ′ 1 + 1 2 Φ′′ 1 u u ∆ x v + Φ′ 1 + Φ′′ 1 u ∇ x u • ∇ x v 0 θ (1 + Ω) 2 2 u 2 ζ Ω 2 θ + ζ (1 + Ω) -u w (1 + 2 Ω) + - u 3 ζ Ω 2 (1 + Ω) (θ + ζ (1 + Ω)) - u 2 w Ω 2 1 + Ω                 </formula><p>, where Φ′ l = Φ ′ l (1), Φ′′ l = Φ ′′ l (1), l = 0, 1. As mentioned before, we can gather information on the formation and shape of patterns when the parameter ξ is close to the critical threshold ξ c given in <ref type="bibr" target="#b10">(11)</ref>, thus we expand it in terms of a small parameter η as follows</p><formula xml:id="formula_37">ξ = ξ c + η ξ 1 + η 2 ξ 2 + η 3 ξ 3 + O(η 3 ).<label>(15)</label></formula><p>Similarly, the solution vector U can be expanded as</p><formula xml:id="formula_38">U = η   u 1 v 1 w 1   + η 2   u 2 v 2 w 2   + η 3   u 3 v 3 w 3   + O(η 3 ). (<label>16</label></formula><formula xml:id="formula_39">)</formula><p>When the bifurcation parameter approaches the threshold, the pattern's amplitude changes slowly over time, since the leading term of the nonlinear expansion of the solution is the product of the basic pattern and a slowly varying amplitude <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b38">39]</ref>. This enables a distinction between fast and slow temporal dynamics, allowing us to introduce multiple time scales as follows:</p><formula xml:id="formula_40">∂ ∂t = η ∂ ∂T 1 + η 2 ∂ ∂T 2 + O(η 2 ). (<label>17</label></formula><formula xml:id="formula_41">)</formula><p>We can now substitute the expansions ( <ref type="formula" target="#formula_38">16</ref>)-( <ref type="formula" target="#formula_40">17</ref>) in <ref type="bibr" target="#b13">(14)</ref>, and collecting the terms in the same order of η on each side, we obtain three equations, one for each order:</p><p>-order η:</p><formula xml:id="formula_42">L c   u 1 v 1 w 1   = 0 with L c = D c ∆ x + J, D c =     Φ0 -ξ c Φ1 0 0 δ 0 0 0 0    <label>(18)</label></formula><p>-order η 2 :</p><formula xml:id="formula_43">∂ ∂T 1   u 1 v 1 w 1   = L c   u 2 v 2 w 2   + H 2     u 1 v 1 w 1    <label>(19)</label></formula><p>with</p><formula xml:id="formula_44">H 2     u 1 v 1 w 1     =       Φ′ 0 ∇ x • (u 1 ∇ x u 1 ) -ξ c Φ′ 1 ∇ x • (u 1 ∇ x v 1 ) -ξ 1 d 12 ∆ x v 1 -u 2 1 0 θ (1 + Ω) 2 2 u 2 1 ζ Ω 2 θ + ζ (1 + Ω) -u 1 w 1 (1 + 2 Ω)       -order η 3 : ∂ ∂T 1   u 2 v 2 w 2   + ∂ ∂T 2   u 1 v 1 w 1   = L c   u 3 v 3 w 3   + H 3     u 1 v 1 w 1   ,   u 2 v 2 w 2    <label>(20)</label></formula><p>with</p><formula xml:id="formula_45">H 3     u 1 v 1 w 1   ,   u 2 v 2 w 2     =                       Φ′ 0 ∇ x • (u 1 ∇ x u 2 + u 2 ∇ x u 1 ) + -ξ c Φ′ 1 ∇ x • (u 1 ∇ x v 2 + u 2 ∇ x v 1 ) + 1 2 Φ′′ 1 ∇ x • (u 2 1 ∇ x v 1 ) + + 1 2 Φ′′ 0 ∇ x • (u 2 1 ∇ x u 1 ) -ξ 1 Φ′ 1 ∇ x • (u 1 ∇ x v 1 ) + -ξ 1 d 12 ∆ x v 2 -ξ 2 d 12 ∆ x v 1 -u 1 u 2 0 θ (1 + Ω) 2 4 u 1 u 2 ζ Ω 2 θ + ζ (1 + Ω) + -(u 1 w 2 + u 2 w 1 ) (1 + 2 Ω) - u 3 1 ζ Ω 2 (1 + Ω) (θ + ζ (1 + Ω)) - u 2 1 w 1 Ω 2 1 + Ω                      </formula><p>.</p><p>Each one of the equalities above can provide information on the corresponding term of the expansion <ref type="bibr" target="#b20">(21)</ref> or its time derivative. We start from the equation of order η and claim the following result.</p><p>Proposition 2. The solution of (18) can be expressed as</p><formula xml:id="formula_46">  u 1 v 1 w 1   =   ρ R 1 ρ E   2 j=1 W j (t) e i k j •x + W j (t) e -i k j •x ,<label>(21)</label></formula><p>where W j is the complex conjugate,</p><formula xml:id="formula_47">ρ R = √ τ β √ τ + δ Φ0 ,<label>(22)</label></formula><p>and</p><formula xml:id="formula_48">ρ E = ζ θ √ τ (1 + 2 Ω) β (θ + ζ (1 + Ω)) 2 √ τ + δ Φ0 .<label>(23)</label></formula><p>Proof. See Appendix A.1. Successively, we look at the equation of order η 2 , i.e. <ref type="bibr" target="#b18">(19)</ref>. We can provide the following result.</p><p>Proposition 3. Let us consider the equation <ref type="bibr" target="#b18">(19)</ref> and let the vector (u 1 , v 1 , w 1 ) T be in the form <ref type="bibr" target="#b20">(21)</ref>; then, the equation ( <ref type="formula" target="#formula_43">19</ref>) can be solved if and only if the conditions</p><formula xml:id="formula_49">(ρ R + σ C ) ∂W j ∂T 1 = ξ 1 k 2 c Φ1 W j , j = 1, 2,<label>(24)</label></formula><p>hold, and the solution has the form</p><formula xml:id="formula_50">  u 2 v 2 w 2   =   X 0 Y 0 Z 0   |W 1 | 2 + |W 2 | 2 + 2 j=1   ρ R 1 ρ E   V j e i k j •x +   X 1 Y 1 Z 1   W 1 W 2 e i (k 1 +k 2 )•x + W 1 W 2 e i (k 1 -k 2 )•x + 2 j=1   X 2 Y 2 Z 2   W 2 j e 2 i k j •x + c.c.,<label>(25)</label></formula><p>where c.c. indicates the complex conjugate, and being the coefficients X m , Y m , Z m , m = 0, 1, 2, given by</p><formula xml:id="formula_51">  X 0 Y 0 Z 0   = -2 ρ 2 R      1 β τ Ξ 0      , (<label>26</label></formula><formula xml:id="formula_52">)   X 1 Y 1 Z 1   = ρ R ρ R + k 2 c ρ R Φ′ 0 -ξ c Φ′ 1 1 + 2k 2 c Φ0       -2 β k 2 c ξ c Φ1 Ξ 1       , (<label>27</label></formula><formula xml:id="formula_53">)   X 2 Y 2 Z 2   = -ρ R ρ R + 2 k 2 c ρ R Φ′ 0 -ξ c Φ′ 1 τ + 4 k 2 c δ + Φ0 (4 k 2 c δ + τ ) -β ξ c Φ1    4 k 2 c δ + τ β Ξ 2    ,<label>(28)</label></formula><p>with Ξ 0 , Ξ 1 and Ξ 2 provided in A. </p><formula xml:id="formula_54">(ρ R + σ C ) ∂V j ∂T 1 + ∂W j ∂T 2 = k 2 c Φ1 (ξ 2 W j + ξ 1 V j ) + r 1 |W j | 2 + r 2 |W l | 2 W j ,<label>(29)</label></formula><p>for j, l = 1, 2, j ̸ = l, with coefficients</p><formula xml:id="formula_55">r 1 = -(X 0 + X 2 ) ρ R 2 + k 2 c Φ′ 0 + k 2 c (X 0 -X 2 ) ξ c Φ′ 1 + 1 2 k 2 c ρ R ξ c 4 Y 2 Φ′ 1 + ρ R Φ′′ 1 -ρ 2 R Φ′′ 0 , r 2 = -(2 X 1 + X 0 ) ρ R 2 + k 2 c Φ′ 0 + k 2 c ξ c (X 0 + 2 X 1 ρ R ) Φ′ 1 -k 2 c ρ 2 R ρ R Φ0s -ξ c Φ1s .<label>(30)</label></formula><p>Proof. See Appendix A.3. Now, we look at the expansion ( <ref type="formula" target="#formula_38">16</ref>) and, keeping in mind the expressions ( <ref type="formula" target="#formula_46">21</ref>) and ( <ref type="formula" target="#formula_50">25</ref>), we may assert that the emerging solution given in <ref type="bibr" target="#b12">(13)</ref> (with m = 2) can be recovered by defining the amplitudes of patterns associated with modes k j as</p><formula xml:id="formula_56">A j = η   ρ R 1 ρ E   W j + η 2   ρ R 1 ρ E   V j + O(η 3 ), j = 1, 2,<label>(31)</label></formula><p>and their evolution in time, considering the expansion <ref type="bibr" target="#b16">(17)</ref>, is given by</p><formula xml:id="formula_57">dA j dt = η 2   ρ R 1 ρ E   ∂W j ∂T 1 + η 3   ρ R 1 ρ E   ∂W j ∂T 2 + ∂V j ∂T 1 + O(η 4 ), j = 1, 2,<label>(32)</label></formula><p>We also find it convenient to write amplitudes as A j = (ρ R A j , A j , ρ E A j ) T . At this point, we outline the result for the evolution in time of amplitudes.</p><p>Proposition 5. Let us decompose each A j (t) into its mode and phase angle as A j (t) = ρ j (t) e i ϕ j (t) , for j = 1, 2. Then, ϕ 1 and ϕ 2 are constant and the evolution in time of ρ 1 , ρ 2 is prescribed by the system</p><formula xml:id="formula_58">s 0 dρ 1 dt = ξ m ρ 1 + s 1 ρ 3 1 + s 2 ρ 2 2 ρ 1 s 0 dρ 2 dt = ξ m ρ 2 + s 1 ρ 3 2 + s 2 ρ 2 1 ρ 2 ,<label>(33)</label></formula><p>where</p><formula xml:id="formula_59">s 0 = ρ R + σ C k 2 c ξ c Φ1 , ξ m = ξ -ξ c ξ c , s i = r i k 2 c ξ c Φ1</formula><p>,</p><formula xml:id="formula_60">with i = 1, 2.</formula><p>Proof. See Appendix A.4</p><p>The existence and stability results relevant to the emergence of different spatial patterns are given by the following theorem.</p><p>Theorem 1. The system (33) admits the following stationary states that correspond to the different spatial patterns: i) homogeneous solution with ρ 1 = ρ 2 = 0; in this case, no pattern emerges; ii) equilibria S 1 = (ρ, 0) and S 2 = (0, ρ), with ρ = -ξ m /s 1 , corresponding to striped pattern, that exists for s 1 &lt; 0 and are stable for s 0 &gt; 0 and s 2 &lt; s 1 &lt; 0;</p><p>iii) equilibrium Q = (ρ, ρ), with ρ = -ξ m /(s 1 + s 2 ), corresponding to squared pattern, that exists for s 1 &lt; -s 2 and is stable for s 0 &gt; 0 and s 1 &lt; -|s 2 |.</p><p>Proof. The conditions for the existence of both striped and squared patterns are directly provided by observing that ξ m &gt; 0 from <ref type="bibr" target="#b10">(11)</ref>. In order to inquire about the stability of patterns, let us compute the Jacobian matrix of the system (33) evaluated at the equilibria.</p><p>For S 1 we have</p><formula xml:id="formula_61">J | S 1 =    - 2 ξ m s 0 0 0 (s 1 -s 2 ) ξ m s 0 s 1    ,</formula><p>having trace and determinant</p><formula xml:id="formula_62">T r J | S 1 = - (s 1 + s 2 ) ξ m s 0 s 1 , Det J | S 1 = 2 (-s 1 + s 2 ) ξ 2 m s 2 0 s 1 . It is easy to check that T r J | S 1 = T r J | S 2 and Det J | S 1 = Det J | S 2 .</formula><p>Then, the conditions for local asymptotic stability of the striped pattern providing T r J | S 1 &lt; 0 and</p><formula xml:id="formula_63">Det J | S 1 &gt; 0 are s 0 &gt; 0, s 2 &lt; s 1 &lt; 0. (<label>34</label></formula><formula xml:id="formula_64">)</formula><p>For the stability of the squared pattern, instead, we compute the Jacobian matrix evaluated at the equilibrium Q, obtaining</p><formula xml:id="formula_65">J | Q = - 2 ξ m s 0 (s 1 + s 2 )   s 1 s 2 s 2 s 1   ,</formula><p>whose trace and determinant are</p><formula xml:id="formula_66">T r J | Q = - 4 s 1 ξ m s 0 (s 1 + s 2 ) , Det J | Q = 4 (s 1 -s 2 ) ξ 2 m s 2 0 (s 1 + s 2 )</formula><p>.</p><p>In this case, the conditions for local asymptotic stability of the squared pattern are</p><formula xml:id="formula_67">s 0 &gt; 0, s 1 &lt; -|s 2 |.<label>(35)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>□</head><p>Remark 1. The spatial patterns predicted by Theorem 1 correspond to structured distributions of demyelinated regions that may resemble histopathological observations in Multiple Sclerosis. Specifically, striped or band-like configurations can be interpreted as elongated plaques often seen along white-matter tracts, where demyelinated areas follow the orientation of deep medullary veins or fiber bundles, a pattern classically exemplified by "Dawson's fingers" <ref type="bibr" target="#b27">[28]</ref>; additionally, evidence from <ref type="bibr" target="#b32">[33]</ref> shows elongated plaques even in lesions confined to the cortex. Some of these striped patterns may also represent individual segments of the concentric rings seen in Baló's lesions <ref type="bibr" target="#b34">[35]</ref>, while squared or spotted arrangements reflect focal or concentric demyelinating areas reminiscent of either intracortical lesions <ref type="bibr" target="#b32">[33]</ref> or the fully developed rings characteristic of Baló's sclerosis <ref type="bibr" target="#b37">[38]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Numerical simulations</head><p>In this section, we numerically investigate the different possible behaviors of the reactiondiffusion system (3) by varying the parameter settings. The aim is to get patterning results in accordance with the theoretical findings outlined in the previous section. First of all, we fix the following parameter values:</p><formula xml:id="formula_68">β = 1, τ = 5, θ = 1, Ω = 1, ζ = 0.2. (<label>36</label></formula><formula xml:id="formula_69">)</formula><p>Then, we analyze the dynamics of the model for different choices of the squeezing exponent γ, defining functions <ref type="bibr" target="#b1">(2)</ref>. In particular, we take γ = 1, 2, and we investigate the values for the parameters R (given in <ref type="bibr" target="#b6">(7)</ref>) and δ which determine the existence and stability of patterns in the two cases. The corresponding results are reported in Figure <ref type="figure" target="#fig_0">1</ref>.</p><p>Remark 2. We point out here that the values for parameters relevant to cytokine dynamics and chemotactic motion are taken accordingly to the ones used in other mathematical models for Multiple Sclerosis, e.g. <ref type="bibr" target="#b22">[23]</ref>, and are biologically plausible. Conversely, the parameter values governing the progression of myelin destruction and the range for R are chosen strictly for illustrative purposes here, with the intention that more specific estimations will be addressed in future investigations. In Figure <ref type="figure" target="#fig_0">1</ref>, values for R and δ leading to stable stripes as stated by condition (34) are in region I, while values providing stable squares stated by condition <ref type="bibr" target="#b34">(35)</ref> are in region II, the two panels correspond to the cases γ = 1 (panel (a)) and γ = 2 (panel (b)).</p><p>Then, we depict the behavior of quantities involved in system (3)- <ref type="bibr" target="#b7">(8)</ref>. We take as reference case the one with γ = 1, δ = 0.6 and R = 3.2. From Figure <ref type="figure" target="#fig_0">1</ref>, we observe that the stability of striped patterns is expected. Additionally, we take ξ m = 0.01 that, with this choice of parameters, provides a value for the chemotactic sensitivity ξ ≃ 13.31. We perform numerical simulations using the software VisualPDE <ref type="bibr" target="#b40">[41]</ref> in a square domain of size L = 5π. The results are shown in Figure <ref type="figure" target="#fig_1">2</ref>, where the portion of myelin destroyed is reported.</p><p>As a second case, we keep the same values of parameters as before, except for γ = 2, providing a value for the chemotactic sensitivity ξ ≃ 10.88. In this case, as observable in Figure <ref type="figure" target="#fig_0">1</ref> again, a squared symmetry of the pattern is the stable configuration. The results are shown in Figure <ref type="figure" target="#fig_2">3</ref>, where we observe a spotted spatial configuration. Indeed, in terms of modeling, a higher squeezing exponent leads to a higher diffusive term and a lower chemotactic term for self-reactive immune cells, which means that the random movement of cells is prevalent.</p><p>As a further test, we take the same parameters as the reference one, but we increase the parameter ξ m = 0.1; in this way, the chemotactic sensitivity results ξ ≃ 14.5. The obtained configuration, as shown in Figure <ref type="figure" target="#fig_5">4</ref>, is still striped one. The observable difference is in the minimum and maximum levels of consumed myelin, which in this case are, respectively, lower and higher w.r.t. the reference case. This is a consequence of the fact that the motion of self-reactive immune cells is majorly driven by the chemotactic attraction of cytokines, causing an inflammation, and consequently a myelin injury, more concentrated in some areas of the domain.</p><p>We point out that the patterns depicted above have been obtained by starting from a perturbation of the equilibrium resembling the results given in Subsection 3.2. Nevertheless, we underline that a weakly nonlinear analysis can be performed by decomposing the solution around the critical bifurcation value into three active dominant pairs of eigenmodes (i.e., as in the expression <ref type="bibr" target="#b12">(13)</ref>, with m = 3), as already proposed for other models describing Multiple Sclerosis (see, e.g., <ref type="bibr" target="#b4">[5]</ref>). In this case, the solution is shaped by the combination of three amplitudes ρ 1 , ρ 2 , ρ 3 that can lead to the emergence of striped (ρ</p><formula xml:id="formula_70">1 ̸ = 0, ρ 2 = ρ 3 = 0), hexagonal (ρ 1 = ρ 2 = ρ 3 ̸ = 0) or rectangular (0 ̸ = ρ 1 = ρ 2 ̸ = ρ 3 ̸ = 0) patterns.</formula><p>Leaving this kind of analysis as a future step, we also perform numerical simulations for our model by starting from a random perturbation of the equilibrium. In particular, we take parameters' values γ = 1, δ = 0.6, R = 3.2, and perform a test by taking ξ = 13.31 (as in the reference case) and another taking ξ = 14.5 (as in the third case considered). The results obtained are reported in Figure <ref type="figure">5</ref> and show the coexistence of other stable spatial configurations, which show rectangular (panel (a)) or hexagonal (panel (b)) symmetry. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusions</head><p>In this study, we consider a reaction-diffusion model for Multiple Sclerosis and investigate the formation of two-dimensional spatial patterns that may replicate the development of demyelinating lesions in the white matter caused by the disease.</p><p>To describe the dynamics of self-reactive immune cells, cytokines, and the destroyed portion of myelin, we perform a reduction of the system introduced in paper <ref type="bibr" target="#b30">[31]</ref>. We conduct a Turing instability analysis to determine parameter conditions that allow for the formation of spatial patterns. Subsequently, we carry out a weakly nonlinear analysis of the problem to further explore different patterning outcomes near the bifurcation value. Specifically, we decompose the solution in terms of two pairs of dominant eigenmodes.</p><p>We then identify the conditions that may lead to the emergence of striped or squaredlike patterns and analyze their stability over time. The results obtained are numerically validated, revealing that different choices of the squeezing probability, which regulates the motion of immune cells in space, can lead to different pattern shapes. Furthermore, we observe that a higher value of the chemotactic parameter results in myelin damage more concentrated in specific regions of the domain.</p><p>Finally, we perform numerical simulations starting from random initial conditions, which lead to the formation of patterns exhibiting hexagonal or rectangular symmetry. A novel contribution of this work is that, through a combination of weakly nonlinear analysis and numerical simulations, we demonstrate how key parameters, including the squeez-ing probability and chemotactic sensitivity, can generate these two-dimensional patterns, providing a direct mechanistic explanation for the emergence of diverse lesion morphologies. These insights allow a better understanding of atypical lesion formation in Multiple Sclerosis, capturing features that cannot be reproduced by one-dimensional models or by approaches relying solely on oligodendrocyte loss. These findings highlight the need for further analysis in future works, particularly considering the number of dominant eigenmodes larger than two. In addition, a wavefront invasion analysis of the problem could be performed to describe the spatio-temporal evolution of patterns.</p><p>we have</p><formula xml:id="formula_71">0 = L c   u 1 v 1 w 1   = J -k 2 c D c   u 1 v 1 w 1   .</formula><p>As shown in Subsection 3.1, though, one has Det(J -k 2 c D c ) = 0, and, since,</p><formula xml:id="formula_72">J -k 2 c D c =       -1 -k 2 c Φ0 k 2 c ξ c Φ1 0 β -k 2 c δ -τ 0 ζ θ (1 + 2Ω) (1 + Ω) (ζ + θ + ζ Ω) 0 - ζ + θ + ζ Ω 1 + Ω      </formula><p>, we can observe that the last two rows of the matrix are linearly independent, thus the kernel of J -k 2 c D c has dimension 1. Consequently, the solution ( <ref type="formula">37</ref>) is of the form</p><formula xml:id="formula_73">  u 1 v 1 w 1   =   ρ R 1 ρ E   2 j=1 W j (t) e i k j •x + W j (t) e -i k j •x ,</formula><p>and, recalling the expression for k 2 c in <ref type="bibr" target="#b11">(12)</ref>, the expressions for ρ R and ρ E read as in ( <ref type="formula" target="#formula_47">22</ref>) and <ref type="bibr" target="#b22">(23)</ref>, respectively. This completes the proof.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>□</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.2 Proof of Proposition 3</head><p>First, we recast <ref type="bibr" target="#b18">(19)</ref> as</p><formula xml:id="formula_74">L c   u 2 v 2 w 2   = ∂ ∂T 1   u 1 v 1 w 1   -H 2     u 1 v 1 w 1     .<label>(38)</label></formula><p>We now exploit the Fredholm solvability condition, which ensures that, being B a Fredholm operator on a Banach (or Hilbert) space and b an element in the space, the inhomogeneous equation Bx = b admits at least one solution if and only if b is orthogonal to every element in the kernel of the adjoint operator B + ; in other words, Bx = b is solvable if and only if ⟨b, v⟩ = 0 for all v ∈ ker(B + ). In this particular case, the operator L c may be interpreted as a linear continuous operator from the Banach space Z = (H 2 (Γ x )) 3 , generated by the</p><formula xml:id="formula_75">functions e i k•x , k ∈ R 2 , to X = (L 2 (Γ x ))</formula><p>3 , with the inner product defined as the classical product in L 2 , see <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b13">14]</ref> for the details. Consequently, the solvability condition states that, for a nontrivial solution to exist, the right-hand side of (38) must be orthogonal to the kernel of the adjoint operator of L c , which we indicate by L + c and reads</p><formula xml:id="formula_76">L + c =        -1 -k2 Φ0 β 0 k2 ξ c Φ1 -k2 δ -τ ζ θ (1 + 2Ω) (1 + Ω) (ζ + θ + ζ Ω) 0 0 - ζ + θ + ζ Ω 1 + Ω       </formula><p>, being k = | k|, and whose kernel is spanned by</p><formula xml:id="formula_77">  1 σ C 0   e i k•x + c.c., |k| = k c , σ C = 1 β 1 + τ Φ 0 δ .<label>(39)</label></formula><p>At this point, we substitute ( <ref type="formula" target="#formula_46">21</ref>) into the right-hand side of <ref type="bibr" target="#b37">(38)</ref>, which results in a linear combination of terms e 0 , e i k j •x , e 2 i k j •x , e i (k j -k l )•x . By isolating the coefficients corresponding to e i k j •x , they write, for j = 1, 2,</p><formula xml:id="formula_78">   R j u R j v R j w    =   ρ R 1 ρ E   ∂W j ∂T 1 -   ξ 1 Φ1 k 2 c W j 0 0   .<label>(40)</label></formula><p>The solvability condition implies the terms R j u , R j v , R j w T e i k j •x to be orthogonal to <ref type="bibr" target="#b38">(39)</ref> and thus</p><formula xml:id="formula_79">   R j u R j v R j w    ,    1 σ C 0    = 0, for j = 1, 2.</formula><p>Consequently, by looking at <ref type="bibr" target="#b39">(40)</ref>, we obtain <ref type="bibr" target="#b23">(24)</ref>. Successively, we have that the complete expression on the right-hand side of (38) results</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head></head><formula xml:id="formula_80">  2 ρ 2 R 0 Ψ 0    |W 1 | 2 + |W 2 | 2 + 2 j=1    R j u R j u R j w    e i k j •x +    2 ρ R ρ R + k 2 c ρ R Φ′ 0 -ξ c ρ c Φ′ 1 0 Ψ 1    × W 1 W 2 e i (k 1 +k 2 )•x + W 1 W 2 e i (k 1 -k 2 )•x + 2 j=1    ρ 2 R + 2 k 2 c ρ 2 R Φ′ 0 -ξ c ρ R Φ′ 1 0 Ψ 2    W 2 j e 2 i k j •x + c.c., with Ψ 0 = 4 θ ρ R (1 + Ω) 2 ρ E (1 + 2 Ω) + ρ R 1 + θ ζ -Ω - (ζ + θ) 2 ζ (θ + ζ (1 + Ω))</formula><p>,</p><formula xml:id="formula_81">Ψ 1 = 4 Θ ρ R (1 + Ω) 2 ρ E (1 + 2Ω) - ζ ρ R Ω 2 Θ + ζ(1 + Ω) , Ψ 2 = 2 θ ρ R (1 + Ω) 2 ρ E (1 + 2 Ω) - ζ ρ R Ω 2 θ + ζ (1 + Ω)</formula><p>.</p><p>At this point, we claim that the solution (u 2 , v 2 , w 2 ) T for the non-homogeneous problem <ref type="bibr" target="#b37">(38)</ref> has to be in the form</p><formula xml:id="formula_82">  u 2 v 2 w 2   =   X 0 Y 0 Z 0   |W 1 | 2 + |W 2 | 2 + 2 j=1       ρ R 1 ρ E   V j + Lc -1     R j U R j V R j W     W j     e i k j •x +   X 1 Y 1 Z 1   W 1 W 2 e i (k 1 +k 2 )•x + W 1 W 2 e i (k 1 -k 2 )•x + 2 j=1   X 2 Y 2 Z 2   W 2 j e 2 i k j •x + c.c..</formula><p>Then, the left-hand side of (38) reads</p><formula xml:id="formula_83">L c   u 2 v 2 w 2   = J   X 0 Y 0 Z 0   |W 1 | 2 + |W 2 | 2 + J -2 k 2 c D c   X 1 Y 1 Z 1   W 1 W 2 e i (k 1 +k 2 )•x + W 1 W 2 e i (k 1 -k 2 )•x + J -4k 2 c D c 2 j=1   X 2 Y 2 Z 2   W 2 j e 2 i k j •x + c.c.,</formula><p>where we have removed the inhomogeneous part in the e i k j •x -coefficient to avoid secular terms. To recover the solution of (38), then, we must solve the linear equations having as unknown the coefficients X m , Y m , Z m , m = 0, 1, 2, given by</p><formula xml:id="formula_84">  X 0 Y 0 Z 0   = J -1    2 ρ 2 R 0 Ψ 0    ,   X 1 Y 1 Z 1   = J -2k 2 c D c -1    2 ρ R ρ R + k 2 c ρ R Φ′ 0 -ξ c ρ c Φ′ 1 0 Ψ 1    ,   X 2 Y 2 Z 2   = J -4k 2 c D c -1    ρ 2 R + 2 k 2 c ρ 2 R Φ′ 0 -ξ c ρ R Φ′ 1 0 Ψ 2    .</formula><p>The resolution of the three linear equations above provides the expressions for the coefficients given in ( <ref type="formula" target="#formula_51">26</ref>)-( <ref type="formula" target="#formula_53">28</ref>), with completing the proof.</p><formula xml:id="formula_85">Ξ 0 = ζ θ (ζ + 3 ζ Ω + θ (3 + 8 Ω)) (ζ + θ + ζ Ω) 3 , Ξ 1 = 2 √ δ + 2 τ Φ0 √ δ δ Φ0 ( Φ1 -Φ′ 1 ) + √ τ ( Φ′ 0 Φ1 -Φ0 Φ′ 1 ) (ζ + θ + ζ Ω) 3 × √ τ Φ′ 0 Φ1 -Φ0 Φ′ 1 (1 + Ω) (ζ + θ + ζ Ω) 2 + δ Φ0 θ 2 ( Φ1 -Φ′ 1 ) (1 + Ω) -2 ζ θ Φ′ 1 (1 + Ω) 2 + Φ1 θ + 3 θ Ω -(1 + Ω) 2</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>□</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.3 Proof of Proposition 4</head><p>We start by rewriting <ref type="bibr" target="#b19">(20)</ref> as</p><formula xml:id="formula_86">L c   u 3 v 3 w 3   = ∂ ∂T 1   u 2 v 2 w 2   + ∂ ∂T 2   u 1 v 1 w 1   -H 3     u 1 v 1 w 1   ,   u 2 v 2 w 2     .</formula><p>As done before, we rely on the Fredholm solvability condition. We substitute the expressions ( <ref type="formula" target="#formula_46">21</ref>) and ( <ref type="formula" target="#formula_50">25</ref>) in the right-hand term of <ref type="bibr" target="#b19">(20)</ref>, and isolate the <ref type="bibr" target="#b23">(24)</ref>, that results</p><formula xml:id="formula_87">   S j u S j v S j w    =   ρ R 1 ρ E   ∂V j ∂T 1 + ∂W j ∂T 2 -   Φ1 k 2 c (ξ 1 V j + ξ 2 W j ) 0 0   +     -r 1 0 t 1   |W j | 2 +   -r 2 0 t 2   |W l | 2   W j ,</formula><p>for j, l = 1, 2, j ̸ = l, with coefficients r 1 and r 2 given in (30) and t 1 = q 1 (q 2 + (Z 0 + Z 2 ) q 3 + (X 0 + X 2 ) q 4 ) , t 2 = q 1 (2 q 2 + (Z 0 + 2 Z 1 ) q 3 + (X 0 + 2 X 1 ) q 4 ) , q 1 = 2 θ ρ R (1 + Ω) 3  First, equations ( <ref type="formula" target="#formula_49">24</ref>) -( <ref type="formula" target="#formula_54">29</ref>) allow us to rewrite <ref type="bibr" target="#b31">(32)</ref>, for j, l = 1, 2, l ̸ = j,, as</p><formula xml:id="formula_88">(ρ R + σ C ) dA j dt =k 2 c Φ1 W j η 2 ξ 1 + η 3 ξ 2 + η 3 ξ 1 V j + η 3 r 1 |W j | 2 + r 2 |W l | 2 W j ,</formula><p>omitting the higher-order terms.</p><p>From <ref type="bibr" target="#b14">(15)</ref> we may write, still omitting higher-order terms,</p><formula xml:id="formula_89">η ξ 1 = ξ -ξ c -η 2 ξ 2 , obtaining (ρ R + σ C ) dA j dt =k 2 c Φ1 (ξ -ξ c ) η W j + η 2 ξ 1 V j + η 3 r 1 |W j | 2 + r 2 |W l | 2 W j ,</formula><p>which, from <ref type="bibr" target="#b30">(31)</ref>, becomes</p><formula xml:id="formula_90">s 0 dA j dt = ξ m A j + A j s 1 |A j | 2 + s 2 |A l | 2 ,<label>(41)</label></formula><p>where</p><formula xml:id="formula_91">s 0 = ρ R + σ C k 2 c ξ c Φ1 , ξ m = ξ -ξ c ξ c , s i = r i k 2 c ξ c Φ1</formula><p>,</p><formula xml:id="formula_92">with i = 1, 2.</formula><p>By decomposing each amplitude into modulus and phase angle as</p><formula xml:id="formula_93">A j = ρ j e i ϕ j ,</formula><p>and splitting the real and imaginary parts of equations ( <ref type="formula" target="#formula_90">41</ref>), we get the system: </p><formula xml:id="formula_94">s 0 ρ</formula></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Values for R and δ satisfying condition (34) (region I) or condition (35) (region II), taking values as in (36) and fixing γ = 1 in panel (a) and γ = 2 in panel (b).</figDesc><graphic coords="17,134.87,227.88,160.66,157.79" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Long-time patterning of destroyed myelin portion (E), described by system (3), taking parameters γ = 1, δ = 0.6 and R = 3.2, ξ = 13.31.</figDesc><graphic coords="18,121.57,141.33,160.65,227.34" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Long-time patterning of destroyed myelin portion (E), described by system (3), taking parameters γ = 2, δ = 0.6 and R = 3.2, ξ = 10.88.</figDesc><graphic coords="19,121.57,141.33,160.65,227.34" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 :Figure 5 :</head><label>45</label><figDesc>Figure 4: Long-time patterning of destroyed myelin portion (E), described by system (3) , taking parameters γ = 2, δ = 0.6 and R = 3.2, ξ = 14.5.</figDesc><graphic coords="20,157.82,430.03,137.70,194.86" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>1 (ζ + θ + ζ Ω) 3 × 4 δ</head><label>134</label><figDesc>Φ0 ( Φ1 -2 Φ′ 1 ) (1 + 2 Ω) (ζ + θ + ζ Ω) +2 τ Φ0 ( Φ′ 0 Φ1 -Φ0 Φ′ 1 ) (1 + 2 Ω) (ζ + θ + ζ Ω) + √ δ τ 8 θ Φ′ 0 Φ1 (1 + 2 Ω) + 8 ζ Φ′ 0 Φ1 (1 + Ω) (1 + 2 Ω) +θ Φ0 Φ1 (19 + 56 Ω) -10 θ Φ0 ( Φ′ 1 + 2 Φ′ 1 Ω) +ζ Φ0 Φ1 + Φ1 (3 -16 Ω) Ω -10 Φ′ 1 (1 + Ω) (1 + 2 Ω) .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>A. 4</head><label>4</label><figDesc>(ζ + θ + ζ Ω) 2 , q 2 = 9 ζ ρ 2 R Ω 2 (ζ + θ + ζ Ω) , q 3 = (1 + Ω) (1 + 2 Ω) (θ + ζ (1 + Ω)) 2 , q 4 = ζ (1 + Ω) θ -2 ζ Ω 2 (1 + Ω) + 2 θ Ω (2 + Ω) . for j = 1, 2,with σ C defined in<ref type="bibr" target="#b38">(39)</ref>, we find the relation<ref type="bibr" target="#b28">(29)</ref>, completing the proof. □ Proof of Proposition 5</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 :</head><label>1</label><figDesc>Description of variables and parameters relevant to model (1)-(2).</figDesc><table><row><cell cols="2">Symbol Description</cell></row><row><cell>A</cell><cell>Macroscopic density for self-antigen presenting cells</cell></row><row><cell>S</cell><cell>Macroscopic density for immunosuppressive cells</cell></row><row><cell>R</cell><cell>Macroscopic density for self-reactive immune cells</cell></row><row><cell>C</cell><cell>Macroscopic density for cytokines</cell></row><row><cell>E</cell><cell>Destroyed fraction of myelin</cell></row><row><cell>α</cell><cell>Input source of self-antigen presenting cells</cell></row><row><cell>p AR</cell><cell>Proliferative rate of A due to interactions with R</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>Let us consider the equation<ref type="bibr" target="#b19">(20)</ref> and let the vectors (u 1 , v 1 , w 1 ) T , (u 2 , v 2 , w 2 ) T , be in the form<ref type="bibr" target="#b20">(21)</ref> and<ref type="bibr" target="#b24">(25)</ref>, respectively; then, the equation (20) can be solved if and only if the conditions below are satisfied.</figDesc><table><row><cell>2.</cell></row><row><cell>Proof. See Appendix A.2.</cell></row><row><cell>For what concerns the equation (20) of order η 3 , it leads to the following result.</cell></row><row><cell>Proposition 4.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>1 dϕ 1 dt cos ϕ 1 + dρ 1 dt sin ϕ 1 = ρ 1 ξ m + s 1 ρ 2 1 + s 2 ρ 2 2 sin ϕ 1 , s 0 ρ 2 dϕ 2 dt cos ϕ 2 + dρ 2 dt sin ϕ 2 = ρ 2 ξ m + s 1 ρ 2 2 + s 2 ρ 2 1 sin ϕ 2 , s 0 dρ 1 dt cos ϕ 1 -ρ 1 dϕ 1 dt sin ϕ 1 = ρ 1 ξ m + s 1 ρ 2 1 + s 2 ρ 2 2 cos ϕ 1 , s 0 dρ 2 dt cos ϕ 2 -ρ 2 dϕ 2 dt sin ϕ 2 = ρ 2 ξ m + s 1 ρ 2 2 + s 2 ρ 2 1 cos ϕ 2 ,</figDesc><table><row><cell>that provides</cell><cell></cell><cell></cell></row><row><cell></cell><cell>dϕ 1 dt</cell><cell>= 0</cell></row><row><cell></cell><cell>dϕ 2 dt</cell><cell>= 0</cell></row><row><cell>s 0</cell><cell>dρ 1 dt</cell><cell>= ξ m ρ 1 + s 1 ρ 3 1 + s 2 ρ 2 2 ρ 1</cell></row><row><cell>s 0</cell><cell>dρ 2 dt</cell><cell>= ξ m ρ 2 + s 1 ρ 3 2 + s 2 ρ 2 1 ρ 2 ,</cell></row><row><cell>completing the proof.</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>□</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgments</head><p>We are thankful to the anonymous reviewers for their useful comments and suggestions. This work was performed in the framework of activities sponsored by the <rs type="funder">Italian National Group of Mathematical Physics</rs> (<rs type="affiliation">GNFM-INdAM</rs>) and by the <rs type="funder">University of Parma (Italy)</rs> and of <rs type="funder">Naples Federico II (Italy)</rs>. RT is a post-doc fellow supported by the <rs type="funder">National Institute of Advanced Mathematics (INdAM), Italy</rs>. RDM and RT also thank the support of the <rs type="funder">University of Parma</rs> through the action Bando di Ateneo per la ricerca 2022, cofunded by <rs type="funder">MUR-Italian Ministry of Universities</rs> and Research -D.M. 737/2021 -PNR -<rs type="projectName">PNRR -NextGenerationEU 'Collective and self-organised dynamics: kinetic and network approaches</rs>'. The work was carried out in the frame of activities sponsored by the <rs type="programName">COST Action</rs> <rs type="grantNumber">CA18232</rs>, by the <rs type="funder">Portuguese</rs> Projects <rs type="grantNumber">UIDB/00013/2020</rs> (https://doi. org/10.<rs type="grantNumber">54499/UIDB/00013/2020</rs>), <rs type="grantNumber">UIDP/00013/2020</rs> of <rs type="institution">CMAT-UM</rs> (https://doi.org/ 10.<rs type="grantNumber">54499/UIDP/00013/2020</rs>), and by the <rs type="funder">Portuguese national funds (OE)</rs>, through the Project <rs type="grantNumber">FCT/MCTES PTDC/03091/2022</rs>, "<rs type="projectName">Mathematical Modelling of Multi-scale Control Systems: applications to human diseases -CoSysM3</rs>" (https://doi.org/10.<rs type="grantNumber">54499/ 2022.03091.PTDC</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_2gZdQzM">
+					<idno type="grant-number">CA18232</idno>
+					<orgName type="project" subtype="full">PNRR -NextGenerationEU &apos;Collective and self-organised dynamics: kinetic and network approaches</orgName>
+					<orgName type="program" subtype="full">COST Action</orgName>
+				</org>
+				<org type="funding" xml:id="_FpyK57W">
+					<idno type="grant-number">UIDB/00013/2020</idno>
+				</org>
+				<org type="funding" xml:id="_JgeanUA">
+					<idno type="grant-number">54499/UIDB/00013/2020</idno>
+				</org>
+				<org type="funding" xml:id="_MDmjTA6">
+					<idno type="grant-number">UIDP/00013/2020</idno>
+				</org>
+				<org type="funding" xml:id="_4Hqpn2p">
+					<idno type="grant-number">54499/UIDP/00013/2020</idno>
+				</org>
+				<org type="funded-project" xml:id="_yV8vmF4">
+					<idno type="grant-number">FCT/MCTES PTDC/03091/2022</idno>
+					<orgName type="project" subtype="full">Mathematical Modelling of Multi-scale Control Systems: applications to human diseases -CoSysM3</orgName>
+				</org>
+				<org type="funding" xml:id="_KgdNHyk">
+					<idno type="grant-number">54499/ 2022.03091.PTDC</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>A Proof of results in Subsection 3.2</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.1 Proof of Proposition 2</head><p>As stated above, we are interested in describing spatial configurations arising from two pairs of eigenvectors. For this reason, we look for a solution of <ref type="bibr" target="#b17">(18)</ref> in the form</p><p>i.e., we express the solution in terms of two active dominant pairs of eigenmodes (k j , -k j ), j = 1, 2, individuating angles of π/2, with |k j | = k c <ref type="bibr" target="#b31">[32,</ref><ref type="bibr" target="#b39">40]</ref>. Being (37) solution of (18),</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The brain cytokine orchestra in multiple sclerosis: from neuroinflammation to synaptopathology</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Amoriello</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Memo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ballerini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ballerini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mol. Brain</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">4</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Ordinary Differential Equations</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">I</forename><surname>Arnold</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1992">1992</date>
+			<publisher>Springer Science &amp; Business Media</publisher>
+			<pubPlace>Berlin, Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Wavefront invasion for a chemotaxis model of multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Barresi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Bilotta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gargano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Lombardo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Pantano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sammartino</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ric. Mat</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="page" from="423" to="434" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A chemotaxis reaction-diffusion model for Multiple Sclerosis with Allee effect</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bisi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Groppi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Martalò</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Soresina</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ric. Mat</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="issue">Suppl 1</biblScope>
+			<biblScope unit="page" from="29" to="46" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Derivation from kinetic theory and 2-D pattern analysis of chemotaxis models for Multiple Sclerosis</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bisi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Groppi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Martalò</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Travaglini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Math. Biol</title>
+		<imprint>
+			<biblScope unit="volume">91</biblScope>
+			<biblScope unit="issue">43</biblScope>
+			<biblScope unit="page">2025</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A mechanistic, stochastic model helps understand multiple sclerosis course and pathogenesis</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Bordi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Umeton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">A G</forename><surname>Ricigliano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Annibali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mechelli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ristori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Grassi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sutera</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Genom</title>
+		<imprint>
+			<biblScope unit="volume">2013</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">910321</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Mathematical description of concentric demyelination in the human brain: Self-organization models, from liesegang rings to chemotaxis</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Calvez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Khonsari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Comput. Model</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">7-8</biblScope>
+			<biblScope unit="page" from="726" to="742" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Optimal control model of immunotherapy for autoimmune diseases</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">F P</forename><surname>Costa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Ramos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ribeiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Soares</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Meth. Appl. Sci</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="8883" to="8902" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">G</forename><surname>Da Prato</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zabczyk</surname></persName>
+		</author>
+		<title level="m">Second Order Partial Differential Equations in Hilbert Spaces</title>
+		<meeting><address><addrLine>Cambridge</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2002">2002</date>
+			<biblScope unit="volume">293</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Autoreactive T cells in healthy individuals</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">A</forename><surname>Danke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Koelle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Beheray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">W</forename><surname>Kwok</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Immunol</title>
+		<imprint>
+			<biblScope unit="volume">172</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="5967" to="5972" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A mathematical model for immune and autoimmune response mediated by T-cells</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Delitala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Dianzani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lorenzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Melensi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Math. Appl</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1010" to="1023" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Mathematical modelling of oscillating patterns for chronic autoimmune diseases</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Della Marca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Machado Ramos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ribeiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Soares</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Meth. Appl. Sci</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="7144" to="7161" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">The dynamics of relapses during treatment switch in relapsing-remitting multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Frascoli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Roos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Malpas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kalincik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Theor. Biol</title>
+		<imprint>
+			<biblScope unit="volume">541</biblScope>
+			<biblScope unit="page">111091</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Local Bifurcations, Center Manifolds, and Normal Forms in Infinite-Dimensional Dynamical Systems</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Haragus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Iooss</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<publisher>Springer Science &amp; Business Media</publisher>
+			<pubPlace>London</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A one year followup study of natural killer and dendritic cells activities in multiple sclerosis patients receiving glatiramer acetate (GA)</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Høglund</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Holmøy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">F</forename><surname>Harbo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Maghazachi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS One</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page">62237</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hoyle</surname></persName>
+		</author>
+		<title level="m">Pattern Formation. An Introduction to Methods</title>
+		<meeting><address><addrLine>Cambridge</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Central nervous system macrophages in progressive multiple sclerosis: relationship to neurodegeneration and therapeutics</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kamma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Lasisi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Libner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">S</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Plemel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Neuroinflammation</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">45</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The origins of concentric demyelination: selforganization in the human brain</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Khonsari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Calvez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS One</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">150</biblScope>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A mathematical model of some viral-induced autoimmune diseases</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kolev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Nikolova</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Applicanda</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Multiple sclerosis pathology: evolution of pathogenetic concepts</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lassmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain Pathol</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="217" to="222" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">The immunopathology of multiple sclerosis: an overview</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lassmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Brück</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Lucchinetti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain Pathol</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="210" to="218" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Progressive multiple sclerosis: pathology and pathogenesis</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lassmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Van Horssen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mahad</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Rev. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="647" to="656" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Demyelination patterns in a mathematical model of multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lombardo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Barresi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Bilotta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gargano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Pantano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sammartino</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Math. Biol</title>
+		<imprint>
+			<biblScope unit="volume">75</biblScope>
+			<biblScope unit="page" from="373" to="417" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">A kinetic model of T cell autoreactivity in autoimmune diseases</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Machado Ramos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ribeiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Soares</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Math. Biol</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="issue">6-7</biblScope>
+			<biblScope unit="page" from="2005" to="2031" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Pathological mechanisms in progressive multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Mahad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Trapp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lassmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Lancet Neurol</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="183" to="193" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">A nonconservative kinetic model under the action of an external force field for modeling the medical treatment of autoimmune response</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Menale</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Travaglini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Commun. Nonlinear Sci. Numer. Simul</title>
+		<imprint>
+			<biblScope unit="volume">128</biblScope>
+			<biblScope unit="page">108126</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Natural killer cells in multiple sclerosis: a review</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mimpen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Smolders</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hupperts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Damoiseaux</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Immunol. Lett</title>
+		<imprint>
+			<biblScope unit="volume">222</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Multiple sclerosis: a practical review for pathologists</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Multz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jamshidi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Ahrendsen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Pathol. Transl. Med</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<author>
+			<persName><forename type="first">J</forename><surname>Murray</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Mathematical Biology II: Spatial Models and Biomedical Applications</title>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2003">2003</date>
+			<biblScope unit="volume">18</biblScope>
+		</imprint>
+	</monogr>
+	<note>3rd edition</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Kinetic models leading to pattern formation in the response of the immune system</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Oliveira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Soares</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Travaglini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Rivista di Matematica della Università di Parma</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="185" to="212" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Reaction-diffusion systems derived from kinetic theory for Multiple Sclerosis</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Oliveira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Travaglini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Models Methods Appl. Sci</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">07</biblScope>
+			<biblScope unit="page" from="1279" to="1308" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Pattern Formation in Reaction-Diffusion Systems</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Ouyang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000">2000</date>
+			<publisher>Shanghai Scientific and Technological Education Publishing House</publisher>
+			<pubPlace>Shanghai</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Transected neurites, apoptotic neurons, and reduced inflammation in cortical multiple sclerosis lesions</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Peterson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bö</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mörk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Trapp</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="389" to="400" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">The long and latent road to autoimmunity</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Selmi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Gershwin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cell. Mol. Immunol</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="543" to="546" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Tissue preconditioning may explain concentric lesions in Balo&apos;s type of multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stadelmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ludwin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tabira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Guseo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Lucchinetti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Leel-Össy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">T</forename><surname>Ordinario</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Brück</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lassmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain</title>
+		<imprint>
+			<biblScope unit="volume">128</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="979" to="987" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">A reaction-diffusion model for relapsing-remitting multiple sclerosis with a treatment term</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Travaglini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Numerical Mathematics and Advanced Applications ENUMATH 2023</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note>In press</note>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">The chemical basis of morphogenesis</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Turing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phil. Trans. R. Soc. Lond. B</title>
+		<imprint>
+			<biblScope unit="volume">237</biblScope>
+			<biblScope unit="page" from="37" to="72" />
+			<date type="published" when="1952">1952</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Heterogeneity of Baló&apos;s concentric sclerosis: a study of eight cases with different therapeutic concepts</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tzanetakos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Vakrakou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Tzartos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Velonakis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Evangelopoulos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Anagnostouli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Koutsis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Dardiotis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Karavasilis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Toulas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Stefanis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kilidireas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Neurol</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">400</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Amplitude equations for pattern forming systems</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Hecke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hohenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Van Saarloos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Fundamental Problems in Statistical Mechanics VIII</title>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Van Beijeren</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Ernst</surname></persName>
+		</editor>
+		<meeting><address><addrLine>North-Holland, Amsterdam</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1994">1994</date>
+			<biblScope unit="page" from="245" to="278" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Walgraef</surname></persName>
+		</author>
+		<title level="m">Spatio-Temporal Pattern Formation: with Examples from Physics, Chemistry, and Materials Science</title>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer Science &amp; Business Media</publisher>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">VisualPDE: rapid interactive simulations of partial differential equations</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>Walker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Townsend</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Chudasama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Krause</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bull. Math. Biol</title>
+		<imprint>
+			<biblScope unit="volume">85</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page">113</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Classical solutions and pattern formation for a volume filling chemotaxis model</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hillen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Chaos</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">37108</biblScope>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">WHO -World Health Organization</title>
+	</analytic>
+	<monogr>
+		<title level="j">Multiple sclerosis</title>
+		<imprint>
+			<date type="published" when="2023-11">2023. November 2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">The role of regulatory T cells in multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Zozulya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wiendl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Clin. Pract. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="384" to="398" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

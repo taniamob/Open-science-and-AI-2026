@@ -1,0 +1,1038 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Masked Unfairness: Hiding Causality within Zero ATE</title>
+				<funder ref="#_ArsTGfw">
+					<orgName type="full">Defense Advanced Research Projects Agency</orgName>
+					<orgName type="abbreviated">DARPA</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Thayer School of Engineering</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2026-03-07">7 Mar 2026</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zou</forename><surname>Yang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Thayer School of Engineering</orgName>
+								<orgName type="institution">Dartmouth College</orgName>
+								<address>
+									<settlement>Hanover</settlement>
+									<region>New Hampshire</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Sophia</forename><surname>Xiao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Thayer School of Engineering</orgName>
+								<orgName type="institution">Dartmouth College</orgName>
+								<address>
+									<settlement>Hanover</settlement>
+									<region>New Hampshire</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Bijan</forename><surname>Mazaheri</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Thayer School of Engineering</orgName>
+								<orgName type="institution">Dartmouth College</orgName>
+								<address>
+									<settlement>Hanover</settlement>
+									<region>New Hampshire</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Schmidt Center</orgName>
+								<orgName type="institution">Broad Institute of MIT and Harvard</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<region>Massachusetts</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Masked Unfairness: Hiding Causality within Zero ATE</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2026-03-07">7 Mar 2026</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">EFE9F9D1D1A18D2F951CD083145D8169</idno>
+					<idno type="arXiv">arXiv:2603.06984v1[stat.ML]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2026-03-10T18:10+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Recent work has proposed powerful frameworks, rooted in causal theory, to quantify fairness. Causal inference has primarily emphasized the detection of average treatment effects (ATEs), and subsequent notions of fairness have inherited this focus. In this paper, we build on previous concerns about regulation based on averages. In particular, we formulate the "causal masking problem" as a linear program that optimizes an alternative objective, such as maximizing profit or minimizing crime, while retaining a zero ATE (i.e., the ATE between a protected attribute and a decision). By studying the capabilities and limitations of causal masking, we show that optimization under ATE-based regulation may induce significant unequal treatment. We demonstrate that the divergence between true and causally masked fairness is driven by confounding, underscoring the importance of full conditional-independence testing when assessing fairness. Finally, we discuss statistical and information-theoretic limitations that make causally masked solutions very difficult to detect, allowing them to persist for long periods. These results argue that we must regulate fairness at the modellevel, rather than at the decision level.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text>
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>While modern methods for AI and machine learning are fantastic optimizers, they exhibit concerning potential for bias and unfair inference <ref type="bibr" target="#b11">[Ferrara, 2024]</ref>. <ref type="bibr" target="#b0">Angwin et al. [2022]</ref>, for example, showed that many statistical tools for parole are biased against minority groups. As such, it is essential to develop formal notions of fairness that can be integrated into increasingly automated decision processes.</p><p>Numerous works have attempted to formalize fairness over the past decade <ref type="bibr" target="#b10">[Dwork et al., 2012]</ref>. One emerging thread of interest is the use of causal principles to distinguish systematically biased decisions from "confounded" imbalances driven by population and demographic differences. For example, hiring primarily male luggage handlers may still be considered "fair" so long as the decisions are based on the physical strength of job applicants and not a direct bias against women. However, explicitly denying employment to strong women is evidence of direct unfair bias. The framework introduced in Nabi and Shpitser <ref type="bibr">[2018]</ref> states that sex should not have a causal effect on manager hiring decisions.</p><p>A causal notion of fairness is advantageous because it enables the application of an increasingly rich body of literature on causal inference. Potential outcome <ref type="bibr" target="#b17">[Imbens and Rubin, 2015]</ref> and graphicallybased <ref type="bibr">[Pearl, 2009]</ref> models have revolutionized our ability to determine the causal effects of an intervention, usually expressed as the average effect across a population.</p><p>The ladder of causality places an important distinction between population-level effects (e.g, "What will happen, on average, if I take an action?") and counterfactuals (e.g., "What would have happened if I had done something differently") <ref type="bibr">[Pearl, 2009]</ref>. Counterfactuals exist at the pinnacle of causality because they represent the individual treatment effect (ITE) across multiple worlds, while the second rung only requires recovery of the average treatment effect (ATE) across a population.</p><p>Although ITEs are strictly more informative than ATEs, stricter parametric assumptions on the equations governing the system are required for their identification. Meanwhile, ATEs can be computed nonparametrically in many settings, only requiring knowledge of a network of dependencies, called a structural causal model (SCM), and a joint probability distribution. As such, much of the causal literature has focused on the second rung of the causal ladder: computing ATEs and conditional ATEs (CATEs) within more restricted populations.</p><p>Building a formal notion of fairness on the literature of causal inference implicitly inherits its gaps and insufficiencies. In the context of this paper, one such insufficiency is the focus on ATEs. In fact, previous work has pointed out that average and even parity-based notions of fairness can lead to unequal treatment of subgroups through "subset targeting" <ref type="bibr" target="#b10">[Dwork et al., 2012]</ref>. To address this, <ref type="bibr" target="#b18">Kim and Zubizarreta [2023]</ref> proposed a regularization framework to ensure that the regression results are homogeneously fair. Still, enforcing the utilization of such techniques is difficult. Regulators often focus on the outcomes of potentially biased models rather than their algorithmic output, making statistical detectability critical.</p><p>All current causality-based (and many noncausality-based) methods for detecting unfair treatment focus on average population-level fairness. This paper studies the task of evading these fairness criteria (intentionally or unintentionally) by optimizing an auxiliary goal. Our findings demonstrate the importance of integrating modern notions of heterogeneous treatment effects (HTEs) <ref type="bibr">[Wager and Athey, 2018]</ref>, mixtures of treatment effects (MTEs) <ref type="bibr" target="#b20">[Mazaheri et al., 2025]</ref>, tests of conditional independence <ref type="bibr" target="#b35">[Zhang et al., 2011</ref><ref type="bibr" target="#b9">, de Morais Andrade et al., 2014</ref><ref type="bibr" target="#b3">, Canonne et al., 2018</ref><ref type="bibr" target="#b30">, Runge, 2018]</ref> into the study of fairness. We caution that conditional independence testing is an information-theoretically difficult task, and many tests for heterogeneous dependence impose strict assumptions and require large datasets <ref type="bibr" target="#b3">[Canonne et al., 2018</ref><ref type="bibr" target="#b31">, Shah and Peters, 2020</ref><ref type="bibr" target="#b13">, He et al., 2025]</ref>. This may allow causally masked policies to evade statistical detection if regulation is left at the level of decision data. Instead, we suggest building fairness regulations on the model outputs and enforcing them through "in-process mechanisms" <ref type="bibr" target="#b26">[Pessach and Shmueli, 2022]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1">Summary of Contributions</head><p>In this paper, we introduce the "causal masking" problem, which seeks to optimize an auxiliary reward while satisfying a zero ATE between two variables of interest. A motivational example maintains a zero ATE between a protected attribute and admissions decisions, while optimizing for student graduations (or graduation rate). Similar structures may emerge in other settings, such as minimizing recidivism while maintaining a zero ATE for race on parole decisions. We show that globally regulated optimization can lead to significant violations of stratified fairness, despite appearing fair to average-based fairness metrics. This behavior is empirically demonstrated in Section 7 for the parole setting using the well-known COMPAS dataset from ProPublica <ref type="bibr" target="#b0">[Angwin et al., 2022]</ref>. Code for both real-data and synthetic data experiments is provided in an anonymized GitHub link.</p><p>Under some simplifying assumptions, the causal masking problem can be formulated as a linear program (LP), which we outline in Section 4. This provides a rigorous theoretical foundation for studying the role of confounding variables in the disparity between "true" and "masked" fairness. We provide theorems in Section 5 that illustrate how causal masking is inherently driven by the statistical dependence between a public source of information and the protected attribute, as well as by the dependence between that information and the optimized outcome.</p><p>Causal masking may be malicious or a naturally occurring consequence of optimization, as shown by genericity arguments in Section 5 with more details in Appendix B. To mitigate the risk of causal masking, we advocate for fairness metrics based on full conditional-independence testing. This approach is inherently data-intensive, and systems that are heavily confounded may be causally masked for extended periods before we collect sufficient data to detect their behavior. This underscores the need for proactive and model-level regulatory action, rather than a (potentially easier) reactive approach based on data from decision outcomes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2">Related Works</head><p>Formalizing Fairness. Many works have formalized definitions of fairness as independence properties between the protected attributes and the decision <ref type="bibr" target="#b26">[Pessach and Shmueli, 2022]</ref>. Statistical parity holds if the protected attribute is independent from the decision <ref type="bibr" target="#b10">[Dwork et al., 2012]</ref>. Conditional statistical parity relaxed this notion to parity across subgroups <ref type="bibr" target="#b6">[Corbett-Davies et al., 2017]</ref>. <ref type="bibr" target="#b23">Nabi and Shpitser [2018]</ref> formalizes the problem within causal effects, while <ref type="bibr" target="#b19">Kusner et al. [2017]</ref> discusses a related notion based on counterfactuals (at the ITE level), which uses structural equations. Path-specific fairness has refined these notions to decompose different mechanisms of unfair treatment <ref type="bibr">[Chiappa, 2019, Plečko and</ref><ref type="bibr" target="#b28">Bareinboim, 2024]</ref>.</p><p>Our work studies the detection of fairness violations in decision-making. <ref type="bibr" target="#b19">Kusner et al. [2017]</ref>'s use of learned functions in a model is in line with our suggestion to regulate models instead of decisions, where we are not vulnerable to statistical weaknesses of conditional independence testing.</p><p>Optimization and Fairness. <ref type="bibr" target="#b10">Dwork et al. [2012]</ref> was the first to formalize fairness as a constraint within optimization, defining an LP that optimizes decisions over individuals. <ref type="bibr" target="#b6">Corbett-Davies et al. [2017]</ref> studied this in more detail, quantifying the "cost of fairness" in the objective function. Also within the scope of optimization, <ref type="bibr" target="#b7">Corbett-Davies et al. [2023]</ref> studied the geometry of fairness constraints and showed that fairness constraints often yield suboptimal solutions, hurting the groups they intended to help. Our optimization problem differs only slightly, focusing on decision rates across groups rather than decisions on individuals. We study the effect of ATE-based constraints, which were not addressed in these earlier works. <ref type="bibr" target="#b24">Nabi et al. [2019]</ref> presented an alternative formulation of policy optimization for online reinforcement learning with an algorithmic focus, using the path-specific effect constraints of <ref type="bibr" target="#b23">Nabi and Shpitser [2018]</ref> (which are also averages). Our paper is primarily concerned with the choices of constraints and is therefore complementary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Fairness in Predictions.</head><p>A parallel line of work has studied fairness with respect to predictions, e.g., equalized odds <ref type="bibr" target="#b1">[Barocas et al., 2019]</ref>, equal opportunity <ref type="bibr" target="#b12">[Hardt et al., 2016]</ref>, and predictive parity <ref type="bibr" target="#b5">[Chouldechova, 2017]</ref> and its relationship to calibration <ref type="bibr" target="#b27">[Pleiss et al., 2017]</ref>. Principal fairness, based on potential outcomes, states that individuals who are affected similarly by a decision should be treated similarly <ref type="bibr" target="#b16">[Imai and Jiang, 2023</ref>].</p><p>Computing HTEs. There are many methods for computing heterogeneous treatment effects (HTEs), which may be useful for detecting causal masking. Wager and Athey <ref type="bibr">[2018]</ref> developed causal forests to determine HTEs within clusters, which pairs closely with a cluster-specific optimization that likely assigns a different CATE to each cluster. Mixtures of treatment effects (MTEs) have also been studied to learn heterogeneity with significant overlap in a covariate space <ref type="bibr" target="#b20">[Mazaheri et al., 2025]</ref>. While our work focuses on naturally-and adversarially-occurring heterogeneity that is separated by observed covariates, it is possible that subgroups that are indistinguishable by observed covariates may still receive unequal treatment. MTE-based methods may extend our concepts to counterfactual notions of fairness.</p><p>We focus solely on detecting unfairness rather than computing its distribution, for which hypothesis testing is a sufficient statistical tool. Within this line of work, there are a number of heterogeneity tests that focus on computational and statistical challenges associated with continuous variables and regression <ref type="bibr" target="#b8">[Dahabreh et al., 2017</ref><ref type="bibr" target="#b15">, Huitfeldt et al., 2019]</ref>. We argue that such tests will become critical for assessing fairness in human decisions, and when the underlying target frequencies given by a model are unknown.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Preliminaries</head><p>Notation. We will use capital Roman letters to denote random variables and their corresponding lowercase letters to denote their realizations. We use the short-hand x i to indicate the realization of a random variable X = i. Lists of random variables will be bolded, e.g., X, and vectors of parameters will be denoted with vector notation, e.g., ⃗ α.</p><p>ATEs and CATEs. The average treatment effect of treatment P ∈ {0, 1} on outcome D ∈ {0, 1} is defined with respect to an adjustment set X such that cases with identical X = x values are considered "exchangeable" <ref type="bibr">[Pearl, 2009]</ref>. The backdoor adjustment formula is</p><formula xml:id="formula_0">AT E := E[D (1) -D (0) ] = x Pr(x)[E[D | x, p 1 ] -E[D | x, p 0 ]]. (1)</formula><p>where D (p) is the "potential outcome" representing the random variable from which D is drawn when P = p <ref type="bibr" target="#b29">[Rubin, 2005]</ref>. E[D (1) -D (0) ] is also sometimes written as the difference between two "do interventions," E[D | do(P = 1)] -E[D | do(P = 1)] <ref type="bibr">[Pearl, 2009]</ref>.</p><p>The terms of the sum in Eq. ( <ref type="formula">1</ref>) can be considered "conditional" average treatment effects (CATEs) because they represent the average change in the expectation of D within a X = x subgroup. A critical concept in the estimation of ATEs and CATEs is the propensity score. In the context of this paper, the propensity score represents the likelihood of an individual belonging to a specific protected group P , conditional on their covariates X, i.e., Pr(p | x). Propensity scores will appear in our analysis of improvements from causal masking in Section 5.</p><p>Causal Graphs. Causal masking settings will be described using "structural causal models" with directed edges representing causal relationships between the random variables (the vertices). A critical insight from the work of Pearl <ref type="bibr">[2009]</ref> is that the causal structure informs the statistical independencies of the random variables via graphical dseparation rules. The faithfulness assumption, often utilized when learning causal structures <ref type="bibr" target="#b33">[Vowels et al., 2022]</ref>, states that "d-connected" or causally linked variables are statistically dependent. Faithfulness holds with full Lebesgue measure <ref type="bibr" target="#b22">[Meek, 1995]</ref>, but <ref type="bibr" target="#b32">Uhler et al. [2013]</ref> showed that the set of distributions that are ε "close" to faithfulness violations grows exponentially with ε, meaning that finitesample regimes that test for conditional independence with significance thresholds are much more likely to struggle with the consequences of "near" faithfulness violations. This insight will become important when discussing relaxations of the fairness and masking constraints (defined later).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Motivating Example</head><p>We start by demonstrating how an optimization task can be improved using a heterogenously unfair strategy that maintains a zero ATE. While this section uses a toy distribution, Section 7 shows similar phenomena on the real-world COMPAS dataset.</p><p>Setup Distribution. Suppose a university seeks a model that informs admissions decisions (D = 1 corresponds to admission) for two different departments, X ∈ {0, 1}, that is "fair" for some protected attribute P ∈ {0, 1}. We are motivated by the famous Berkeley admissions case <ref type="bibr" target="#b2">[Bickel et al., 1975]</ref>, and give a deliberately simple example in Table <ref type="table">1</ref>.</p><formula xml:id="formula_1">x p Pr(x, p) Pr(Y = 1 | x, p) Pr(D mask = 1 | x, p) 0 0 1 /15 .5 .5 0 1 9 /15 .5 0 1 0 4 /15 .25 0 1 1 1 /15 1 1</formula><p>Table <ref type="table">1</ref>: A description of a joint probability distribution on X, P , a list of graduation rates, and a masking policy.</p><p>The goal is to maximize graduations (Y ∈ {0, 1}) among admitted students. While the protected attribute P should not be used, it correlates with some public information like department X. Since department-level differences in admissions may skew the distribution of the protected attribute in the student body, the decisions may still be considered fair so long as parity is achieved within each department. The undirected edge X -P captures optionality in X ← P , or X → P .</p><p>Figure <ref type="figure" target="#fig_0">1</ref> gives causal diagrams for this setting, including the absence of a P → D relationship for a "truly fair" decision policy, giving conditional parity within the context of P causing D, i.e., P ⊥ ⊥ D | X. We will describe two unfair policies: "Masking" and "Exploiting".</p><p>ATE as a Measure of Fairness. A regulating body wants to balance decisions to equal rates of acceptance across minority and majority groups. A "truly fair" set of decision rates, under this restriction, would involve homogenously trivial group-level CATEs for the effect of P on D. If the covariate X gives us exchangeability<ref type="foot" target="#foot_0">1</ref> , this corresponds to</p><formula xml:id="formula_2">E(Y | x 0 , p 1 ) -E(Y | x 0 , p 0 ) = 0, E(Y | x 1 , p 1 ) -E(Y | x 1 , p 0 ) = 0.</formula><p>"Global" or "average" fairness is a much milder restriction:</p><formula xml:id="formula_3">AT E = Pr(x 0 )(E(Y | x 0 , p 1 ) -E(Y | x 0 , p 0 )) + Pr(x 1 )(E(Y | x 1 , p 1 ) -E(Y | x 1 , p 0 )) = 0.</formula><p>Evading ATE Detection. Notice that all fair admission policies involve a graduation rate of no more than 50%. However, an optimizer that uses minority status (P ) can do better by granting admission only to non-minority (P = 1) applicants in the second department (X = 1), achieving a perfect graduation rate. Such a "exploitative" strategy utilizes P and clearly fails ATE-based fairness metrics, with an ATE of 1/3. Now consider the "masking" strategy outlined as D mask in Table <ref type="table">1</ref>. Notice that it achieves an ATE of 0 by strategically offsetting P = 0, X = 1 cases with P = 1, X = 0 cases. This is unfair to both the non-minority and minority groups in the X = 1, P = 0 and X = 0, P = 1 cases. Still, such a strategy evades the detection of a naïve ATE-based regulator. Furthermore, such an approach achieves a better graduation rate ( 5 /6) than fairness ( 1 /2). As such, an optimized strategy, whether by humans or by machines, is likely to incur some or all of this bias.</p><p>Other Formulations. This setup is general and may emerge in many settings. For example, courts may seek to make fair parole decisions (Y ) unbiased by a protected status (P ) when controlling for crime details (X). We perform such a study on real data in Section 7.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Causal Masking</head><p>Motivated by the previous section, we formalize the causal masking problem as a linear program (LP). Suppose that we have a decision D ∈ {0, 1} representing "when to participate." Examples of participation include granting parole, making a hire, or admitting a student. The goal of these decisions is to maximize a reward</p><formula xml:id="formula_4">Y when D = 1, i.e., E[Y | d 1 ]. An equivalent formulation is to maximize E[Y | d 1 ] Pr(d 1 )</formula><p>subject to the participation rate, Pr(d 1 ), being constant.</p><p>The features on which we may base our policy are divided into P , which is protected, and X, which is unprotected. For simplicity, we treat X ∈ {1, . . . , k} and P ∈ {0, 1} as scalars. Continuous and multivariate X can be reduced to this setting using clustering algorithms, such as k-means. While this reduces the information capacity of the more complicated X, the results obtained in the coarsened X serve as a lower bound on the achievable objective in the more general case, with the parameter k providing a natural way to study the problem's "resolution". It is also possible to extend to multivariate and continuous P using multivariate and continuous interventions <ref type="bibr">[Pearl, 2009]</ref>, but such extensions are beyond the scope of this work. Our choice of binary Y is arbitrary, since we only maximize its expectation and conditional expectation.</p><p>A decision policy is given by a function α(x, p) that maps the support of X, P onto [0, 1], indicating the "rates of participation" for each x, u pair. Such a decision policy yields a random variable with probabilities given by these participation rates, D ∼ Bernoulli(α(x, p)). Under this specification, we may now assume without loss of generality that we are optimizing a deterministic function of x, p, which we call γ(x, p) = E[Y | x, p]. Our goal is to select an "optimal" decision policy that maximizes E[Y |d 1 ] Pr(d 1 ) subject to a constraint of constant participation rate Pr(d 1 ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">LP Formulation</head><p>When X, P are discrete, a policy is represented by a vector of frequencies α x,p = Pr(d 1 | x, p), and a reward function is represented by a vector of expected rewards γ x,p = E[Y | x, p], each of which is indexed by the values of X and P . This also allows us to index Pr(x, p) = π x,p .</p><p>Using the law of total expectation and D ⊥ ⊥ Y | X, P , the objective is:</p><formula xml:id="formula_5">W(D) = E[E[Y • D | X, P ]] = x,p γ x,p α x,p π x,p .</formula><p>The following three optimization problems formalize "exploitation", "fairness", and "masking" as linear programs. In order maintain equivalence with maximizing the rate of wins, we add a participation constraint x,p α x,p π x,p = ρ. Proposition 4.1 (Optimal Exploit Policy). The "exploit" approach optimally uses X, P without further constraints:</p><formula xml:id="formula_6">max {αx,p} W(D) = k x=1 γ xi,1 α x,1 π x,1 + γ x,0 α x,0 π x,0 s.t. 0 ⩽ α x,p ⩽ 1 ∀x, p x,p α x,p π x,p = ρ.</formula><p>The optimal policy participates greedily with nonzero α x,p in (x * 1 , p * 1 ) with the highest possible reward function, (x * 1 , p * 1 ) = arg max x,p γ(x, p), then the second highest (x * 2 , p * 2 ), and so on until the participation rate is exhausted. Proposition 4.2 (Optimal ε-Fair Policy). The optimal ε fair -fair policy, D fair (ε fair ), imposes a "within ε fair " fairness constraint of P ⊥ ⊥ D | X, requiring decision parity across all strata, X = x. The additional constraint is</p><formula xml:id="formula_7">s.t. -ε fair ⩽ α x,1 -α x,0 ⩽ ε fair ∀x = 1, . . . , k.</formula><p>The optimal solution for ε = 0 can be expressed using</p><formula xml:id="formula_8">w avg x := E[Y | x] = γ x,1 Pr(p 1 |x) + γ x,0 Pr(p 0 |x). Let x * 1 = arg max x w avg</formula><p>x , and all following</p><formula xml:id="formula_9">x * i = arg max x̸ =x * 1 ,...x̸ =x * i-1 w avg x so that x *</formula><p>1 , x * 2 , . . . , x * k represent an ordering of the best to worst settings. The optimal fair policy is to always participate in context x * 1 , then x * 2 , and so on until we have exhausted the participation rate.</p><p>Proposition 4.3 (Optimal ε-Masking Policy). The optimal ε mask -masking policy, D mask (ε mask ), is the solution to the LP with a masking constraint that bounds the ATE:</p><formula xml:id="formula_10">max {αx,p} W(D) = k x=1 γ x,1 α x,1 π x,1 + γ x,0 α x,0 π x,0 s.t. -ε mask ⩽ x (π x,0 + π x,1 )(α x,1 -α x,0 ) ⩽ ε mask 0 ⩽ α x,p ⩽ 1 ∀x, p x,p α x,p π x,p = ρ.</formula><p>Both ε-fairness and ε-masking will usually be considered in ε = 0 settings, leading to perfect fairness and perfect masking strategies D fair and D mask respectively. Relaxations with nonzero ε will be used to discuss finite-sample behavior in Section 6. Notice that the masking constraint is satisfied by the fairness constraint. As such, optimal masking is always at least as good as optimal fairness.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Theoretical Results</head><p>This section establishes key properties of causal masking. We lower-bound the benefit of causal masking relative to the fair solution and ultimately argue that masking is a natural outcome of optimization when subject to a zero ATE constraint, even when the decision-maker is not acting adversarially. All proofs are in Appendix A.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Improvements from Masking</head><p>The optimal fair policy, D fair , is a "water-filling" algorithm that selects the best strata by average reward until the participation budget ρ is met. If ρ is sufficiently small, then this procedure simply chooses the single best stratum x * = arg max x w avg</p><p>x . Starting from this baseline, a decision-maker could be tempted to make an "unfair" swap to increase utility. For example, they could stop participating with group p = 0 in fair stratum x i and compensate by increasing participation with group p = 0 in some other stratum x j . Such a change must then scale the participation rate to keep it constant. This swap-and-scale procedure provides a lower bound on the performance gap that is valid in "low participation rate" (small ρ) scenarios.</p><p>Definition 5.1. Define the "arbitrage rate of return" for a policy that trades participation between states (i, p) and (j, p) as: R p (j) := w i,p + w j,p Pr(p|x i ) + Pr(p|x j ) where p = |1 -p| and w x,p = γ x,p Pr(p|x).</p><p>Theorem 5.2 (The Gap between Masking and Fairness). Assume the participation rate ρ is sufficiently small such that the optimal fair policy, D fair , only participates in the best stratum x * = x i . The performance gap, ∆ = W(D mask ) -W(D fair ), is bounded by:</p><formula xml:id="formula_11">∆ ⩾ ρ • max 0, max j̸ =i,p∈{0,1} {R p (j) -w avg i }</formula><p>To see this theorem in action, we apply it to the motivating example in Table <ref type="table">1</ref>. First, we calculate that the best stratum for the fair policy is x * = x 0 , with an average reward of w avg 0 = 0.5. The most profitable arbitrage opportunity involves trading between state (i, p) = (0, 0) and (j, p) = (1, 1). This yields an arbitrage rate of return R 1 (1) = 5 6 . Plugging these values into Theorem 5.2, the performance gap is bounded by ∆ ⩾ ρ • (5/6 -0.5) = ρ/3. The specific masking policy shown in the table has a participation rate of ρ = 0.1. For this value, the theorem guarantees a minimum gap of 0.1/3 = 1 /30. Remarkably, for this example, the bound is tight. The optimal fair policy yields a utility of W(D fair ) = 0.1 × 0.5 = 1 /20, while the D mask policy yields a utility of W(D mask ) = 1 /12. The true gap is 1 /12 -1 /20 = 1 /30, exactly matching our lower bound.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">The Role of the Observed X</head><p>The performance gap between the masking and fair policies is a direct consequence of data dependencies. A gap can only emerge if the optimizer can exploit either (1) demographic disparities between strata or (2) heterogeneous outcome patterns across those strata. These correspond to the dependencies P ̸ ⊥ ⊥ X (confounding) and X ̸ ⊥ ⊥ Y | P (heterogeneity), respectively.</p><p>From Theorem 5.2, a gap can exist if the arbitrage rate of return, R p (j), exceeds the fair policy's return, w avg i ; the existence of such a gap is characterized by two sufficient conditions:</p><p>1. Heterogeneity (X ̸ ⊥ ⊥ Y | P ): Even if there is no confounding (P ⊥ ⊥ X, so Pr(P = p|x) = Pr(P = p)), the rewards γ x,p can still vary across strata x. The context-weighted rewards w x,p = γ x,p Pr(P = p) will therefore also vary. The arbitrage rate R p (j) becomes a mix of different reward terms (e.g., from γ i,1-p and γ j,p ) that can easily outperform the simple average reward w avg i of the fair policy's chosen stratum. Therefore, heterogeneity in outcomes is a sufficient driver for a performance gap.</p><p>2. Confounding (P ̸ ⊥ ⊥ X): Even if there are no heterogeneous effects (X ⊥ ⊥ Y | P , so γ x,p = γ p ), the propensity scores Pr(p|x) can vary across strata x. In this case, the arbitrage rate of return is</p><formula xml:id="formula_12">R p (j) = γ 1-p Pr(p|x i ) + γ p Pr(p|x j ) Pr(p|x i ) + Pr(p|x j ) .</formula><p>This is a weighted average of the base rewards γ p and γ 1-p . The fair policy's return, w avg i = γ 0 Pr(p 0 |x i ) + γ 1 Pr(p 1 |x i ), is also a weighted average. Because the weights (the propensities) in R p (j) are drawn from the different propensities of strata i and j, these two averages will not be equal in general. The masking policy can exploit this difference, proving that confounding is also a sufficient driver for a performance gap.</p><p>The following theorems formalize that a gap exists if and only if either of these two dependencies holds.</p><p>Theorem 5.3 (Necessary Conditions for a Performance Gap). Let ∆ = W(D mask ) -W(D fair ) be the performance gap. If P ⊥ ⊥ X AND X ⊥ ⊥ Y | P , then the performance gap is identically zero (∆ = 0).</p><p>Theorem 5.4 (Sufficient Conditions for a Generic Gap). If either confounding exists (P ̸ ⊥ ⊥ X) or heterogeneous effects exist (X ̸ ⊥ ⊥ Y | P ), then for a set of world parameters (π, γ) of full Lebesgue measure satisfying this condition, the performance gap is strictly positive (∆ &gt; 0).</p><p>The results of Theorem 5.3 and Theorem 5.4 can be summarized as a relaxation of the graph initially introduced in Figure <ref type="figure" target="#fig_0">1</ref>, now shown in Figure <ref type="figure" target="#fig_1">2</ref>. The causal graphs on the left represent settings where causal masking is generically beneficial due to the presence of either an X → Y path or an X -P confounding path. The graph on the right cannot be improved because both dependencies are absent, so the masked solution gives the same utility as the fair solution. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">The Role of Regulation</head><p>Testing for non-zero ATEs can be done with a simple z-test whose sample complexity does not depend on k, so the statistical power does not get worse when k increases. Causally masked solutions require a full heterogeneity test, which partitions the data into X = x strata and thus reduces the statistical power for larger k. Both tests are given in Appendix D. This implies that unfair solutions that are not causally masked are likely to be easier to detect than those that are. This subsection argues that ATE-based regulation does not necessarily improve fairness and instead pushes solutions into this "hard-to-detect" realm.</p><p>In the infinite sample regime, we give basic genericity results in Appendix B, summarized in three points:</p><p>1. Without regulation, solutions are unfair and unmasked. 2. Optimized solutions are also unfair and unmasked. 3. ATE-based constraints still result in unfair solutions. This shows that imposing zero ATE regulations almost inevitably leads to causally masked policies, for which fairness is more difficult to detect than in unregulated settings.</p><p>We can also quantify the size of the feasible sets. In Appendix C, we show that feasible fair solutions are a strict subset of feasible masking solutions, and that ε-fair solutions have a significantly smaller volume when ε is relaxed to handle finite-sample regimes. This volume also grows significantly slower (O(ε k ) vs. O(ε)). As such, we must relax fairness to a far more detectable ε fair to meaningfully improve our objective, whereas small (and likely undetectable) relaxations of masking provide significant flexibility. The next section demonstrates that optimization does, indeed, take advantage of this growth in the feasible sets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Synthetic Experiments</head><p>This section quantitatively reinforces the intuition that relaxing fairness constraints yields significant utility, even under zero-ATE regulations. We demonstrate that a very small and likely undetectable relaxation of a zero-ATE constraint is capable of significant utility gain.</p><p>To do this, we performed a synthetic data experiment on 100,000 uniformly sampled models with ⃗ π in the simplex, ⃗ γ ∈ [0, 1] 2k , ρ = .25 and D exploit , D fair (ε fair ), and D mask (ε mask ) determined by the solutions to their respective LPs. The results are reported in Figure <ref type="figure" target="#fig_2">3</ref>.</p><p>The achieved objective (i.e., "performance") of each LP is normalized so that 0 corresponds to W(D fair (0)) and 1 corresponds to W(D exploit ). To illustrate the role of k, we repeat the experiment for k = 2 (top row) and k = 10 (bottom row).</p><p>The first column shows a moderate improvement in optimization when the fairness constraint is relaxed ε fair . This improvement is dwarfed in the second column, where a relaxation of ε mask increases the performance much faster than a relaxation of the fairness constraint. This emphasizes that large gains can be obtained with very little change in a metric that is already statistically difficult to detect. This effect is magnified for larger k.</p><p>We also studied a fourth optimization problem, which includes both a masking constraint with ε mask = 0 and a fairness constraint with variable ε fair , whose results are shown in the third column. Within these completely masked policies, we receive an approximately linear benefit from relaxing the fairness constraint. This demonstrates the temptation to move from fair to unfair policies when only regulated by an ATE-based masking constraint.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Real Data Demonstration</head><p>In this section, we simulate a parole policy based on causal masking while optimizing for minimal 2year recidivism. We show that the resulting outcome evades detection of its ATE while remaining unfair. Due to the statistical difficulties in conditional independence testing, the new masked policy persists for a long time until there is sufficient data to detect its (stratified) unfairness.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1">Setup</head><p>We simulate a parole policy D, where D = 1 indicates a release and D = 0 indicates a denied parole. The goal is to minimize the expected number of recidivisms, E[Y | d 1 ] Pr(d 1 ), where Y is 2-year recidivism, while remaining fair with respect to minority status (P ). We impose a minimum release-rate constraint Pr(d 1 ) = x,p π x,p α(x, p) ⩾ ρ, where π x,p = Pr(x, p) is estimated from the data and ρ = 0.1.</p><p>For X, we select the following variables: the age category of defendants, the prior criminal records of defendants, the charge degree of defendants, and the sex of defendants. To determine the stratification X, such that variables are discretized using quantilebased binning at various resolutions.</p><p>We evaluate each policy by testing two nested null hypotheses that correspond to the masking and fair conditions. The first, a test of global fairness, assesses whether the Average Treatment Effect (ATE) of the protected attribute P on the decision D is zero across the population. The second, a stricter test of stratified fairness, assesses whether this is true within every single stratum X = x. Formally, using the policy rates α x,p , we define these as:</p><formula xml:id="formula_13">Global Fairness : H ATE : k x=1 Pr(X = x)(α x,1 - α x,0 ) = 0.</formula><p>This ATE-based regulatory check ensures a policy appears fair "on average."</p><p>Stratified Fairness: H CATE : α x,1 -α x,0 = 0, ∀x. The stronger, true fairness condition; if H CATE holds, H ATE is satisfied automatically.</p><p>Rejecting local fairness while accepting global fairness is the definitive signature of a successfully masked policy. To test these hypotheses, we utilize a </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2">Results</head><p>In Figure <ref type="figure" target="#fig_3">4</ref>, we performed our statistical tests on policies applied to successively larger datasets until we rejected H ATE , H CATE , or either, simulating the "longevity" of each strategy. In all cases, the fair strategy is rejected last (as happens by chance), and the exploit strategy is rejected first. Notice that the masking strategy rejects H ATE at similar times to the fair strategy, while the exploit strategy is quickly discovered to be unfair. In the middle two plots, we see that, even with all forms of testing, the masking strategy is allowed to persist over five times longer than the exploit strategy, with this gap worsening for larger k. Finally, on the right, we see that the longevity of the masked solution coupled with its hidden unfairness contributes the most "total unfairness" as measured by adding α x,1 -α x,0 (the disparity of decision probabilities) for each candidate until the policy is "caught" as unfair.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8">Discussion</head><p>This paper introduces the causal masking problem, formulates it as an LP, and examines its properties. We showed that ATE-based regulation almost always leads optimizers to unfair solutions. Although this unfairness is essentially certain, detecting such unfairness is information-theoretically difficult. As a result, these unfair models can remain undetected for years. More complex observed covariates (larger k) significantly widen the detectability gap between generically unfair and masked unfair policies, while also allowing more tempting masking solutions. If we restrict ourselves to decision statistics, we should accept causal masking as inevitable and essentially impossible to detect or regulate.</p><p>These limitations are fundamentally grounded in the detectability of conditional independence and therefore extend beyond causal notions of fairness to any form of conditional parity. This has widespread implications for many fairness applications, including college admissions and criminal justice, as discussed in this paper, as well as affirmative action <ref type="bibr" target="#b14">[Holzer and Neumark, 2000]</ref>, and the gender wage gap <ref type="bibr" target="#b25">[Pendakur and Woodcock, 2010</ref>] -all of which have been predominantly analyzed using conditional (adjusted) averages. Given these challenges, we argue that fairness regulation should operate at the model level, where the internal decision mechanism is accessible, rather than solely at the level of observed decisions.</p><p>There are several natural extensions to our work. The first involves the study of success rate maximization with an unfixed participation rate. Examples include maximizing the win rate when counting cards (while avoiding detection) or maximizing graduation rate or average GPA. Such a problem is a linearfractional program with different properties.</p><p>Another important extension will involve generalizing to measures of global dependence beyond ATEs, such as global odds ratios, which can be detected using a CMH test <ref type="bibr">[Zhang and Boos, 1997]</ref>, or conditional mutual information. These properties impose distinct constraints, thereby opening avenues for significant future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A Deferred Proofs</head><p>A.1 Proof of Theorem 5.2</p><p>Proof. The proof proceeds by comparing the utility of the optimal fair policy to a specially constructed, valid masking policy candidate, D ′′ p,j . 1. Utility of the Optimal Fair Policy: Under the small ρ assumption, the optimal fair policy is to participate only in stratum i with rates α i,1 = α i,0 = ρ/ Pr(X = i). The utility is:</p><formula xml:id="formula_14">W(D fair ) = ρ • w avg i .</formula><p>2. Construct a Valid Masking Candidate Policy, D ′′ p,j : We build a candidate policy from scratch that is inspired by an arbitrage between states (i, 1) and (j, 0) (the argument for (i, 0) and (j, 1) is symmetric).</p><p>Step A: Define the Unscaled Arbitrage Policy (D ′ ). Let's construct an intermediate policy D ′ that has non-zero participation only for rates α ′ i,1 and α ′ j,0 . To satisfy the zero ATE constraint, these rates must obey the balance equation: Pr(X = i)α ′ i,1 = Pr(X = j)α ′ j,0 . To make this policy as extreme as possible while keeping all rates ⩽ 1, we set one rate to 1 and solve for the other. This results in the policy:</p><formula xml:id="formula_15">α ′ i,1 = min(Pr(X = i), Pr(X = j)) Pr(X = i) and α ′ j,0 = min(Pr(X = i), Pr(X = j))</formula><p>Pr(X = j) .</p><p>For example, if Pr(X = i) is larger, then α ′ i,1 &lt; 1 and α ′ j,0 = 1.</p><p>Step B: Calculate the Rate of Return of D ′ . The utility of this unscaled policy is:</p><formula xml:id="formula_16">W(D ′ ) = α ′ i,1 γ i,1 π i,1 + α ′ j,0 γ j,0 π j,0 = min(. . . ) Pr(x i ) γ i,1 Pr(P = 1|x i ) Pr(x i ) + min(. . . ) Pr(x j ) γ j,0 Pr(P = 0|x j ) Pr(x j ) = min(Pr(X = i), Pr(X = j)) • [w i,1 + w j,0 ].</formula><p>The participation rate of this policy is:</p><formula xml:id="formula_17">ρ ′ = α ′ i,1 π i,1 + α ′ j,0 π j,0 = min(. . . ) Pr(X = i) Pr(P = 1|x i ) Pr(x i ) + min(. . . ) Pr(X = j) Pr(P = 0|x j ) Pr(x j ) = min(Pr(X = i), Pr(x j )) • [Pr(P = 1|i) + Pr(P = 0|j)].</formula><p>The key insight is that the rate of return, W(D ′ )/ρ ′ , is symmetric and simplifies because the "min" term cancels out:</p><formula xml:id="formula_18">W(D ′ ) ρ ′ = w i,1 + w j,0 Pr(P = 1|i) + Pr(P = 0|j) = R 0 (j).</formula><p>Step C: Scale to Create Valid Candidate D ′′ . We now define our final candidate policy D ′′ 0,j by scaling all rates of D ′ by a factor of (ρ/ρ ′ ). This policy is guaranteed to be valid if we assume ρ is sufficiently small (specifically, ρ ⩽ ρ ′ ). By construction, its participation rate is exactly ρ, and its utility is:</p><formula xml:id="formula_19">W(D ′′ 0,j ) = ρ • R 0 (j).</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Bounding the Gap:</head><p>The optimal masking policy's utility, W(D mask ), must be at least as high as the utility of the best of these constructed candidates. The performance gap ∆ is therefore bounded by:</p><formula xml:id="formula_20">∆ = W(D mask ) -W(D fair ) ⩾ max j̸ =i,p∈{0,1} W(D ′′ p,j ) -W(D fair ) = ρ • max j̸ =i,p∈{0,1} {R p (j)} -ρ • w avg i .</formula><p>Factoring out ρ and ensuring the gap is non-negative completes the proof.</p><p>A.2 Proof of Theorem 5.3</p><p>Proof. The two assumptions translate directly to our model parameters:</p><p>1. P ⊥ ⊥ X =⇒ Pr(P = p|X = x) = Pr(P = p) for all strata x.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">X ⊥ ⊥ Y</head><formula xml:id="formula_21">| P =⇒ E[Y |X = x, P = p] = E[Y |P = p].</formula><p>In our notation, this means γ x,p does not depend on x, so we write it as γ p .</p><p>Under these assumptions, the context-weighted reward is w x,p = γ p Pr(P = p), which is constant for all strata x. Consequently, the average reward w avg x = w x,0 + w x,1 = γ 0 Pr(P = 0) + γ 1 Pr(P = 1) is also constant for all x. The fair policy is indifferent to which stratum it chooses. Let's pick i.</p><p>Now, let's analyze the arbitrage rate of return from Theorem 5.2: R p (j) = w i,p + w j,p Pr(P = p|x i ) + Pr(P = p|x j ) = γ p Pr(P = p) + γ p Pr(P = p) Pr(P = p) + Pr(P = p) = γ p Pr(P = p) + γ p Pr(P = p) = w avg i . Since R p (j) = w avg i for all possible swaps, the lower bound on the gap from Theorem 5.2 is ρ • max(0, 0) = 0. To show the gap is exactly zero, we note that any valid masking policy must satisfy the zero ATE constraint. Under our assumptions, the decisions α x,p for a given p will be the same across all x (since w x,p is constant). Let this policy be (α 0 , α 1 ). The ATE constraint becomes (α 1 -α 0 ) x Pr(X = x) = α 1 -α 0 = 0. This forces α 1 = α 0 , meaning any optimal masking policy must also be a fair policy. Thus, W(D mask ) = W(D fair ) and ∆ = 0.</p><p>A.3 Proof of Theorem 5.4</p><p>Proof. The proof relies on showing that if either dependency holds, the "no-gap" condition (∆ = 0) imposes a non-trivial equality constraint on the problem parameters, which defines a set of Lebesgue measure zero. We use the bound from Theorem 5.2, which guarantees a positive gap if R p (j) &gt; w avg i for some swap (j, p), where i = arg max x w avg</p><p>x . Case 1: Confounding exists (P ̸ ⊥ ⊥ X). Assume for simplicity X ⊥ ⊥ Y | P (so γ x,p = γ p ). The condition P ̸ ⊥ ⊥ X means that for some j ̸ = i, Pr(P |j) ̸ = Pr(P |i). The arbitrage return R p (j) is a weighted average of γ p and γ p , while w avg i is a different weighted average of the same values. These two averages will be equal only if γ p = γ p or if the propensities align in a specific way. For generic, continuous parameters (π, γ), the strict inequality R p (j) ̸ = w avg i will hold. There will almost surely be a swap for which the inequality is favorable (R p (j) &gt; w avg i ), creating a positive gap. The condition R p (j) = w avg i defines a measure-zero set. Case 2: Heterogeneous effects exist (X ̸ ⊥ ⊥ Y | P ). Assume for simplicity P ⊥ ⊥ X (so Pr(P |x) = Pr(P )). The condition X ̸ ⊥ ⊥ Y | P means that for some p, γ x,p is not constant across strata. The arbitrage return R p (j) involves terms like γ j,p and γ i,p , while the fair return w avg i involves γ i,p and γ i,p . For a generic choice of reward parameters, it would be a measure-zero coincidence for the specific combination of terms in R p (j) to exactly equal the combination in w avg i . Therefore, a profitable swap will almost surely exist, guaranteeing ∆ &gt; 0.</p><p>Since a strictly positive gap is generated (generically) if either condition holds, a zero-gap outcome represents a "perfect alignment" of parameters that is broken by any small, random perturbation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B Genericity of Constraints and Solutions</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B.1 Genericity of Constraints</head><p>A policy is a vector ⃗ α = (α x1,0 , α x1,1 , . . . , α x k ,0 , α x k ,1 ) in the policy space P = [0, 1] 2k . We first show that an arbitrarily chosen policy is almost never fair or masked. Proof. The space of all possible policies P = [0, 1] 2k is a 2k-dimensional hypercube with volume 1.</p><p>(a) Fairness Constraint: The fairness constraint is A ⊥ ⊥ U | X, which corresponds to the set of k linear equality constraints: α x,1 -α x,0 = 0 for each x ∈ {x 1 , . . . , x k }.</p><p>These k constraints are independent, as each involves a disjoint pair of coordinates of ⃗ α. Geometrically, the set of policies satisfying these constraints is the intersection of k distinct hyperplanes with the hypercube P. This intersection forms a k-dimensional manifold within the 2k-dimensional space P. For any k ⩾ 1, we have k &lt; 2k. A k-dimensional manifold has zero Lebesgue measure in a 2k-dimensional space. Thus, the set of fair policies has measure zero.</p><p>(b) Masking Constraint: The masking constraint corresponds to a single linear equality:</p><formula xml:id="formula_22">k x=1 Pr(X = x)(α x,1 -α x,0 ) = 0,</formula><p>where Pr(X = x) = π x,0 + π x,1 . Assuming not all Pr(X = x) are zero, this is a single non-trivial linear constraint on the coordinates of ⃗ α. Geometrically, this equation defines a (2k -1)-dimensional hyperplane in R 2k . The set of policies satisfying the constraint is the intersection of this hyperplane with the hypercube P, which is a (2k -1)-dimensional manifold. Since 2k -1 &lt; 2k, this set has Lebesgue measure zero in P.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B.2 Genericity of Optimal Solutions</head><p>We now consider the "world parameters" (π, γ) which define the problem instance. Let the space of all such parameters be Θ, a subset of a high-dimensional Euclidean space with a well-defined Lebesgue measure.</p><p>Theorem B.2. The set of world parameters (π, γ) ∈ Θ for which the optimal exploit policy also satisfies (a) the fairness constraint or (b) the masking constraint is a set of Lebesgue measure zero.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Proof. Let w ′</head><p>x,u := γ x,u π x,u . The objective is W(D) = x,u w ′ x,u α x,u . For a generic choice of parameters, the values of w ′</p><p>x,u will be unique. In this case, the optimal exploit policy is a pure strategy: set α x * ,u * = 1 for (x * , u * ) = arg max x,u w ′</p><p>x,u , and all other α x,u = 0. (a) Fairness Constraint: The pure exploit policy sets one coordinate to 1 and the rest to 0. For this to satisfy the fairness constraints α x,1 = α x,0 for all x, every coordinate must be 0 (if all w ′</p><p>x,u ⩽ 0) or 1. A non-trivial pure exploit policy necessarily violates the constraint at stratum x * , where it sets (α x * ,1 , α x * ,0 ) to either (1, 0) or (0, 1).</p><p>A non-pure exploit policy is optimal only if there is a tie for the maximum value of w ′ x,u . For an optimal exploit solution to be fair, it must be that a fair policy is also an optimal exploit solution. This requires a specific alignment of parameters. For instance, if the optimal fair policy is α x ′ ,1 = α x ′ ,0 = 1 for some x ′ , then for this to also be an optimal exploit solution, we need w ′</p><p>x ′ ,1 + w ′ x ′ ,0 ⩾ w ′ x,u for all (x, u) and for any other fair policy. A necessary condition for such a policy to be expressible as an optimal exploit solution is a tie, such as w ′</p><p>x ′ ,1 = w ′ x ′ ,0 being the two highest values. This equality, γ x ′ ,1 π x ′ ,1 = γ x ′ ,0 π x ′ ,0 , is a single non-trivial equality constraint on the continuous parameters (π, γ) and thus defines a set of Lebesgue measure zero in Θ.</p><p>(b) Masking Constraint: Plugging the pure exploit policy α x * ,u * = 1 into the masking constraint gives Pr(X = x * )(δ u * ,1 -δ u * ,0 ) = 0, which implies Pr(X = x * ) = 0, a trivial case. Thus, a pure exploit policy cannot satisfy the masking constraint.</p><p>The constraint can only be satisfied if the optimal exploit policy is non-pure, which requires a tie, e.g., w ′</p><p>x A ,u A = w ′ x B ,u B = max x,u w ′ x,u . This is an equality constraint on (π, γ), e.g., γ x A ,u A π x A ,u A = γ x B ,u B π x B ,u B , which defines a measure-zero set.</p><p>Theorem B.3. The set of world parameters (π, γ) ∈ Θ for which the optimal masking policy is also a fair policy is a set of Lebesgue measure zero.</p><p>Proof. The fair policies are a strict subset of the feasible set for the masking problem. Therefore, W(A mask ) ⩾ W(A fair ). The solutions are identical if and only if the maximum over the larger set happens to lie in the smaller subset.</p><p>The optimal masking policy is a double-threshold strategy: α x,1 = I(w x,1 &gt; λ) and α x,0 = I(w x,0 &gt; -λ), where w x,u := γ x,u Pr(u|x) and λ is a Lagrange multiplier chosen to satisfy the constraint (we ignore measurezero cases where the decision is fractional).</p><p>For this policy to be fair, it must be that α x,1 = α x,0 for all x. This means that for the optimal λ * , every stratum x must have a policy of either (1, 1) or (0, 0). No stratum can have an "unfair" policy of (1, 0) or (0, 1). A policy is (1, 0) if w x,1 &gt; λ * and w x,0 ⩽ -λ * . A policy is (0, 1) if w x,1 ⩽ λ * and w x,0 &gt; -λ * .</p><p>The masking LP is free to select such "unfair" policies for individual strata if doing so increases the global objective, provided the choices can be balanced to satisfy the zero ATE constraint. For instance, suppose stratum x A has a large positive w x A ,1 and stratum x B has a large positive w x B ,0 . The masking LP can potentially set α x A ,1 = 1 and α x B ,0 = 1 (and others zero), yielding a high objective value. This policy is unfair. It is feasible for the masking problem if Pr(</p><formula xml:id="formula_23">X = x A )(1 -0) + Pr(X = x B )(0 -1) = 0, i.e., if Pr(X = x A ) = Pr(X = x B ).</formula><p>The optimal masking solution is fair only if, for the given parameters (π, γ), no such profitable "unfair" combination of choices exists. The condition where an unfair policy (like the one above) gives an objective value *equal to* the optimal fair policy's objective value is an equality constraint on the parameters (π, γ). For instance: γ x A ,1 π x A ,1 + γ x B ,0 π x B ,0 = max x (γ x,1 π x,1 + γ x,0 π x,0 )</p><p>Such equations define the boundaries between regions in the parameter space Θ where different types of policies are optimal. These boundaries are lower-dimensional manifolds and thus have Lebesgue measure zero. For a generic choice of parameters, one side of the inequality will hold, and it is overwhelmingly likely that there exists some profitable, unfair trade-off. The masking solution will thus almost never be a fair one.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C The Geometry of Fair and Masked Policies</head><p>Let the world of interest be defined by a policy vector ⃗ α ∈ [0, 1] 2k , with constraints carving out a feasible region within this hypercube. The size of this region represents the "freedom" the optimizer has to find a good solution. When constraints are perfectly enforced (ε = 0), the feasible sets become lower-dimensional affine subspaces. Their dimension quantifies their size.</p><p>Theorem C.1 (Dimensionality of Feasible Sets). Let V fair and V mask be the feasible sets for the perfectly fair and masking problems (ε fair = ε mask = 0), respectively.</p><p>1. Containment: V fair ⊆ V mask .</p><p>2. Dimensionality: The dimension of V fair is k -1, while the dimension of V mask is 2k -2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Growth of Freedom:</head><p>The masking problem has k-1 more dimensions of freedom than the fair problem.</p><p>Proof. (1) Any policy satisfying the k local fairness constraints, α x,1 -α x,0 = 0, also satisfies the global masking constraint, x Pr(X = x)(α x,1 -α x,0 ) = 0. (2) The policy space is 2k-dimensional. The fair problem imposes k local fairness constraints and 1 global participation constraint, for a total of k + 1 independent linear equality constraints. The resulting dimension is 2k -(k + 1) = k -1. The masking problem imposes 1 global ATE constraint and 1 global participation constraint, for 2 total constraints. The dimension is 2k -2.</p><p>(3) The difference is (2k -2) -(k -1) = k -1.</p><p>This result shows that the masking policy's advantage, in terms of the dimensionality of its search space, grows linearly with the number of strata, k. When ε &gt; 0, the constraints define "slabs" instead of thin hyperplanes, and the feasible sets become full-dimensional bodies. We can compare their volumes.</p><p>Proposition C.2 (Volume of Feasible Sets). Let Vol(V (ε)) be the volume of the feasible set for a given ε &gt; 0. For a small ε, the volumes scale as:</p><p>1. Vol(V fair (ε)) ∝ ε k 2. Vol(V mask (ε)) ∝ ε 1 Proof (Sketch). The ε-fair problem constrains the policy vector ⃗ α to lie within k independent slabs, each of width proportional to ε. The volume of their intersection thus scales with ε k . The ε-masking problem imposes only a single slab constraint, so its volume scales linearly with ε.</p><p>The ratio of the feasible volumes, Vol(V mask )/Vol(V fair ) ∝ 1/ε k-1 , is therefore immense. This disparity in "freedom to operate" provides a clear geometric reason for the masking policy's ability to find significantly better solutions. The Z-statistic is then Z = ATE SE( ATE), which is asymptotically standard normal under the null hypothesis H ATE . We use a significance level of 5%.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D Hypothesis Tests</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D.2 Testing for Conditional Independence</head><p>A more nuanced way to detect unfairness is to directly test the null hypothesis of conditional independence; i.e., H CATE : D ⊥ P | X. To evaluate this, first for each stratum, x ∈ {1, ..., k -1}, we apply Fisher's exact test <ref type="bibr" target="#b21">[McDonald, 2014]</ref> for independence to obtain a corresponding p-value.</p><p>To test the joint null hypothesis that conditional independence holds across all strata, we combine the per-stratum p-values using Fisher's method, S = -2 x∈ν log p x , where the ν denotes the set of strata with observations in the P = 1 and P = 0 groups. Under H CATE , the combined statistics satisfy S ∼ χ 2 2|ν| . We reject the null hypothesis when the combined p-value falls below the 5% significance level.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>FairFigure 1 :</head><label>1</label><figDesc>Figure1: Two causal diagrams depicting the dependencies between the random variables in our setting. The undirected edge X -P captures optionality in X ← P , or X → P .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>WFigure 2 :</head><label>2</label><figDesc>Figure2: Two relaxations that allow improvements from causal masking (on the left), and one where there is no improvement from fairness (on the right).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Synthetic data experiments showing that relaxing masking and fairness yield tempting performance improvements.</figDesc><graphic coords="8,72.00,72.00,468.01,230.95" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Simulations showing the average (+-standard error) sample size needed to reject each null hypothesis for all three strategies.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>Theorem B.1. The set of policies ⃗ α ∈ [0, 1] 2k that satisfy (a) the fairness constraint or (b) the masking constraint are sets of Lebesgue measure zero in P.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>D. 1</head><label>1</label><figDesc>Testing for Zero ATEIn the setting where P is binary, we employ a Z-test to test the null hypothesis H ATE : ATE = 0</figDesc></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>This is the case for the graph specified in Figure3, as X is a "backdoor adjustment set." See Pearl[2009]  for a detailed discussion.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>Support for <rs type="person">Bijan Mazaheri</rs> and <rs type="person">Sophia Xiao</rs> was provided by the <rs type="programName">Advanced Research Concepts (ARC) COMPASS program</rs>, sponsored by the <rs type="funder">Defense Advanced Research Projects Agency (DARPA)</rs> under agreement number <rs type="grantNumber">HR001-25-3-0212</rs>. Support for Zou Yang was provided by a first-year fellowship by the <rs type="funder">Thayer School of Engineering</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_ArsTGfw">
+					<idno type="grant-number">HR001-25-3-0212</idno>
+					<orgName type="program" subtype="full">Advanced Research Concepts (ARC) COMPASS program</orgName>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Machine bias</title>
+		<author>
+			<persName><forename type="first">Julia</forename><surname>Angwin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeff</forename><surname>Larson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Surya</forename><surname>Mattu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lauren</forename><surname>Kirchner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Ethics of data and analytics</title>
+		<imprint>
+			<publisher>Auerbach Publications</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="254" to="264" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Fairness and machine learning</title>
+		<author>
+			<persName><forename type="first">Solon</forename><surname>Barocas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arvind</forename><surname>Narayanan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Sex Bias in Graduate Admissions: Data from Berkeley: Measuring bias is harder than is usually assumed, and the evidence is sometimes contrary to expectation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Peter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eugene</forename><forename type="middle">A</forename><surname>Bickel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hammel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O'</forename><surname>William</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Connell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">187</biblScope>
+			<biblScope unit="issue">4175</biblScope>
+			<biblScope unit="page" from="398" to="404" />
+			<date type="published" when="1975">1975</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Testing conditional independence of discrete distributions</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Clément</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ilias</forename><surname>Canonne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><forename type="middle">M</forename><surname>Diakonikolas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alistair</forename><surname>Kane</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Stewart</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3188745.3188756</idno>
+		<ptr target="https://dl.acm.org/doi/10.1145/3188745.3188756" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 50th Annual ACM SIGACT Symposium on Theory of Computing, STOC 2018</title>
+		<meeting>the 50th Annual ACM SIGACT Symposium on Theory of Computing, STOC 2018<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computing Machinery</publisher>
+			<date type="published" when="2018-06">June 2018</date>
+			<biblScope unit="page" from="735" to="748" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Path-specific counterfactual fairness</title>
+		<author>
+			<persName><forename type="first">Silvia</forename><surname>Chiappa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI conference on artificial intelligence</title>
+		<meeting>the AAAI conference on artificial intelligence</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="7801" to="7808" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Fair Prediction with Disparate Impact: A Study of Bias in Recidivism Prediction Instruments</title>
+		<author>
+			<persName><forename type="first">Alexandra</forename><surname>Chouldechova</surname></persName>
+		</author>
+		<idno type="DOI">10.1089/big.2016.0047</idno>
+		<ptr target="https://www.liebertpub.com/doi/abs/10.1089/big.2016.0047" />
+	</analytic>
+	<monogr>
+		<title level="j">Big Data</title>
+		<idno type="ISSN">2167-6461</idno>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="153" to="163" />
+			<date type="published" when="2017-06">June 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Algorithmic Decision Making and the Cost of Fairness</title>
+		<author>
+			<persName><forename type="first">Sam</forename><surname>Corbett-Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Emma</forename><surname>Pierson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Avi</forename><surname>Feller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sharad</forename><surname>Goel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aziz</forename><surname>Huq</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3097983.3098095</idno>
+		<ptr target="https://dl.acm.org/doi/10.1145/3097983.3098095" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, KDD &apos;17</title>
+		<meeting>the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, KDD &apos;17<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computing Machinery</publisher>
+			<date type="published" when="2017-08">August 2017</date>
+			<biblScope unit="page" from="797" to="806" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Hamed Nilforoshan, Ravi Shroff, and Sharad Goel. The Measure and Mismeasure of Fairness</title>
+		<author>
+			<persName><forename type="first">Sam</forename><surname>Corbett-Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Johann</forename><forename type="middle">D</forename><surname>Gaebler</surname></persName>
+		</author>
+		<ptr target="http://jmlr.org/papers/v24/22-1511.html" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<idno type="ISSN">1533-7928</idno>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">312</biblScope>
+			<biblScope unit="page" from="1" to="117" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Heterogeneity of treatment effects</title>
+		<author>
+			<persName><forename type="first">Thomas</forename><forename type="middle">A</forename><surname>Issa J Dahabreh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><forename type="middle">M</forename><surname>Trikalinos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christopher</forename><forename type="middle">H</forename><surname>Kent</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Schmid</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Methods in comparative effectiveness research</title>
+		<imprint>
+			<publisher>Chapman and Hall/CRC</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="247" to="292" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Bayesian test of significance for conditional independence: the multinomial model</title>
+		<author>
+			<persName><forename type="first">Pablo</forename><surname>De Morais Andrade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Julio</forename><surname>Michael Stern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Carlos Alberto De Bragança</forename><surname>Pereira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Entropy</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1376" to="1395" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Fairness through awareness</title>
+		<author>
+			<persName><forename type="first">Cynthia</forename><surname>Dwork</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Toniann</forename><surname>Pitassi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Omer</forename><surname>Reingold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><surname>Zemel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 3rd innovations in theoretical computer science conference</title>
+		<meeting>the 3rd innovations in theoretical computer science conference</meeting>
+		<imprint>
+			<date type="published" when="2012">2012</date>
+			<biblScope unit="page" from="214" to="226" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Fairness and Bias in Artificial Intelligence: A Brief Survey of Sources, Impacts, and Mitigation Strategies</title>
+		<author>
+			<persName><forename type="first">Emilio</forename><surname>Ferrara</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/sci6010003</idno>
+		<ptr target="https://www.mdpi.com/2413-4155/6/1/3" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci</title>
+		<idno type="ISSN">2413-4155</idno>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">3</biblScope>
+			<date type="published" when="2024-03">March 2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Equality of Opportunity in Supervised Learning</title>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eric</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nati</forename><surname>Srebro</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips.cc/paper_files/paper/2016/hash/6" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">29</biblScope>
+		</imprint>
+	</monogr>
+	<note>a9659feb1216f14f7384ba499518b38-Abstract. html</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">On the Hardness of Conditional Independence Testing In Practice</title>
+		<author>
+			<persName><forename type="first">Zheng</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Roman</forename><surname>Pogodin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yazhe</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Namrata</forename><surname>Deka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arthur</forename><surname>Gretton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Danica</forename><forename type="middle">J</forename><surname>Sutherland</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<imprint>
+			<date type="published" when="2025-12">December 2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Assessing affirmative action</title>
+		<author>
+			<persName><forename type="first">Harry</forename><surname>Holzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><surname>Neumark</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Economic literature</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="483" to="568" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Effect heterogeneity and variable selection for standardizing causal effects to a target population: A. Huitfeldt et al</title>
+		<author>
+			<persName><forename type="first">Anders</forename><surname>Huitfeldt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sonja</forename><forename type="middle">A</forename><surname>Swanson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mats</forename><forename type="middle">J</forename><surname>Stensrud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Etsuji</forename><surname>Suzuki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">European journal of epidemiology</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1119" to="1129" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Principal Fairness for Human and Algorithmic Decision-Making. Statistical</title>
+		<author>
+			<persName><forename type="first">Kosuke</forename><surname>Imai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhichao</forename><surname>Jiang</surname></persName>
+		</author>
+		<idno type="DOI">10.1214/22-STS872.full</idno>
+		<ptr target="https://projecteuclid.org/journals/statistical-science/volume-38/issue-2/Principal-Fairness-for-Human-and-Algorithmic-Decision-M10.1214/22-STS872.full" />
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<idno type="ISSN">0883-4237</idno>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="2168" to="8745" />
+			<date type="published" when="2023-05">May 2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Causal Inference in Statistics, Social, and Biomedical Sciences</title>
+		<author>
+			<persName><forename type="first">Guido</forename><forename type="middle">W</forename><surname>Imbens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Donald</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015-04">April 2015</date>
+			<publisher>Google-Books-ID: Bf1tBwAAQBAJ</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Fair and Robust Estimation of Heterogeneous Treatment Effects for Policy Learning</title>
+		<author>
+			<persName><forename type="first">Kwangho</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jose</forename><forename type="middle">R</forename><surname>Zubizarreta</surname></persName>
+		</author>
+		<ptr target="https://proceedings.mlr.press/v202/kim23ab.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 40th International Conference on Machine Learning</title>
+		<meeting>the 40th International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2023-07">July 2023</date>
+			<biblScope unit="page" from="16997" to="17014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Counterfactual Fairness</title>
+		<author>
+			<persName><forename type="first">Matt</forename><forename type="middle">J</forename><surname>Kusner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joshua</forename><surname>Loftus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chris</forename><surname>Russell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ricardo</forename><surname>Silva</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips.cc/paper_files/paper/2017/file/a486" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">U</forename><surname>Von Luxburg</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Bengio</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Wallach</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Fergus</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Vishwanathan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Garnett</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+	<note>cd07e4ac3d270571622f4f316ec5-Paper. pdf</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Synthetic Potential Outcomes and Causal Mixture Identifiability</title>
+		<author>
+			<persName><forename type="first">Bijan</forename><surname>Mazaheri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chandler</forename><surname>Squires</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Caroline</forename><surname>Uhler</surname></persName>
+		</author>
+		<ptr target="https://proceedings.mlr.press/v258/mazaheri25a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of The 28th International Conference on Artificial Intelligence and Statistics</title>
+		<meeting>The 28th International Conference on Artificial Intelligence and Statistics</meeting>
+		<imprint>
+			<date type="published" when="2025-04">April 2025</date>
+			<biblScope unit="page" from="4276" to="4284" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Handbook of Biological Statistics</title>
+		<author>
+			<persName><forename type="first">John</forename><forename type="middle">H</forename><surname>Mcdonald</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<publisher>Sparky House Publishing</publisher>
+			<pubPlace>Baltimore, Maryland</pubPlace>
+		</imprint>
+	</monogr>
+	<note>3 edition. Web page version contains content of pages 77-85 from the printed book</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Strong completeness and faithfulness in Bayesian networks</title>
+		<author>
+			<persName><forename type="first">Christopher</forename><surname>Meek</surname></persName>
+		</author>
+		<idno type="DOI">10.5555/2074158.2074205</idno>
+		<ptr target="https://dl.acm.org/doi/10.5555/2074158.2074205" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Eleventh conference on Uncertainty in artificial intelligence, UAI&apos;95</title>
+		<meeting>the Eleventh conference on Uncertainty in artificial intelligence, UAI&apos;95<address><addrLine>San Francisco, CA, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Morgan Kaufmann Publishers Inc</publisher>
+			<date type="published" when="1995-08">August 1995</date>
+			<biblScope unit="page" from="411" to="418" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Fair Inference on Outcomes</title>
+		<author>
+			<persName><forename type="first">Razieh</forename><surname>Nabi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ilya</forename><surname>Shpitser</surname></persName>
+		</author>
+		<idno type="DOI">10.1609/aaai.v32i1.11553</idno>
+		<ptr target="https://ojs.aaai.org/index.php/AAAI/article/view/11553" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2018-04">April 2018</date>
+			<biblScope unit="volume">32</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Learning Optimal Fair Policies</title>
+		<author>
+			<persName><forename type="first">Razieh</forename><surname>Nabi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><surname>Malinsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ilya</forename><surname>Shpitser</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<ptr target="https://proceedings.mlr.press/v97/nabi19a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 36th International Conference on Machine Learning</title>
+		<meeting>the 36th International Conference on Machine Learning</meeting>
+		<imprint>
+			<publisher>Judea Pearl. Causality. Cambridge university press</publisher>
+			<date type="published" when="2009">May 2019. 2009</date>
+			<biblScope unit="page" from="4674" to="4682" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Glass Ceilings or Glass Doors? Wage Disparity Within and Between Firms</title>
+		<author>
+			<persName><forename type="first">Krishna</forename><surname>Pendakur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Simon</forename><surname>Woodcock</surname></persName>
+		</author>
+		<idno type="DOI">10.1198/jbes.2009.08124</idno>
+		<ptr target="https://doi.org/10.1198/jbes.2009.08124" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Business &amp; Economic Statistics</title>
+		<idno type="ISSN">0735-0015</idno>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="181" to="189" />
+			<date type="published" when="2010-01">January 2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A review on fairness in machine learning</title>
+		<author>
+			<persName><forename type="first">Dana</forename><surname>Pessach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Erez</forename><surname>Shmueli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM computing surveys (CSUR)</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1" to="44" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">On Fairness and Calibration</title>
+		<author>
+			<persName><forename type="first">Geoff</forename><surname>Pleiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Manish</forename><surname>Raghavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Felix</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jon</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kilian</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+		<ptr target="https://papers.nips.cc/paper_files/paper/2017/hash/b" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+	<note>d39ab038d1cd7-Abstract. html</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Causal Fairness Analysis: A Causal Toolkit for Fair Machine Learning</title>
+		<author>
+			<persName><forename type="first">Drago</forename><surname>Plečko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Elias</forename><surname>Bareinboim</surname></persName>
+		</author>
+		<idno type="DOI">10.1561/2200000106</idno>
+		<ptr target="http://www.nowpublishers.com/article/Details/MAL-106" />
+	</analytic>
+	<monogr>
+		<title level="j">Foundations and Trends® in Machine Learning</title>
+		<idno type="ISSN">1935-8237</idno>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1935" to="8245" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Causal Inference Using Potential Outcomes: Design, Modeling, Decisions</title>
+		<author>
+			<persName><forename type="first">Donald</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+		<ptr target="https://www.jstor.org/stable/27590541" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the American Statistical Association</title>
+		<idno type="ISSN">0162-1459</idno>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="issue">469</biblScope>
+			<biblScope unit="page" from="322" to="331" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Conditional independence testing based on a nearest-neighbor estimator of conditional mutual information</title>
+		<author>
+			<persName><forename type="first">Jakob</forename><surname>Runge</surname></persName>
+		</author>
+		<ptr target="https://proceedings.mlr.press/v84/runge18a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-First International Conference on Artificial Intelligence and Statistics</title>
+		<meeting>the Twenty-First International Conference on Artificial Intelligence and Statistics</meeting>
+		<imprint>
+			<date type="published" when="2018-03">March 2018</date>
+			<biblScope unit="page" from="938" to="947" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">The hardness of conditional independence testing and the generalised covariance measure</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rajen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonas</forename><surname>Shah</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Peters</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Annals of Statistics</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">1514</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Geometry of the faithfulness assumption in causal inference</title>
+		<author>
+			<persName><forename type="first">Caroline</forename><surname>Uhler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Garvesh</forename><surname>Raskutti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Bühlmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bin</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Annals of Statistics</title>
+		<imprint>
+			<biblScope unit="page" from="436" to="463" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Stefan Wager and Susan Athey. Estimation and Inference of Heterogeneous Treatment Effects using Random Forests</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Matthew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Necati</forename><surname>Vowels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><surname>Cihan Camgoz</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Bowden</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Computing Surveys</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="36" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note>Journal of the</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Generalized Cochran-Mantel-Haenszel test statistics for correlated categorical data</title>
+		<idno type="DOI">10.1080/01621459.2017.1319839</idno>
+		<ptr target="https://doi.org/10.1080/01621459.2017.1319839" />
+	</analytic>
+	<monogr>
+		<title level="j">Communications in Statistics-Theory and Methods</title>
+		<editor>
+			<persName><forename type="first">Francis</forename><surname>Taylor</surname></persName>
+		</editor>
+		<editor>
+			<persName><surname>Eprint</surname></persName>
+		</editor>
+		<idno type="ISSN">0162-1459</idno>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="issue">523</biblScope>
+			<biblScope unit="page" from="1813" to="1837" />
+			<date type="published" when="1997">July 2018. 1997</date>
+			<publisher>Jie Zhang and Dennis D Boos</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Kernel-based conditional independence test and application in causal discovery</title>
+		<author>
+			<persName><forename type="first">Kun</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonas</forename><surname>Peters</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dominik</forename><surname>Janzing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bernhard</forename><surname>Schölkopf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-Seventh Conference on Uncertainty in Artificial Intelligence, UAI&apos;11</title>
+		<meeting>the Twenty-Seventh Conference on Uncertainty in Artificial Intelligence, UAI&apos;11<address><addrLine>Arlington, Virginia, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>AUAI Press</publisher>
+			<date type="published" when="2011-07">July 2011</date>
+			<biblScope unit="page" from="804" to="813" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

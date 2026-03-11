@@ -1,0 +1,3887 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">CoCo: Code as CoT for Text-to-Image Preview and Rare Concept Generation</title>
+				<funder ref="#_mqCAXWw">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+				<funder ref="#_pmUNycC">
+					<orgName type="full">Guangdong Provincial Key Fields Research and Development Program</orgName>
+				</funder>
+				<funder ref="#_SstajbA">
+					<orgName type="full">Guangdong Provincial Key Laboratory of Human Digital Twin</orgName>
+				</funder>
+				<funder ref="#_RPTXUER">
+					<orgName type="full">Natural Science Foundation of Guangdong Province</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2026-03-09">9 Mar 2026</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Haodong</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">South China University of Technology</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chunmei</forename><surname>Qing</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">South China University of Technology</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Huanyu</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Institute of Automation</orgName>
+								<orgName type="institution">Chinese Academy of Sciences</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Dongzhi</forename><surname>Jiang</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yihang</forename><surname>Zou</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">South China University of Technology</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hongbo</forename><surname>Peng</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Dingming</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Yuhong</forename><surname>Dai</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Zepeng</forename><surname>Lin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">South China University of Technology</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Juanxi</forename><surname>Tian</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Nanyang Technological University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yi</forename><surname>Zhou</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">South China University of Technology</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Siqi</forename><surname>Dai</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Jingwei</forename><surname>Wu</surname></persName>
+						</author>
+						<title level="a" type="main">CoCo: Code as CoT for Text-to-Image Preview and Rare Concept Generation</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2026-03-09">9 Mar 2026</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">81245F7AD37934F8A63B2A27690FDAA8</idno>
+					<idno type="arXiv">arXiv:2603.08652v1[cs.AI]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2026-03-10T18:11+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Recent advancements in Unified Multimodal Models (UMMs) have significantly advanced text-to-image (T2I) generation, particularly through the integration of Chain-of-Thought (CoT) reasoning. However, existing CoT-based T2I methods largely rely on abstract natural-language planning, which lacks the precision required for complex spatial layouts, structured visual elements, and dense textual content. In this work, we propose CoCo (Code-as-CoT), a codedriven reasoning framework that represents the reasoning process as executable code, enabling explicit and verifiable intermediate planning for image generation. Given a text prompt, CoCo first generates executable code that specifies the structural layout of the scene, which is then executed in a sandboxed environment to render a deterministic draft image. The model subsequently refines this draft through fine-grained image editing to produce the final high-fidelity result. To support this training paradigm, we construct CoCo-10K, a curated dataset containing structured draft-final image pairs designed to teach both structured draft construction and corrective visual refinement. Empirical evaluations on StructT2IBench, OneIG-Bench, and LongText-Bench show that CoCo achieves improvements of +68.83%, +54.8%, and +41.23% over direct generation, while also outperforming other generation methods empowered by CoT. These results demonstrate that executable code is an effective and reliable reasoning paradigm for precise, controllable, and structured text-to-image generation. The code is available at:https://github.com/micky-li-hd/CoCo</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text>
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Unified multimodal large language models (MLLMs) <ref type="bibr">(Chen et al., 2025a;</ref><ref type="bibr" target="#b10">Deng et al., 2025;</ref><ref type="bibr">Lin et al., 2025a;</ref><ref type="bibr" target="#b55">Qu et al., 2024;</ref><ref type="bibr" target="#b59">Team, 2024;</ref><ref type="bibr">Wu et al., 2024a,b,d;</ref><ref type="bibr" target="#b80">Xiao et al., 2025;</ref><ref type="bibr">Zhou et al., 2024a)</ref> have recently emerged as a compelling paradigm that jointly models visual understanding and generation within a single architecture, as exemplified by Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>, EMU3 <ref type="bibr" target="#b68">(Wang et al., 2024)</ref>, and Janus <ref type="bibr">(Wu et al., 2024a)</ref>. This consolidation gives rise to emergent capabilities beyond those of single-task models-most notably, the ability to process interleaved image-text inputs and synthesize images conditioned on complex multimodal instructions <ref type="bibr">(Lyu et al., 2025a;</ref><ref type="bibr">Wu et al., 2025b;</ref><ref type="bibr" target="#b84">Xin et al., 2025;</ref><ref type="bibr" target="#b92">Zhang et al., 2026)</ref>.</p><p>Concurrently, chain-of-thought (CoT) reasoning <ref type="bibr" target="#b30">(Kojima et al., 2022;</ref><ref type="bibr" target="#b70">Wei et al., 2022)</ref> has demonstrated significant improvements across a broad spectrum of tasks, spanning mathematical problem solving <ref type="bibr" target="#b0">(Amini et al., 2019;</ref><ref type="bibr" target="#b20">Hendrycks et al., 2021;</ref><ref type="bibr" target="#b42">Lu et al., 2023;</ref><ref type="bibr" target="#b93">Zhang et al., 2024)</ref>, structured visual draft that explicitly specifies object layouts and attributes, which is then rendered and refined to produce the final image.</p><p>visual reasoning <ref type="bibr">(Chen et al., 2025b;</ref><ref type="bibr">Jiang et al., 2025b;</ref><ref type="bibr" target="#b49">Meng et al., 2025;</ref><ref type="bibr" target="#b88">Yue et al., 2023;</ref><ref type="bibr" target="#b89">Zhan et al., 2025;</ref><ref type="bibr">Zhang et al., 2025a,b)</ref>, and multi-agent systems <ref type="bibr" target="#b47">(Mai et al., 2025;</ref><ref type="bibr">Wei et al., 2025b)</ref>. Recent efforts have sought to extend CoT to text-to-image (T2I) generation <ref type="bibr" target="#b10">(Deng et al., 2025;</ref><ref type="bibr" target="#b15">Gu et al., 2025;</ref><ref type="bibr">Guo et al., 2025c;</ref><ref type="bibr">Lyu et al., 2025b;</ref><ref type="bibr" target="#b53">Pan et al., 2025;</ref><ref type="bibr">Zhang et al., 2025d</ref>), yet these approaches remain limited in their exploitation of the unified MLLM architecture. Image-Gen-CoT <ref type="bibr">(Guo et al., 2025c)</ref>, for instance, employs a reward model to assess generation quality at early decoding steps, effectively reducing the model to a pure image generator. A subsequent line of work <ref type="bibr" target="#b10">(Deng et al., 2025)</ref> prepends textual reasoning to the generation process, demonstrating promising improvement.</p><p>However, natural-language planning is inherently too abstract to specify the precise spatial layouts, structural elements, and fine-grained visual attributes demanded by complex prompts. This limitation becomes particularly evident in structured visual domains such as scientific diagrams and images containing dense textual content, where accurate layout, symbol placement, and semantic consistency are critical. In practice, current generation models often struggle with prompts such as "2D plot of 𝑦 = 𝑥 2 ", frequently producing incorrect structures or illegible text due to the lack of explicit visual grounding during reasoning. In contrast, expressing the reasoning process in executable code enables a more precise and verifiable form of planning. Unlike natural-language descriptions, code can explicitly encode spatial layouts, structural constraints, and textual placements in a deterministic and executable manner. Once executed, the code produces a draft image that concretely instantiates the model's reasoning outcome, making the planned structure directly observable and verifiable. This executable reasoning process transforms abstract planning into an explicit visual scaffold, allowing the model to inspect the rendered draft and perform targeted refinements. As a result, the final image can be progressively improved from the draft, achieving higher visual fidelity and stronger semantic alignment with the input prompt. This raises a natural question: Can executable code serve</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>as a more precise and verifiable form of CoT to produce an explicit draft image that guides structured and text-intensive image generation?</head><p>Building on this motivation, we introduce CoCo (Code-as-CoT), a unified reasoning-generation framework that leverages executable code as an explicit intermediate representation for T2I synthesis. Rather than only relying on abstract natural-language descriptions, as demonstrated in Fig. <ref type="figure" target="#fig_0">1</ref>, CoCo requires the model to express its planning process as code that encodes spatial layouts, structural constraints, and object relationships in a deterministic manner. The generated code will be executed within a sandboxed environment to produce a draft image that faithfully reflects the intended structure. This draft then serves as a concrete visual scaffold on which the model performs fine-grained image editing to produce the final high-fidelity result.</p><p>To realize this code-driven reasoning paradigm, the unified MLLM must not only generate executable code but also manipulate the draft images with precise, targeted edits. However, existing datasets provide neither the necessary supervision for code generation nor the fine-grained correction signals required for this workflow. To address this gap, we construct CoCo-10K, a carefully curated dataset built around three atomic correction capabilities. For each capability, we design a rigorous data-synthesis pipeline that fully leverages the complementary strengths of a powerful MLLM <ref type="bibr" target="#b14">(Google, 2025b)</ref> and image-editing models <ref type="bibr">(Google, 2025a)</ref>, ensuring both high-quality sketch code and semantically aligned Draft Image-Final Image pairs. Building upon Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>, we conduct extensive experiments to assess the effectiveness of our code-driven paradigm. Results show that CoCo delivers substantial improvements over Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>, achieving a 68.83% gain on StructT2IBench <ref type="bibr" target="#b100">(Zhuo et al., 2025)</ref> and further surpassing text-CoT-based approaches by 64.48%. Moreover, CoCo exhibits robust generalization on more demanding benchmarks such as LongText-Bench <ref type="bibr" target="#b12">(Geng et al., 2025)</ref> and OneIG-Bench <ref type="bibr" target="#b4">(Chang et al., 2025)</ref>. Representative visualizations of CoCo's outputs are provided in Fig. <ref type="figure" target="#fig_2">3</ref>. In summary, our contributions are as follows:</p><p>• Code-as-CoT reasoning for structured T2I generation. We propose CoCo, a novel reasoning-generation framework that leverages executable code as Chain-of-Thought. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Related Work</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Unified Multimodal Models</head><p>UMMs aim to unify cross-modal understanding and generation, yet strong understanding often fails to yield equally strong native generation. Existing designs fall into two paradigms: pure autoregressive models that jointly predict text and visual tokens over interleaved sequences <ref type="bibr">(Chen et al., 2025c;</ref><ref type="bibr" target="#b9">Cui et al., 2025;</ref><ref type="bibr">Tong et al., 2025b)</ref> and hybrid models that combine autoregressive language modeling with diffusion-based image synthesis, either within a unified backbone <ref type="bibr" target="#b81">(Xie et al., 2024;</ref><ref type="bibr" target="#b96">Zhao et al., 2024)</ref> or via modular routing and sparse experts <ref type="bibr" target="#b10">(Deng et al., 2025;</ref><ref type="bibr" target="#b36">Liang et al., 2024;</ref><ref type="bibr" target="#b58">Shi et al., 2024)</ref>, with related guidance schemes such as Diffusion Forcing <ref type="bibr" target="#b5">(Chen et al., 2024)</ref>. Beyond architecture, personalization <ref type="bibr">(An et al., 2025;</ref><ref type="bibr" target="#b50">Nguyen et al., 2025;</ref><ref type="bibr" target="#b97">Zhong et al., 2026)</ref> becomes an interesting application for UMMs. Furthermore, self-improvement methods convert self-generated signals into training objectives <ref type="bibr" target="#b44">(Lyu et al., 2024;</ref><ref type="bibr">Wang et al., 2025b;</ref><ref type="bibr" target="#b87">Yu et al., 2025;</ref><ref type="bibr">Zhou et al., 2024b)</ref>; for UMMs, SRUM derives internal rewards from understanding <ref type="bibr" target="#b28">(Jin et al., 2025)</ref>, and UniRL jointly optimizes understanding and generation <ref type="bibr" target="#b48">(Mao et al., 2025)</ref>.</p><p>Recent advances further explore efficiency and self-supervision: DeepGen 1.0 <ref type="bibr" target="#b66">(Wang et al., 2026)</ref> leverages Stacked Channel Bridging (SCB) and a three-stage training strategy to enable lightweight models (5B) to outperform much larger counterparts on reasoning benchmarks, while UniCorn <ref type="bibr" target="#b19">(Han et al., 2026)</ref> introduces a "proposer-solver-critic" self-play framework that converts internal understanding into explicit generation signals without external data. However, constrained by generation-side training data and the lack of targeted training strategies, UMMs tend to underperform on structured visual synthesis and complex text rendering.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Multimodal Reasoning</head><p>Recent breakthroughs in multimodal large language models lie in the continuously evolving reasoning paradigms <ref type="bibr" target="#b34">(Li et al., 2025</ref><ref type="bibr">(Li et al., , 2026b;;</ref><ref type="bibr" target="#b43">Luo et al., 2025;</ref><ref type="bibr" target="#b54">Peng et al., 2025;</ref><ref type="bibr" target="#b57">Shen et al., 2025;</ref><ref type="bibr">Tong et al., 2025a;</ref><ref type="bibr">Wu et al., 2025c;</ref><ref type="bibr">Zhang et al., 2025c)</ref> and more unified foundation models <ref type="bibr">(Chen et al., 2025a;</ref><ref type="bibr">Guo et al., 2025c;</ref><ref type="bibr">Xie et al., 2025b;</ref><ref type="bibr" target="#b85">Yang et al., 2025)</ref>. Starting from simple image understanding, the long-chain-of-thought (LongCoT) paradigm trained with reinforcement learning substantially strengthened multimodal reasoning <ref type="bibr">(Guo et al., 2025a,b;</ref><ref type="bibr">Team et al., 2025)</ref>. <ref type="bibr">OpenAI-o3 (OpenAI, 2025)</ref> brings visual outcomes into LongCoT, pioneering a new "thinking with images" paradigm of interleaved multimodal reasoning. Meanwhile, architectures are converging toward unified designs that integrate text and image inputs/outputs <ref type="bibr">(Chen et al., 2025c;</ref><ref type="bibr">Xie et al., 2025a)</ref>, making interleaved reasoning within a single framework a compelling direction. Mogao <ref type="bibr" target="#b37">(Liao et al., 2025)</ref> highlights the potential of interleaved generation under unified architectures, while T2I-R1 <ref type="bibr">(Jiang et al., 2025a)</ref> and Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref> explore "thinking before generating" for interleaved text-image synthesis. In parallel, efficient region-level understanding is achieved by PAM <ref type="bibr">(Lin et al., 2025b)</ref>, which unifies segmentation, recognition, and captioning via a semantic perceiver and parallel decoding. However, existing approaches primarily optimize textual instructions during reasoning for image generation. Recently, Huang et al. <ref type="bibr">(Huang et al., 2025b)</ref> propose the Interleaving Reasoning Generation (IRG) framework, which adopts a multi-round "text-to-image-to-text-to-image" workflow to iteratively refine outputs through visual feedback. In contrast, CoCo introduces executable code as an explicit and structured intermediate representation, enabling controllable draft construction prior to image synthesis rather than post-hoc refinement. This fundamental difference allows CoCo to directly encode spatial layouts and structural constraints, providing deterministic and interpretable guidance for complex generation tasks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Benchmarks for Text-to-Image Generation</head><p>Evaluating text-to-image (T2I) models requires benchmarks that probe diverse capabilities. Early benchmarks primarily focus on prompt-image alignment <ref type="bibr" target="#b13">(Ghosh et al., 2023;</ref><ref type="bibr" target="#b21">Hu et al., 2024</ref><ref type="bibr" target="#b22">Hu et al., , 2023;;</ref><ref type="bibr" target="#b23">Huang et al., 2023</ref><ref type="bibr">Huang et al., , 2025a;;</ref><ref type="bibr" target="#b32">Li et al., 2024;</ref><ref type="bibr">Wei et al., 2025a;</ref><ref type="bibr">Wu et al., 2024c;</ref><ref type="bibr" target="#b86">Yu et al., 2022)</ref>. For example, GenEval <ref type="bibr" target="#b13">(Ghosh et al., 2023)</ref> verifies object co-occurrence, position, count, and color through object detection, while TIIF-Bench <ref type="bibr">(Wei et al., 2025a)</ref> extends this paradigm to more complex instruction following with a fine-grained VLM-based evaluation protocol covering text rendering, long instructions, and designer-level constraints. More recent benchmarks</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Prompt</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Unified MLLM</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Code Generation</head><p>ViT Encoder VAE Encoder</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Final Image</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Step1 Step3</head><p>Code Tokens</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Image Tokens</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>CE Loss MSE Loss</head><p>Step2 further examine structured and text-intensive visual generation. StructT2IBench <ref type="bibr" target="#b100">(Zhuo et al., 2025)</ref> evaluates factual accuracy in structured image synthesis involving charts, mathematical figures, and tables using a multi-round QA-based metric. OneIG-Bench <ref type="bibr" target="#b4">(Chang et al., 2025)</ref> expands evaluation to multilingual text rendering, stylized generation, and compositional scenarios, while LongText-Bench <ref type="bibr" target="#b12">(Geng et al., 2025)</ref> specifically targets the accurate rendering of extended textual content within images. Recent efforts also explore more complex capabilities, such as interactive and editing-based evaluation, including GEBench <ref type="bibr">(Li et al., 2026a)</ref>, which assesses multi-step interaction in GUI environments, VIBE <ref type="bibr" target="#b92">(Zhang et al., 2026)</ref>, which evaluates visual instruction-driven editing, and GENIUS <ref type="bibr" target="#b2">(An et al., 2026)</ref>, which examines generative fluid intelligence. Collectively, these benchmarks highlight that current generative models still face notable challenges when handling structured layouts, dense textual content, and reasoning-intensive visual generation.</p><p>This gap motivates the development of CoCo, which introduces executable code as a structured reasoning medium to bridge semantic intent and visual realization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Method</head><p>We first introduce the structure of our adopted unified MLLM, Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>, in Section 3.1. Then we elaborate on the design idea and pipeline of CoCo in Section 3.2. Finally, we introduce the construction of CoCo-10K in Section 3.3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Preliminary</head><p>Our work builds upon Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>, a unified MLLM that supports both visual generation and visual understanding within a single architecture. Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref> comprises three core components: a SigLIP ViT encoder <ref type="bibr" target="#b64">(Tschannen et al., 2025)</ref> for visual understanding, a VAE encoder <ref type="bibr" target="#b29">(Kingma and Welling, 2013)</ref> for generation, and a Mixture-of-Transformer-Experts (MoT) consisting of two specialized transformer branches <ref type="bibr" target="#b65">(Vaswani et al., 2017)</ref>, one dedicated to VAE tokens for visual generation and the other to ViT and text tokens for understanding. For understanding tasks, an input image is encoded by the ViT into a sequence of visual tokens, which are then processed by the transformer to autoregressively predict text tokens. For generation tasks, Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref> adopts Rectified Flow <ref type="bibr" target="#b11">(Esser et al., 2024;</ref><ref type="bibr" target="#b40">Lipman et al., 2022;</ref><ref type="bibr" target="#b41">Liu et al., 2022)</ref> to decode VAE tokens into high-fidelity images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Code-as-CoT Framework</head><p>The overall pipeline of CoCo is illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>. Given a textual prompt, our framework decomposes the generation process into three stages: code generation, draft image rendering, and draft-guided refinement. Instead of directly synthesizing the final image, CoCo first produces executable code that explicitly encodes structural semantics, renders a draft image through code execution, and finally refines the draft to obtain the final result.</p><p>Code Generation. Leveraging the language reasoning capabilities of unified MLLMs, the first stage generates executable code that serves as an explicit form of Chain-of-Thought reasoning. Given a user prompt 𝑝, the model produces code 𝑐 that deterministically specifies the core semantic structure of the target image. This code explicitly describes key visual elements such as spatial layouts, object relationships, textual rendering, and canvas configurations. Instead of synthesizing a fully detailed image in a single step, the generated code focuses on specifying the essential semantic structure of the scene. Fine-grained visual details, such as stylistic appearance and rendering quality, are deferred to later refinement stages.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Draft Image Rendering.</head><p>The generated code 𝑐 is executed in a sandbox environment to produce a draft image 𝐼 𝑑 . This step instantiates the programmatic reasoning into a concrete visual representation. The sandbox ensures safe and stable execution through restricted operations and isolated runtime environments. The resulting draft 𝐼 𝑑 captures the core semantic layout specified by the code, including object placement, textual content, and structural relationships.</p><p>Draft-Guided Refinement. While the draft image provides an accurate structural scaffold, its visual appearance may remain simplistic due to programmatic rendering. To obtain the final output, we introduce a draft-guided refinement stage that improves visual fidelity while preserving strong semantic alignment with the draft. As illustrated in Fig. <ref type="figure" target="#fig_2">3</ref>, the refined images retain the structural layout specified by the draft while significantly enhancing visual realism. Specifically, in Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>, the draft image 𝐼 𝑑 is encoded using both a ViT encoder and a VAE encoder before being fed back into the unified MLLM. The ViT encoder extracts high-level semantic features for global reasoning, while the VAE encoder preserves low-level visual details for precise image editing. Together, these representations enable the model to enhance visual realism while maintaining the structural semantics defined by the draft.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">CoCo-10K</head><p>We combine UMM-based code generation with image editing capabilities to facilitate a sketch-toimage paradigm, enabling the synthesis of complex scenes through structured layout generation and subsequent refinement. We first explain the necessity of constructing the dataset and describe the two stages of the generation pipeline for each capability. Finally, we outline how the collected data are organized for training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Draft Image</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Final Image</head><p>Draft Image Final Image </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.1.">Necessity of Dataset Construction</head><p>Our zero-shot pilot study reveals two key limitations of Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>. First, although the model is capable of producing code, the generated code is often non-executable and leads to low-quality outputs that lack the required precision and fidelity. Second, the model tends to ignore the draft semantics and instead produces entirely new images, defeating the purpose of using drafts to ease the difficulty of one-shot generation.</p><p>However, existing datasets are insufficient to address these issues. Therefore, we construct CoCo-10K, a training dataset containing over 10K structured supervision instances. We identify three essential atomic capabilities required for correction and design dedicated data pipelines for each of them. Throughout the data construction process, we ensure the generation of high-fidelity sketch code while maintaining strict semantic consistency between draft images and final outputs. This design enables the model to not only produce executable and robust code but also learn selective editing-correcting erroneous elements while preserving correct structures.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.2.">Construction Details</head><p>As illustrated in Fig. <ref type="figure" target="#fig_3">4</ref>, our dataset consists of two complementary components: the Editing Dataset and the Synthesis Dataset. The Editing Dataset focuses on preserving the model's perception of structured visual elements, while the Synthesis Dataset is specifically designed for structured visual generation. In particular, the synthesis data explicitly provides paired intermediate renderings and refined outputs, which align with the two-stage generation paradigm of CoCo and enable the model to learn both draft construction and draft-guided refinement. Editing Dataset. The Editing Dataset is constructed from StructVisuals <ref type="bibr" target="#b100">(Zhuo et al., 2025)</ref>, which contains a large collection of structured chart images. For each sample, we denote the original image as A-Image and the corrected result as B-Image. These pairs typically involve modifications to data values, labels, or formatting while preserving the overall chart structure. Such characteristics allow the model to maintain a strong perception of structured visual layouts and learn to perform precise corrections without disrupting the underlying structure. Synthesis Dataset. While the Editing Dataset helps preserve structural perception, generating complex structured visuals remains challenging for existing generative models, particularly for scientific diagrams and images containing dense complex text. To address this limitation, we construct a dedicated synthesis dataset using an automated generation pipeline that explicitly produces paired intermediate and final images.</p><p>First, we synthesize a diverse set of prompts covering scientific concepts and text-intensive visual formats such as charts, posters, infographics, and annotated diagrams. Gemini-3-Pro <ref type="bibr" target="#b14">(Google, 2025b)</ref> is then employed to generate corresponding code that explicitly specifies the visual structure and layout. These scripts are executed within a sandbox environment to render initial programmatic visualizations, which we denote as A-Image. As these renderings typically exhibit simple visual styles, we further apply Nano Banana <ref type="bibr">(Google, 2025a)</ref> to refine them into visually enhanced outputs conditioned on both the original prompt and A-Image, producing the final B-Image. ...Morning subway poster displays "开启您的星际探险之旅" with family deals...</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>This process naturally constructs paired supervision between executable code, its rendered</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Prompt:</head><p>... Code:</p><p>Prompt:</p><p>...sprinting across the savanna with a bottom caption "Cheetahs rely on bursts of incredible speed... &lt;code&gt;```python… ax.add_patch(patches.FancyBboxPatch((0.1, 0.08), 0.8, 0.12, fc='gray', alpha=0.6)) ax.text(0.5, 0.14, "Cheetahs rely on bursts of incredible speed...", fontsize=16, ha='center') ax.text(0.95, 0.03, "00:15:09", fontsize=14, ha='right') ax.add_patch(patches.Ellipse((0.5, 0.5), 0.6, 0.25, angle=10, color='#D2691E')) …&lt;code&gt; </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.3.">Training Set</head><p>Finally, we organize the prompt, code, and corresponding images into two training formats: (1) Text-Code pairs and (2) Text-Draft Image-Final Image triplets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.">Training Loss</head><p>We conduct supervised fine-tuning from Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>. For our curated training dataset, we sequentially input the prompt tokens, the ViT feature of draft images, the verifications, and finally the noisy VAE tokens of the final image. We only calculate token-level cross entropy loss on the code and Mean Squared Error (MSE) on the VAE tokens:</p><formula xml:id="formula_0">L code = - 1 |𝑣| | 𝑣| ∑︁ 𝑖=1 log(𝑣 𝑖 ),<label>(1)</label></formula><formula xml:id="formula_1">L final image = 𝔼 𝑡,𝑥 0 ,𝑥 1 ∥𝑚(𝑡, 𝑥 𝑡 ) -(𝑥 1 -𝑥 0 )∥ 2 .</formula><p>(2)</p><p>Prompt: Elegant ivory restaurant menu for "The Garden Bistro" features starters, main courses, and desserts with detailed dish descriptions in gold decorative border.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>BAGEL BAGEL Thinking DraCo CoCo(Ours)</head><p>Prompt: Travel agency advertisement features "Discover Your Next Adventure" and "Sustainability and style in perfect harmony" with the offer "Join Now and Enjoy Member Benefits" offer."</p><p>Prompt: Annotated 2D plot shows blue parabola "y = x^2" with vertex O, red line "y = -x" through O, dashed guides intersecting at P, regions A and B labeled. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Experiment</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Experimental Setting</head><p>Evaluation. We evaluate our method on StructT2IBench <ref type="bibr" target="#b100">(Zhuo et al., 2025)</ref>, LongText-Bench <ref type="bibr" target="#b12">(Geng et al., 2025)</ref>, and OneIG-Bench <ref type="bibr" target="#b4">(Chang et al., 2025)</ref>. StructT2IBench evaluates image generation and editing on structured visuals, including charts, diagrams, mathematical figures, tables, and puzzles, and contains 1,714 evaluation samples with 37,941 Q&amp;A pairs. For text rendering evaluation, we adopt the text rendering subset of OneIG-Bench, covering both English and Chinese tasks and using a composite metric combining Edit Distance, Completion Rate, and Word Accuracy to assess typographic precision. We further evaluate long-form text generation on LongText-Bench, which contains 160 prompts across eight scenarios targeting accurate rendering of long Chinese and English text. Following the official protocols, we generate one image per prompt for StructT2IBench and LongText-Bench, and four images per prompt for OneIG-Bench.</p><p>Training Details. We train our model using the CoCo-10K and StructVisuals <ref type="bibr" target="#b100">(Zhuo et al., 2025)</ref> datasets. To preserve visual perception ability, we also utilize the caption annotations from StructVisuals during training. We empirically observe that Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref> struggles to generate executable code, so we first perform a text-to-code fine-tuning stage to equip the model with basic code generation capability. Afterward, we conduct full-parameter fine-tuning for 16K steps and adopt the EMA weights for evaluation. The learning rate is set to 2 × 10 -5 with 2K warmup steps. During training, we freeze the ViT encoder, the VAE encoder, and their connector to preserve stable visual encoding and reconstruction ability. The model is trained using 8 H800 GPUs. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Main Results</head><p>We present quantitative results in Tables <ref type="table" target="#tab_3">1</ref> and<ref type="table" target="#tab_5">2</ref>, with qualitative results shown in Fig. <ref type="figure" target="#fig_6">6</ref>. We compare our method against generation-only models (including diffusion-based and autoregressive models), unified MLLMs, and unified MLLMs with CoT planning.</p><p>Our method substantially outperforms other methods on StructT2IBench, achieving an overall accuracy of 73.52%, significantly surpassing the best baseline (GPT-Image, 49.58%). Notably, CoCo achieves the best performance on several structurally demanding tasks, including Chart (79.44%), Graph (62.58%), Math (69.12%), and Table (79.15%), which require precise spatial layouts and structured reasoning. These results demonstrate the effectiveness of code-based reasoning for handling complex structural compositions in text-to-image generation. Furthermore, on text rendering benchmarks, CoCo achieves strong performance across both datasets. On OneIG-Bench, it reaches 0.895 (English) and 0.811 (Chinese) with an overall score of 0.853, outperforming all compared generation-only and unified MLLM methods. On LongText-Bench, CoCo achieves 0.755 (English) and 0.753 (Chinese) with an overall score of 0.754, demonstrating competitive performance on long-text rendering. These results validate that code-based intermediate representations enable more reliable handling of complex textual instructions and structured visual layouts.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Ablation Study</head><p>To better understand the contribution of each component, we conduct ablation studies on the two key learnable modules in CoCo: code generation and draft-guided refinement.    Is Text-Code Supervision Necessary? We further evaluate the role of Text-Code supervision in structured generation. As shown in Fig. <ref type="figure" target="#fig_7">7</ref>, the off-the-shelf Bagel <ref type="bibr" target="#b10">(Deng et al., 2025)</ref>, without training on Text-Code pairs, often produces non-executable code, leading to a high rendering failure rate. On LongText-Bench, only 9.06% of its generated programs compile successfully (29/320), indicating that the model struggles to produce reliable code for downstream rendering.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Effect of Training Mixture Ratios.</head><p>In contrast, after fine-tuning with our training pipeline, CoCo achieves a 100% compilation success rate. This result shows that Text-Code supervision is essential for teaching the model to generate executable code, which in turn serves as a prerequisite for stable and successful rendering.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.">Discussion and Further Analysis</head><p>We observe an interesting generalization behavior of CoCo. Although all training data are constructed at a fixed resolution of 1024, the generated code during inference is not restricted to this setting. Instead, the model adaptively configures the canvas according to the prompt semantics. For example, poster-like prompts often lead to wider layouts (e.g., 16:9), while charts or diagrams typically produce square or near-square canvases. Qualitative examples in Fig. <ref type="figure" target="#fig_6">6</ref> show that CoCo naturally generates outputs with different aspect ratios depending on the prompt.</p><p>This behavior suggests that the model does not simply memorize a fixed rendering configuration. Instead, it learns to treat canvas size and layout parameters as part of the reasoning process encoded in the generated code. We attribute this flexibility to the programmatic nature of Code-as-CoT, where spatial layouts and canvas parameters are explicitly represented in code and can be dynamically adjusted to match the prompt.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Conclusion</head><p>In this work, we introduce CoCo, a novel code-driven reasoning framework that formulates executable code as Chain-of-Thought for text-to-image generation. Instead of relying on abstract natural-language planning, CoCo generates structured code that explicitly specifies spatial layouts and textual elements, which is executed to produce an intermediate draft image. The model then performs fine-grained image editing on the draft to obtain the final high-fidelity result. To support this paradigm, we build CoCo-10K with Text-Code pairs and Text-Draft Image-Final Image triplets, where draft-to-final supervision yields higher-fidelity outputs with stronger semantic alignment. Extensive experiments demonstrate the effectiveness of our approach, showing substantial improvements on challenging benchmarks including StructT2IBench, OneIG-Bench, and LongText-Bench. Our results highlight executable code as a reliable intermediate reasoning representation for precise, controllable, and structured text-to-image generation.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 |</head><label>1</label><figDesc>Figure 1 | Comparison of reasoning paradigms for text-to-image generation. (a) Direct generation without explicit reasoning. (b) Text-only Chain-of-Thought (CoT) reasoning prior to image synthesis. (c) Textual CoT with an intermediate visual draft. (d) Multi-turn reasoning with iterative textual and visual drafts. (e) CoCo: our approach generates executable code as a structured visual draft that explicitly specifies object layouts and attributes, which is then rendered and refined to produce the final image.</figDesc><graphic coords="2,70.87,85.04,453.54,206.56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 |</head><label>2</label><figDesc>Figure 2 | Framework of CoCo. CoCo operates in three stages: (1) generating executable code from the input prompt to explicitly specify structural layouts, (2) executing the code in a sandboxed environment to render a deterministic draft image, and (3) performing draft-guided refinement to produce the final high-quality output.</figDesc><graphic coords="5,398.75,165.07,122.89,80.63" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 |</head><label>3</label><figDesc>Figure 3 | Visual comparison between code-generated drafts and final results. Left: draft image synthesized from code generated by CoCo. Right: final image refined by CoCo based on the draft image and input prompt.</figDesc><graphic coords="7,185.78,272.03,110.63,71.57" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 |</head><label>4</label><figDesc>Figure 4 | Construction Pipeline and Examples of CoCo-10K. We design specialized data pipelines targeting three atomic correction capabilities: general editing, scientific diagrams, and complex text. Using Gemini-3-Pro (Google, 2025b) and Nano Banana (Google, 2025a), we generate code and final images from the collected prompts. The resulting data are organized into two training categories: Text-Code Pairs and Text-Draft Image-Final Image Pairs.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>ax.add_patch(patches.Rectangle((150, 60), 900, 80, facecolor='#111111', alpha=0.75))   ax.text(600, 100, "Traditional street…", color='white', fontsize=18, ha='center') ax.text(1150, 30, "00:15:09", color='white', fontsize=14, ha='right') ax.add_patch(patches.Rectangle((0, 0), 1200, 800, facecolor='#050510')) ax.add_patch(patches.Ellipse((x, y), 40, 50, color='#ff4400', alpha=0.8)) ax.add_patch(patches.Rectangle((x, y_base), width, height, color=color, alpha=0.8Rusty robot negotiates upgrade with sleek mechanic in futuristic repair shop... &lt;code&gt;```python… ax.text(250, 680, "Need deluxe speed...", ha='center', fontsize=12) ax.text(950, 650, "Chassis from 2050...", ha='center', fontsize=12) ax.text(450, 300, "Risk I'm willing...", ha='center', fontsize=11) ax.text(900, 200, "Sign waiver...", ha='center', fontsize=11) ax.add_patch(patches.FancyBboxPatch((180, 220), 160, 180, color='#d35400')) ax.add_patch(patches.Ellipse((925, 480), 90, 110, color='#ecf0f1'</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 |</head><label>5</label><figDesc>Figure 5 | Detailed Visualization of CoCo-10K. We present the prompt, generated code, draft image, and final image. CoCo-10K demonstrates high fidelity and strong semantic alignment between draft and final images.</figDesc><graphic coords="9,74.29,249.60,77.37,77.37" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 |</head><label>6</label><figDesc>Figure 6 | Contrastive visualization of the experiment. CoCo generates accurate layouts and high-fidelity text, outperforming baselines, and supports adaptive aspect ratios that align images with prompt semantics.</figDesc><graphic coords="10,204.75,257.50,65.77,65.77" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 7 |</head><label>7</label><figDesc>Figure 7 | Code executability diagnostic.CoCo vs. Bagel on LongText-Bench.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>• A Code-as-CoT training dataset. We introduce</head><label></label><figDesc></figDesc><table /><note><p>CoCo-10K, a curated dataset containing Text-Code pairs and Text-Draft-Final image triplets, enabling models to jointly learn executable layout planning and draft-</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>guided image refinement. • Extensive empirical validation on structured and text-intensive T2I tasks. Extensive</head><label></label><figDesc></figDesc><table><row><cell>experiments on StructT2IBench, LongText-Bench, and OneIG-Bench demonstrate that</cell></row><row><cell>CoCo substantially outperforms existing methods, especially on tasks requiring precise</cell></row><row><cell>layouts, complex text rendering, and structured visual generation.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>Tablet displays "Five Pillars of Financial Wellness" with five icon cards...</figDesc><table /><note><p><p><p><p><p><p>&lt;code&gt;```python… ax.add_patch(patches.Rectangle</p>((102, 327)</p>, 820, 470, facecolor='#1a0a2e')) ax.text(512, 675, "开启您的星际探险之旅", fontsize=38, color='white', ha='center') ax.text(512, 550, "探索未知星球…", fontsize=22, color='#ddddff', ha='center') ax.text(512, 450, "家庭套票买三送⼀", fontsize=18, color='#ffffaa', ha='center') ax.add_patch(patches.Rectangle</p>((332, 130)</p>, 360, 40, facecolor='#ff4444')) ax.text(512, 150, "⽴即登录银河旅⾏⽹抢购", fontsize=16, color='white', ha='center') …&lt;code&gt; &lt;code&gt;```python… ax.text(512, 282, "Five Pillars of Financial Wellness", fontsize=24, ha='center') ax.text(x + 80, y + 35, card['title'], fontsize=14, weight='bold') ax.text(x + 80, y + 65, card['desc'], fontsize=10) ax.add_patch(patches.FancyBboxPatch((62, 212), 900, 600, facecolor='#1a1a1a')) ax.add_patch(patches.FancyBboxPatch((82, 232), 860, 560, facecolor='#f8f9fa')) ax.add_patch(patches.FancyBboxPatch((x, y), 320, 140, facecolor=card['color'])) …&lt;code&gt; 开启您的星际探险之旅 Code: Prompt:</p>...breaking news broadcast with a lower-third banner "Global markets tumble as tech sector faces sudden downturn... &lt;code&gt;```python… ax.text(6, banner_y + banner_h/2, "Global markets tumble as tech sector faces sudden downturn...", fontsize=14, ha='center') ax.add_patch(patches.Rectangle((bn_x, bn_y), bn_w, bn_h, color='#cc0000')) ax.text(bn_x + bn_w/2, bn_y + bn_h/2, "BREAKING NEWS", fontsize=16, ha='center') ax.text(bn_x + 0.1, loc_y + loc_h/2, "New York Financial District 09:15 AM") ax.text(ts_x + ts_w/2, ts_y + ts_h/2, "00:04:15", fontsize=12, ha='center') …&lt;code&gt;</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 1 |</head><label>1</label><figDesc>Quantitative comparison on StructT2IBench. All values are reported as Accuracy (%). Orange and Champagne cells indicate the Top 1 and Top 2 performers respectively.</figDesc><table><row><cell>Model</cell><cell cols="7">Chart↑ Graph↑ Math↑ Puzzle↑ Science↑ Table↑ Overall↑</cell></row><row><cell>Close-resource models</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Seedream 4.0 Seedream et al. (2025)</cell><cell>35.79</cell><cell>54.08</cell><cell>63.33</cell><cell>50.89</cell><cell>62.59</cell><cell>68.94</cell><cell>47.52</cell></row><row><cell>Nano banana Google (2025a)</cell><cell>35.55</cell><cell>58.96</cell><cell>64.81</cell><cell>63.87</cell><cell>60.75</cell><cell>67.20</cell><cell>48.45</cell></row><row><cell>GPT-Image OpenAI (2024)</cell><cell>37.09</cell><cell>57.00</cell><cell>63.25</cell><cell>59.42</cell><cell>60.94</cell><cell>83.31</cell><cell>49.58</cell></row><row><cell>Open-resource models</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>UniWorld-V1 Lin et al. (2025a)</cell><cell>1.71</cell><cell>5.52</cell><cell>4.72</cell><cell>1.58</cell><cell>8.82</cell><cell>5.25</cell><cell>3.20</cell></row><row><cell>Bagel Deng et al. (2025)</cell><cell>4.66</cell><cell>3.61</cell><cell>4.02</cell><cell>4.46</cell><cell>8.60</cell><cell>5.74</cell><cell>4.69</cell></row><row><cell>Bagel-Think Deng et al. (2025)</cell><cell>4.81</cell><cell>15.33</cell><cell>13.89</cell><cell>15.22</cell><cell>19.05</cell><cell>8.97</cell><cell>9.03</cell></row><row><cell>HiDream-I1-Full Cai et al. (2025)</cell><cell>9.47</cell><cell>20.84</cell><cell>19.20</cell><cell>18.00</cell><cell>26.77</cell><cell>27.05</cell><cell>14.77</cell></row><row><cell>OmniGen2 Wu et al. (2025b)</cell><cell>10.67</cell><cell>22.51</cell><cell>22.89</cell><cell>18.63</cell><cell>28.00</cell><cell>22.61</cell><cell>16.24</cell></row><row><cell>FLUX.1 Dev Labs et al. (2025)</cell><cell>12.35</cell><cell>20.09</cell><cell>19.86</cell><cell>20.63</cell><cell>25.25</cell><cell>27.00</cell><cell>16.51</cell></row><row><cell>FLUX.1 Kontext Labs et al. (2025)</cell><cell>17.22</cell><cell>24.64</cell><cell>21.42</cell><cell>24.06</cell><cell>30.97</cell><cell>29.16</cell><cell>20.36</cell></row><row><cell>Ovis-U1 Wang et al. (2025a)</cell><cell>24.75</cell><cell>16.08</cell><cell>19.45</cell><cell>21.23</cell><cell>26.03</cell><cell>12.70</cell><cell>22.83</cell></row><row><cell>Qwen-Image Wu et al. (2025a)</cell><cell>32.23</cell><cell>48.05</cell><cell>46.98</cell><cell>48.90</cell><cell>53.51</cell><cell>73.65</cell><cell>41.03</cell></row><row><cell>CoCo (Ours)</cell><cell>79.44</cell><cell>62.58</cell><cell>69.12</cell><cell>49.10</cell><cell>58.81</cell><cell>79.15</cell><cell>73.52</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head></head><label></label><figDesc>Table 3 examines the effect of different training-mixture ratios on model performance. Following the training strategy described in Sec. 3.3.3, we train the model with a mixture of two complementary supervision sources: (1) Text-Code pairs and (2) Text-Draft Image-Final Image triplets. The former promotes executable reasoning, while the</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 2 |</head><label>2</label><figDesc>Comparison of text rendering capability. All values are reported as Accuracy (%). Orange and Champagne cells indicate the Top 1 and Top 2 performers respectively.</figDesc><table><row><cell>Method</cell><cell></cell><cell></cell><cell cols="5">OneIG-Bench Chang et al. (2025) LongText-Bench Geng et al. (2025)</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">English Chinese</cell><cell>Overall</cell><cell cols="2">English Chinese</cell><cell>Overall</cell></row><row><cell>Gen. Only Models</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="3">FLUX.1-dev Labs et al. (2025)</cell><cell>0.523</cell><cell>-</cell><cell>-</cell><cell>0.607</cell><cell>0.005</cell><cell>0.306</cell></row><row><cell cols="3">HiDream-I1 Cai et al. (2025)</cell><cell>0.707</cell><cell>0.205</cell><cell>0.456</cell><cell>0.543</cell><cell>0.024</cell><cell>0.284</cell></row><row><cell cols="2">Kolors 2.0 team (2025)</cell><cell></cell><cell>0.427</cell><cell>0.502</cell><cell>0.465</cell><cell>0.258</cell><cell>0.329</cell><cell>0.294</cell></row><row><cell>Unified Models</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="3">Janus-Pro Chen et al. (2025c)</cell><cell>0.019</cell><cell>0.015</cell><cell>0.017</cell><cell>0.019</cell><cell>0.006</cell><cell>0.013</cell></row><row><cell cols="3">BLIP3-o Chen et al. (2025a)</cell><cell>0.013</cell><cell>0.092</cell><cell>0.053</cell><cell>0.021</cell><cell>0.018</cell><cell>0.020</cell></row><row><cell cols="3">OmniGen2 Xiao et al. (2025)</cell><cell>0.680</cell><cell>-</cell><cell>-</cell><cell>0.561</cell><cell>0.059</cell><cell>0.310</cell></row><row><cell cols="3">Show-o2 Xie et al. (2025b)</cell><cell>0.002</cell><cell>-</cell><cell>-</cell><cell>0.006</cell><cell>0.002</cell><cell>0.004</cell></row><row><cell cols="3">BAGEL Deng et al. (2025)</cell><cell>0.244</cell><cell>0.365</cell><cell>0.305</cell><cell>0.373</cell><cell>0.310</cell><cell>0.342</cell></row><row><cell cols="2">GPT-4o OpenAI (2024)</cell><cell></cell><cell>0.857</cell><cell>0.650</cell><cell>0.754</cell><cell>0.956</cell><cell>0.619</cell><cell>0.788</cell></row><row><cell cols="2">Unified Model w/ CoT</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="3">BAGEL-thinking Deng et al. (2025)</cell><cell>0.020</cell><cell>0.127</cell><cell>0.074</cell><cell>0.068</cell><cell>0.105</cell><cell>0.087</cell></row><row><cell>CoCo(Ours)</cell><cell></cell><cell></cell><cell>0.895</cell><cell>0.811</cell><cell>0.853</cell><cell>0.755</cell><cell>0.753</cell><cell>0.754</cell></row><row><cell>Method</cell><cell>𝑟 𝑐</cell><cell cols="2">English Chinese</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Bagel</cell><cell>-</cell><cell>0.373</cell><cell>0.310</cell><cell></cell><cell></cell><cell></cell></row><row><cell>CoCo</cell><cell>0.20</cell><cell>0.724</cell><cell>0.667</cell><cell></cell><cell></cell><cell></cell></row><row><cell>CoCo</cell><cell>0.10</cell><cell>0.733</cell><cell>0.671</cell><cell></cell><cell></cell><cell></cell></row><row><cell>CoCo</cell><cell>0.05</cell><cell>0.755</cell><cell>0.753</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 3 | Ablation on training mixture ratio. 𝑟 𝑐</head><label>3</label><figDesc></figDesc><table /><note><p>is the proportion of Text-Code supervision.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgments</head><p>This work is partially supported by the following grants: <rs type="funder">Guangdong Provincial Key Fields Research and Development Program</rs> (<rs type="grantNumber">2025B0101120004</rs>), <rs type="funder">National Natural Science Foundation of China</rs> (<rs type="grantNumber">61972163</rs>), <rs type="funder">Natural Science Foundation of Guangdong Province</rs> (<rs type="grantNumber">2023A1515012568</rs>), <rs type="funder">Guangdong Provincial Key Laboratory of Human Digital Twin</rs> (<rs type="grantNumber">2022B1212010004</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_pmUNycC">
+					<idno type="grant-number">2025B0101120004</idno>
+				</org>
+				<org type="funding" xml:id="_mqCAXWw">
+					<idno type="grant-number">61972163</idno>
+				</org>
+				<org type="funding" xml:id="_RPTXUER">
+					<idno type="grant-number">2023A1515012568</idno>
+				</org>
+				<org type="funding" xml:id="_SstajbA">
+					<idno type="grant-number">2022B1212010004</idno>
+				</org>
+			</listOrg>
+
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Code Code</head><p>Final</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Amini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gabriel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Koncel-Kedziorski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hajishirzi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1905.13319</idno>
+		<title level="m">Mathqa: Towards interpretable math word problem solving with operation-based formalisms</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Unictokens: Boosting personalized understanding and generation via unified concept tokens</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>An</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.14671</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Genius: Generative fluid intelligence evaluation suite</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>An</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2602.11144" />
+		<imprint>
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Hidream-i1: A high-efficient image generative foundation model with sparse diffusion transformer</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.22705</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Oneig-bench: Omni-dimensional nuanced evaluation for image generation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H.-B</forename><surname>Chen</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2506.07977" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Diffusion forcing: Next-token prediction meets full-sequence diffusion</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Martí Monsó</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Simchowitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tedrake</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Sitzmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="24081" to="24125" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Blip3-o: A family of fully open unified multimodal models-architecture, training and dataset</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Goldstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Savarese</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.09568</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">R1-v: Reinforcing super generalization ability in vision-language models with less than $3</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Vinci</surname></persName>
+		</author>
+		<ptr target="https://github.com/Deep-Agent/R1-V" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="2025" to="2027" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Janus-pro: Unified multimodal understanding and generation with data and model scaling</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ruan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2501.17811</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2510.26583</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Native multimodal models are world learners</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="volume">3</biblScope>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Emerging properties in unified multimodal pretraining</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Gou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Song</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.14683</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Scaling rectified flow transformers for high-resolution image synthesis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Esser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kulal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Blattmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Entezari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Saini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Levi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lorenz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sauer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Boesel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Forty-first international conference on machine learning</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">X-omni: Reinforcement learning makes discrete autoregressive image generative models great again</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Geng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Linus</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2507.22058" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Geneval: An object-focused framework for evaluating text-to-image alignment</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hajishirzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Schmidt</surname></persName>
+		</author>
+		<ptr target="https://blog.google/technology/ai/nano-banana-pro/" />
+	</analytic>
+	<monogr>
+		<title level="m">Google. Introducing nano banana pro</title>
+		<imprint>
+			<date type="published" when="2023-11">2023. November 2025a</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="52132" to="52152" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">A new era of intelligence with gemini 3</title>
+		<author>
+			<persName><surname>Google</surname></persName>
+		</author>
+		<ptr target="https://blog.google/products-and-platforms/products/gemini/gemini-3/" />
+		<imprint>
+			<date type="published" when="2025-11">November 2025b</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Improving chain-of-thought efficiency for autoregressive image generation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Georgopoulos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ghazvininejad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Juefei-Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>He</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2510.05593</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Leng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.07062</idno>
+		<title level="m">Seed1. 5-vl technical report</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Bi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2501.12948</idno>
+		<title level="m">Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Can we generate images with cot? let&apos;s verify and reinforce image generation step by step</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2501.13926</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Unicorn: Towards self-improving unified multimodal models through self-generated supervision</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W.-J</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2601.03193</idno>
+		<imprint>
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Measuring mathematical problem solving with the math dataset</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hendrycks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Burns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kadavath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Steinhardt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<publisher>NeurIPS</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Ella: Equip diffusion models with llm for enhanced semantic alignment</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2403.05135</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Tifa: Accurate and interpretable text-to-image faithfulness evaluation with question answering</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kasai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ostendorf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Krishna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="20406" to="20417" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">T2i-compbench: A comprehensive benchmark for open-world compositional text-to-image generation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="78723" to="78747" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">T2i-compbench++: An enhanced and comprehensive benchmark for compositional text-to-image generation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Duan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Pattern Analysis and Machine Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="3563" to="3579" />
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Interleaving reasoning for better text-to-image generation</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2509.06945</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.00703</idno>
+		<title level="m">T2i-r1: Reinforcing image generation with collaborative semantic-level and token-level cot</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Mme-cot: Benchmarking chain-of-thought in large multimodal models for reasoning quality</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2502.09621</idno>
+	</analytic>
+	<monogr>
+		<title level="m">robustness, and efficiency</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Niu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Duan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2510.12784</idno>
+		<title level="m">Srum: Fine-grained self-rewarding for unified multimodal models</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1312.6114</idno>
+		<title level="m">Auto-encoding variational bayes</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Large language models are zero-shot reasoners</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kojima</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Matsuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Iwasawa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in neural information processing systems</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="22199" to="22213" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Flux.1 kontext: Flow matching for in-context image generation and editing in latent space</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">F</forename><surname>Labs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Batifol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Blattmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Boesel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Consul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Diagne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Dockhorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>English</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>English</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Esser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kulal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lacey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Levi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lorenz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Podell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Saini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sauer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Smith</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2506.15742" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Genaibench: Evaluating and improving compositional text-to-visual generation</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Pathak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">G</forename><surname>Neubig</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2406.13743</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>An</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Qing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jiang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2602.09007</idno>
+		<title level="m">Gebench: Benchmarking image generation models as gui environments</title>
+		<imprint>
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Why 1 + 1 &lt; 1 in visual token pruning: Beyond naive integration via multi-objective balanced covering</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y.-J</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The Thirty-ninth Annual Conference on Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Deepscan: A training-free framework for visually grounded reasoning in large vision-language models</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF conference on computer vision and pattern recognition</title>
+		<imprint>
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<monogr>
+		<title level="m" type="main">Mixture-of-transformers: A sparse and scalable architecture for multi-modal foundation models</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Iyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>-T. Yih</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zettlemoyer</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2411.04996</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.05472</idno>
+		<title level="m">Mogao: An omni foundation model for interleaved multi-modal generation</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<monogr>
+		<title level="m" type="main">Uniworld: High-resolution semantic encoders for unified visual understanding and generation</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Niu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ge</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.03147</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">Perceive anything: Recognize, explain, caption, and segment anything in images and videos</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>An</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.05302</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lipman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ben-Hamu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nickel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Le</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2210.02747</idno>
+		<title level="m">Flow matching for generative modeling</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+		<title level="m" type="main">Flow straight and fast: Learning to generate and transfer data with rectified flow</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.03003</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<monogr>
+		<title level="m" type="main">Mathvista: Evaluating math reasoning in visual contexts with gpt-4v, bard, and other large multimodal models</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bansal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hajishirzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K.-W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Galley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2310.02255</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<title level="m">Ursa: Understanding and verifying chain-of-thought reasoning in multimodal mathematics. arXiv e-prints</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page">2501</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Unibind: Llm-augmented unified and balanced representation space to bind them all</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lyu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page" from="26752" to="26762" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<title level="m" type="main">Understanding-ingeneration: Reinforcing generative capability of unified model via infusing understanding into generation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lyu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2509.18639</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<title level="m" type="main">Realrag: Retrievalaugmented realistic image generation via self-reflective contrastive learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lyu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2502.00848</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">Agent rl scaling law: Agent rl with spontaneous code execution for mathematical problem solving</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Mai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z.-Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.07773</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<monogr>
+		<title level="m" type="main">Unirl: Self-improving unified multimodal models via supervised and reinforcement learning</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Z</forename><surname>Shou</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2505.23380" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<title level="m" type="main">Mm-eureka: Exploring visual aha moment with rule-based large-scale reinforcement learning</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2503.07365</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Yo&apos;chameleon: Personalized vision and language generation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">K</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Computer Vision and Pattern Recognition Conference</title>
+		<meeting>the Computer Vision and Pattern Recognition Conference</meeting>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="14438" to="14448" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<monogr>
+		<title level="m" type="main">Hello gpt</title>
+		<ptr target="https://openai.com/index/hello-gpt-" />
+		<imprint>
+			<date type="published" when="2024">4o/, 2024</date>
+			<biblScope unit="page">4</biblScope>
+		</imprint>
+		<respStmt>
+			<orgName>OpenAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<monogr>
+		<title level="m" type="main">Thinking with images</title>
+		<author>
+			<persName><surname>Openai</surname></persName>
+		</author>
+		<ptr target="https://openai.com/index/thinking-with-images/" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<monogr>
+		<title level="m" type="main">Focusdiff: Advancing fine-grained text-image alignment for autoregressive visual generation through rl</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhuang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.05501</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>You</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Geng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2503.07536</idno>
+		<title level="m">Lmm-r1: Empowering 3b lmms with strong reasoning abilities through two-stage rule-based rl</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<monogr>
+		<author>
+			<persName><forename type="first">L</forename><surname>Qu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">K</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2412.03069</idno>
+		<title level="m">Tokenflow: Unified image tokenizer for multimodal understanding and generation</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<monogr>
+		<title level="m" type="main">Seedream 4.0: Toward next-generation multimodal image generation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Seedream</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2509.20427</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<monogr>
+		<title level="m" type="main">Vlm-r1: A stable and generalizable r1-style large vision-language model</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2504.07615</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">V</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zettlemoyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2412.15188</idno>
+		<title level="m">Lmfusion: Adapting pretrained language models for multimodal generation</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<monogr>
+		<title level="m" type="main">Chameleon: Mixed-modal early-fusion foundation models</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Team</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2405.09818</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<monogr>
+		<author>
+			<persName><forename type="first">K</forename><surname>Team</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Qu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wei</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2504.07491</idno>
+		<title level="m">-vl technical report</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">K</forename><surname>Team</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Kolors</surname></persName>
+		</author>
+		<ptr target="https://app.klingai.com/cn/" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.17017</idno>
+		<title level="m">Delving into rl for image generation with cot: A study on dpo vs. grpo</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Metamorph: Multimodal understanding and generation via instruction tuning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sinha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rabbat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="17001" to="17012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<monogr>
+		<title level="m" type="main">Siglip 2: Multilingual vision-language encoders with improved semantic understanding, localization, and dense features</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tschannen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gritsenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">F</forename><surname>Naeem</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Alabdulmohsin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parthasarathy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Beyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mustafa</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2502.14786</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shazeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Uszkoreit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ł</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Polosukhin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in neural information processing systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<monogr>
+		<title level="m" type="main">Deepgen 1.0: A lightweight unified multimodal model for advancing image generation and editing</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2602.12205</idno>
+		<imprint>
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<monogr>
+		<author>
+			<persName><forename type="first">G.-H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Duan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.23044</idno>
+		<title level="m">Ovis-u1 technical report</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<analytic>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2409.18869</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Next-token prediction is all you need</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="volume">3</biblScope>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<monogr>
+		<title level="m" type="main">Unified reward model for multimodal understanding and generation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2503.05236</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<analytic>
+		<title level="a" type="main">Chain-ofthought prompting elicits reasoning in large language models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Schuurmans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bosma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in neural information processing systems</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="24824" to="24837" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<monogr>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.02161</idno>
+		<title level="m">Tiif-bench: How does your t2i model follow your instructions? arXiv preprint</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<monogr>
+		<title level="m" type="main">Webagentr1: Training web agents via end-to-end multi-turn reinforcement learning</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yin</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.16421</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<monogr>
+		<title level="m" type="main">Janus: Decoupling visual encoding for unified multimodal understanding and generation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ruan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2410.13848</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>-M. Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2508.02324</idno>
+		<title level="m">Qwen-image technical report</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b75">
+	<monogr>
+		<title level="m" type="main">Omnigen2: Exploration to advanced multimodal generation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.18871</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b76">
+	<monogr>
+		<title level="m" type="main">Liquid: Language models are scalable multi-modal generators</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Bai</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2412.04332</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b77">
+	<monogr>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ma</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.14460</idno>
+		<title level="m">Visualquality-r1: Reasoning-induced image quality assessment via reinforcement learning to rank</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b78">
+	<analytic>
+		<title level="a" type="main">Conceptmix: A compositional image generation benchmark with controllable difficulty</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Russakovsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Arora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="86004" to="86047" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b79">
+	<monogr>
+		<title level="m" type="main">Vila-u: a unified foundation model integrating visual understanding and generation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2409.04429</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b80">
+	<analytic>
+		<title level="a" type="main">Omnigen: Unified image generation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Computer Vision and Pattern Recognition Conference</title>
+		<meeting>the Computer Vision and Pattern Recognition Conference</meeting>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="13294" to="13304" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b81">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Z</forename><surname>Shou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2408.12528</idno>
+		<title level="m">Show-o: One single transformer to unify multimodal understanding and generation</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b82">
+	<monogr>
+		<title level="m" type="main">Reconstruction alignment improves unified multimodal models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zettlemoyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2509.07295" />
+		<imprint>
+			<date type="published" when="2025">2025. 2025</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page">3</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b83">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Z</forename><surname>Shou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.15564</idno>
+		<title level="m">Show-o2: Improved native unified multimodal models</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b84">
+	<monogr>
+		<title level="m" type="main">Lumina-dimoo: An omni diffusion large language model for multi-modal generation and understanding</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2510.06308</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b85">
+	<monogr>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Hermesflow</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2502.12148</idno>
+		<title level="m">Seamlessly closing the gap in multimodal understanding and generation</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b86">
+	<monogr>
+		<title level="m" type="main">Scaling autoregressive models for content-rich text-to-image generation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Koh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Luong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Baid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vasudevan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ku</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">K</forename><surname>Ayan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.10789</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page">5</biblScope>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b87">
+	<monogr>
+		<title level="m" type="main">Guided self-evolving llms with minimal human supervision</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Panaganti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Mi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2512.02472</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b88">
+	<monogr>
+		<title level="m" type="main">Mmmu: A massive multi-discipline multimodal understanding and reasoning benchmark for expert agi</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Stevens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2311.16502</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b89">
+	<monogr>
+		<title level="m" type="main">Vision-r1: Evolving humanfree alignment in large vision-language models via vision-guided reinforcement learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2503.18013</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b90">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Vulić</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2504.15037</idno>
+		<title level="m">Scaling and beyond: Advancing spatial reasoning in mllms requires new recipes</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b91">
+	<monogr>
+		<title level="m" type="main">Latent sketchpad: Sketching visual thoughts to elicit multimodal reasoning in mllms</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2510.24514</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b92">
+	<monogr>
+		<title level="m" type="main">How well do models follow visual instructions? vibe: A systematic benchmark for visual instruction-driven image editing</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>An</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Korhonen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tan</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2602.01851" />
+		<imprint>
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b93">
+	<monogr>
+		<title level="m" type="main">Mathverse: Does your multi-modal llm truly see the diagrams in visual</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K.-W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note>math problems? ECCV 2024</note>
+</biblStruct>
+
+<biblStruct xml:id="b94">
+	<monogr>
+		<title level="m" type="main">Perl: Permutation-enhanced reinforcement learning for interleaved vision-language reasoning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z.-Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2506.14907</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b95">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Qiu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2505.24875</idno>
+		<title level="m">Reasongenr1: Cot for autoregressive image generation models through sft and rl</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b96">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2409.16280</idno>
+		<title level="m">One transformer for both diffusion and autoregression</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b97">
+	<monogr>
+		<title level="m" type="main">Unified personalized understanding, generating and editing</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>He</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2601.06965</idno>
+		<imprint>
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b98">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Babu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tirumala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yasunaga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shamis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kahn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zettlemoyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Levy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2408.11039</idno>
+		<title level="m">Transfusion: Predict the next token and diffuse images with one multi-modal model</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b99">
+	<analytic>
+		<title level="a" type="main">Calibrated self-rewarding vision language models</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="51503" to="51531" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b100">
+	<monogr>
+		<title level="m" type="main">Factuality matters: When image generation and editing meet structured visuals</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Pu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Paul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2510.05091" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

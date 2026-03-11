@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">The Boiling Frog Threshold: Criticality and Blindness in World Model-Based Anomaly Detection Under Gradual Drift</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2026-03-09">9 Mar 2026</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zhe</forename><surname>Hong</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">National University of Singapore</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">The Boiling Frog Threshold: Criticality and Blindness in World Model-Based Anomaly Detection Under Gradual Drift</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2026-03-09">9 Mar 2026</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">2C3F6FBF432F47535D369709F9F29F0B</idno>
+					<idno type="arXiv">arXiv:2603.08455v1[cs.AI]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2026-03-10T18:11+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>When an RL agent's observations are gradually corrupted, at what drift rate does it "wake up"-and what determines this boundary? We study world model-based self-monitoring under continuous observation drift across four MuJoCo environments, three detector families (z-score, variance, percentile), and three model capacities. We find that (1) a sharp detection threshold ε * exists universally: below it, drift is absorbed as normal variation; above it, detection occurs rapidly. The threshold's existence and sigmoid shape are invariant across all detector families and model capacities, though its position depends on the interaction between detector sensitivity, noise floor structure, and environment dynamics. (2) Sinusoidal drift is completely undetectable by all detector families-including variance and percentile detectors with no temporal smoothing-establishing this as a world model property rather than a detector artifact.</p><p>(3) Within each environment, ε * follows a power law in detector parameters (R 2 = 0.89-0.97), but cross-environment prediction fails (R 2 = 0.45), revealing that the missing variable is environment-specific dynamics structure ∂PE/∂ε. (4) In fragile environments, agents collapse before any detector can fire ("collapse before awareness"), creating a fundamentally unmonitorable failure mode. Our results reframe ε * from an emergent world model property to a three-way interaction between noise floor, detector, and environment dynamics, providing a more defensible and empirically grounded account of self-monitoring boundaries in RL agents.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text>
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Reinforcement learning agents increasingly rely on learned world models for planning <ref type="bibr" target="#b8">[Hafner et al., 2023</ref><ref type="bibr" target="#b13">, Schrittwieser et al., 2020]</ref>, but these internal models also offer an underexplored capability: self-monitoring. If an agent's world model can predict what will happen next, then systematic prediction failures may signal that something has gone wrong-either in the environment or in the agent's own perception.</p><p>Recent work has demonstrated that world model prediction error can detect abrupt environmental changes <ref type="bibr" target="#b3">[Domberg and Schildbach, 2025]</ref>. But real-world sensor degradation is rarely abrupt. Cameras fog gradually, LiDAR calibration drifts imperceptibly, and adversarial perturbations may accumulate incrementally. The critical question is: can an agent detect gradual perceptual corruption, and if so, what determines the boundary between awareness and oblivion?</p><p>We study this question through systematic ablation across four MuJoCo environments, three detector families, multiple hyperparameter configurations, and three model capacities. Our central finding is that the detection boundary is shaped by a three-way interaction between the world model's learned noise floor, the detector's sensitivity, and the environment's dynamics structure-not by any single factor alone.</p><p>Our contributions are fourfold:</p><p>1. Threshold existence and shape invariance. We identify a sharp sigmoid detection threshold across three detector families (z-score, variance, percentile) with varied hyperparameters and three model capacities. The threshold's existence and shape are universal; its position is not.</p><p>2. Sinusoidal blindness as a world model property. All detector families-including variance detectors and percentile detectors with no temporal smoothing-are completely blind to periodic drift. This rules out detectorspecific artifacts and establishes that the prediction error signal itself lacks drift information under periodic perturbation.</p><p>3. Analytical characterization of ε * . Within each environment, ε * follows a power law in detector parameters (R 2 = 0.89-0.97), with environment-specific exponents that quantify noise floor structure. Across environments, a global model fails (R 2 = 0.45), pinpointing environment dynamics (∂PE/∂ε) as the missing variable.</p><p>4. Collapse Before Awareness (CBA). In fragile environments (Hopper), the agent's policy collapses before any detector fires, creating a regime where drift is lethal but invisible-stable across all detector types and model capacities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Distribution shift and OOD detection in RL. Out-of-distribution detection <ref type="bibr" target="#b0">[Hendrycks and Gimpel, 2017]</ref> has been extensively studied for neural networks. The concept drift literature <ref type="bibr" target="#b5">[Gama et al., 2014</ref><ref type="bibr" target="#b10">, Lu et al., 2018]</ref> addresses distributional shift in data streams using methods like CUSUM <ref type="bibr" target="#b11">[Page, 1954]</ref> and Page-Hinkley tests <ref type="bibr" target="#b12">[Hinkley, 1970]</ref>. <ref type="bibr" target="#b3">Domberg and Schildbach [2025]</ref> apply DreamerV3's world model for anomaly detection under abrupt environmental changes. Our work extends this paradigm to gradual drift and reveals the threshold phenomenon that abrupt-change studies cannot observe. Critically, we study not whether drift can be detected, but what determines the boundary of detectability.</p><p>World models. World models have evolved from simple forward predictors <ref type="bibr" target="#b7">[Ha and Schmidhuber, 2018]</ref> to sophisticated latent dynamics models <ref type="bibr" target="#b8">[Hafner et al., 2023</ref><ref type="bibr" target="#b13">, Schrittwieser et al., 2020]</ref>. We use a deliberately simple MLP world model to isolate the threshold phenomenon from architectural complexity, treating the world model as an internal reality representation whose prediction error serves as a self-monitoring signal.</p><p>Predictive processing and active inference. The free energy principle <ref type="bibr" target="#b4">[Friston, 2010]</ref> and "controlled hallucination" framework <ref type="bibr" target="#b15">[Seth, 2021]</ref> posit that perception is constrained prediction, with precision weighting governing the balance between prior expectations and sensory evidence. Our noise floor maps onto precision weighting; our ε * onto the precision-weighted prediction error threshold; and our sinusoidal blindness onto model evidence optimization absorbing periodic variance. <ref type="bibr" target="#b9">Hobson and Friston [2014]</ref> propose that dreaming optimizes internal models-our sinusoidal result operationalizes this: the world model "dreams through" periodic perturbation by absorbing it as normal variation.</p><p>Signal detection theory. <ref type="bibr" target="#b6">Green and Swets' [1966]</ref> framework for sensitivity-specificity tradeoffs provides the theoretical basis for our detector sensitivity spectrum analysis (Section 4.4), where different detectors correspond to different operating points on an environment-specific ROC curve.</p><p>3 Method</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Agent and World Model</head><p>We train PPO agents <ref type="bibr" target="#b14">[Schulman et al., 2017]</ref> using Stable-Baselines3 for 10 6 steps on four MuJoCo-v5 environments: HalfCheetah (obs: 17, act: 6), <ref type="bibr">Hopper (11,</ref><ref type="bibr">3),</ref><ref type="bibr">Walker2d (17,</ref><ref type="bibr">6),</ref><ref type="bibr">and Ant (105,</ref><ref type="bibr">8)</ref>. For each environment, we train a forward dynamics model f θ (s t , a t ) → ŝt+1 : a 3-layer MLP minimizing MSE on transitions collected by the trained policy. Prediction error at each step is e t = ∥f θ (s t , a t ) -s t+1 ∥ 2 . To test whether threshold behavior depends on model capacity, we train three variants per environment: small (hidden size 128), medium (512, default), and large (1024).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Drift Injection</head><p>Each evaluation episode runs for 1,000 steps with 300 unmodified baseline steps. At step t 0 =300, drift is applied to velocity-related observation dimensions:</p><formula xml:id="formula_0">st = s t + g(ε, t -t 0 ) • d (1)</formula><p>where d is a unit direction vector, ε controls intensity, and g defines the profile:</p><p>• Linear: g = ε • t (monotonically increasing)</p><formula xml:id="formula_1">• Sinusoidal: g = ε • sin(2π • 0.01 • t) (periodic, zero-mean)</formula><p>We sweep 16 intensities from ε=10 -4 to 0.5 with finer resolution near expected thresholds. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Detector Family</head><p>We employ three fundamentally different detector families to disentangle threshold effects from detector-specific artifacts:</p><p>Doubt Index (DI). Maintains an exponential moving average of prediction error and flags anomalies via z-score against a pre-drift baseline. Detection triggers when a sliding window of W consecutive steps exceeds threshold z.</p><p>We sweep z ∈ {2.0, 2.5, 3.0, 3.5, 4.0} and W ∈ {1, 3, 5, 10, 20}. Note that W =1 acts as a single-step detector with no temporal integration, yielding high baseline FPR; it is included for completeness but excluded from regression analyses.</p><p>Variance detector. Monitors the variance of prediction error within a sliding window of size V =50 and flags when variance exceeds k standard deviations above baseline variance, sustained for C=5 consecutive windows. We sweep k ∈ {2, 3, 5}. This detector operates on a fundamentally different signal (second moment rather than first moment of PE).</p><p>Percentile detector. Flags when prediction error exceeds the p-th percentile of the baseline PE distribution within a window of W =5 steps. We test p ∈ {95, 99}. Critically, this detector involves no temporal smoothing-it compares each observation directly to the baseline distribution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Experimental Protocol</head><p>All conditions use 10 seeds × 8 episodes per seed = 80 episodes per condition. We report Wilson score 95% confidence intervals throughout.</p><p>Experiment A (Full ablation </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results</head><p>Table <ref type="table" target="#tab_0">1</ref> summarizes the key findings across environments before detailed analysis. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Threshold Existence and Shape Invariance</head><p>Across all four environments, all three detector families, and all hyperparameter configurations tested, we observe a consistent pattern: detection rate follows a sharp sigmoid transition from ∼0% to ∼100% as drift intensity increases (Figure <ref type="figure" target="#fig_0">1</ref>). This shape invariance is the most robust finding of our study.</p><p>The threshold position ε * , however, varies substantially across detectors. Within the Doubt Index family alone, ε * ranges from ∼0.0003 (low z, low W ) to ∼0.004 (high z, high W )-nearly an order of magnitude. Across detector families, the range extends further: variance detectors with k=2 achieve the lowest ε * values, while Doubt Index configurations with strict thresholds achieve the highest. This dissociation between shape invariance and position variability is central to our reframing: the existence of a sharp threshold is a property of the world model (all detectors see it), but its position is jointly determined by detector sensitivity and the environment's noise floor structure.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Sinusoidal Blindness: A Fundamental Limit of PE-Based Monitoring</head><p>Our strongest result is that all detector families are completely blind to sinusoidal drift across all environments and intensities. Detection rates are indistinguishable from zero, even at ε=0.5 where the instantaneous perturbation magnitude far exceeds the noise floor.</p><p>This finding is robust to three challenges:</p><p>1. "It's the EMA smoothing." The Doubt Index uses an exponential moving average that could, in principle, smooth away oscillatory signals. However, the variance detector-which monitors the second moment of PE and uses no such smoothing-is equally blind.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">"It's temporal averaging."</head><p>The percentile detector compares individual PE values directly against the baseline distribution with no temporal aggregation (Experiment B1). It too is completely blind.</p><p>3. "It's the detector threshold." Different detectors with thresholds spanning a 10× range all show identical blindness-the signal is not "just below threshold" for any detector.</p><p>The mechanism is that sinusoidal perturbation oscillates symmetrically around zero: positive and negative deviations cancel over each cycle, so cumulative perturbation never escapes the noise floor. The prediction error signal itself contains no drift information-no downstream detector, however sensitive, can extract what is not there. In the language of predictive processing <ref type="bibr" target="#b4">[Friston, 2010]</ref>, the world model performs model evidence optimization by absorbing periodic variance as part of the expected sensory distribution. This parallels <ref type="bibr" target="#b9">Hobson and Friston [2014]</ref>'s proposal that dreaming serves to optimize internal models-our world model effectively "dreams through" periodic perturbation.</p><p>A spectral analysis confirms this quantitatively (Figure <ref type="figure" target="#fig_3">5</ref> in Appendix E): at ε=0.01 in HalfCheetah, linear drift produces PE power 201.6× baseline, while sinusoidal drift produces only 0.8×-indistinguishable from the no-drift condition.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Collapse Before Awareness</head><p>In Hopper, we observe a phenomenon stable across all detector types and model capacities: at intermediate drift intensities, the agent's policy physically collapses (the simulated robot falls) before any detector accumulates sufficient evidence to trigger. We quantify this via the survival gap: ∆ = T collapse -T detection , where negative values indicate that the agent dies before detection. In Hopper, the collapse rate exceeds 99% across nearly all drift intensities; at ε=0.05, the mean time to collapse is only 25 steps from drift onset while no detector fires at all (Figure <ref type="figure" target="#fig_2">4</ref> in Appendix D). This creates four distinct regimes:</p><p>1. Sub-threshold (ε &lt; ε * ): drift absorbed, never detected.</p><p>2. Detectable (ε slightly above ε * ): drift exceeds noise floor; agent survives long enough for detection.</p><p>3. Collapse Before Awareness (ε moderate): drift destabilizes the policy within ∼30 steps of onset, but the detector requires ∼50 steps of post-drift data-the agent dies before waking up.</p><p>4. Overwhelming (ε very large): even a few steps produce unmistakable signal; detection occurs before collapse.</p><p>Note that Hopper exhibits substantial inherent fragility (collapse rate ∼50% even near ε=0); the CBA phenomenon specifically refers to drift-accelerated collapse that outpaces detection, not baseline instability.</p><p>CBA is environment-specific, appearing most strongly in Hopper (fragile single-leg dynamics) and to a lesser extent in Walker2d. HalfCheetah and Ant, with their more stable locomotion, do not exhibit CBA. The practical implication is stark: for fragile agents in safety-critical deployments, there exists a dangerous blind spot where perturbations are strong enough to cause catastrophic failure but not strong enough for any detector to fire in time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Detector Sensitivity Spectrum</head><p>Having established the qualitative phenomena-threshold existence, sinusoidal blindness, and collapse before awarenesswe now turn to quantitative characterization of detector sensitivity across environments.</p><p>Figure <ref type="figure" target="#fig_1">2</ref> presents a signal detection theory (SDT) analysis <ref type="bibr" target="#b6">[Green and Swets, 1966]</ref> of all detector configurations. We plot each detector's baseline false positive rate (FPR, measured at ε=10 -4 ≈ 0) against its detection rate at a reference drift intensity ε=0.003, chosen because it falls within the sigmoid transition region for most environment-detector combinations.</p><p>The resulting patterns are environment-specific:</p><p>• HalfCheetah and Ant: Detector configurations cluster in the upper-left corner (high detection, low FPR), indicating that the drift signal is strong relative to noise and most detectors achieve good separation.</p><p>• Walker2d: Configurations fall along the diagonal, meaning detection rate increases approximately proportionally with FPR. No detector achieves meaningfully better-than-chance separation at this reference ε-the environment's high baseline noise prevents clean discrimination.</p><p>• Hopper: Configurations spread widely, reflecting a genuine sensitivity-specificity tradeoff. More sensitive detectors (variance with low k) achieve higher detection but at the cost of elevated FPR.</p><p>Different detector configurations correspond to different operating points on an environment-specific ROC-like curve. The shape of this curve-and whether good separation is achievable at all-is determined by the environment's noise floor structure, not the detector family. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5">Analytical Characterization of ε *</head><p>One might expect ε * to correlate with baseline prediction error (MSE): environments with noisier world models should have higher thresholds. Surprisingly, this is not the case. Hopper has the lowest baseline MSE (0.0024) yet the highest ε * , while HalfCheetah has the highest MSE (0.163) with a relatively low ε * . The rank ordering by MSE does not match the rank ordering by ε * for any detector configuration tested.</p><p>Within each environment, however, ε * follows a clean power law in detector parameters (Table <ref type="table" target="#tab_2">2</ref>). For the Doubt Index family (excluding W =1, which acts as a single-step detector with fundamentally different characteristics), we fit:</p><formula xml:id="formula_2">log 10 (ε * ) = a + α • log 10 (z) + β • log 10 (W ) (2)</formula><p>Three of four environments achieve R 2 &gt; 0.88, indicating that ε * is highly predictable from detector parameters within a given environment. The cross-environment global fit, however, yields R 2 = 0.45-the missing variable is the environment's dynamics structure, specifically how prediction error responds to drift (∂PE/∂ε).</p><p>The exponents themselves carry information. The z-exponent α quantifies the noise floor's tail heaviness: Ant's α=1.35 (heavy-tailed, requiring much stricter z to avoid false positives) versus HalfCheetah's α=0.43 (light-tailed, z barely matters). This means the noise floor is not merely a scalar (baseline MSE) but has structure-different environments produce PE distributions with different shapes, and these shapes determine how detector sensitivity translates to detection capability. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.6">Walker2d: A Case Study in High-Noise Environments</head><p>Walker2d exhibits baseline false positive rates of 12-44% across detector configurations-even at ε ≈ 0, detectors frequently fire. This initially appears to undermine the threshold analysis: how can we define ε * when the baseline is already noisy? A FPR-correction analysis reveals that this noise is informative rather than problematic. After correcting for each detector's baseline FPR (subtracting FPR and normalizing), ε * converges to ≈0.002 regardless of detector configuration. The corrected R 2 drops from 0.78 to 0.36-not because the fit worsened, but because there is almost no remaining variance to explain: all detectors agree on the same threshold once baseline noise is accounted for.</p><p>This supports the three-way interaction framework: in high-noise environments, ε * is dominated by environmental dynamics rather than detector sensitivity. The apparent detector-dependence of ε * in Walker2d is largely a FPR artifact-the true threshold is an environment property, masked by detector-specific noise.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.7">Capacity Independence</head><p>Experiment C tests whether ε * is an artifact of model capacity by training small (128), medium (512), and large (1024) hidden-unit world models. As expected, baseline MSE decreases monotonically with capacity (e.g., HalfCheetah: 0.254 → 0.163 → 0.145). However, the detection rate curves and ε * positions remain essentially unchanged across all three capacities.</p><p>This result has a simple explanation: the Doubt Index uses z-score normalization, which divides by the baseline standard deviation. A more accurate model has lower absolute noise but also lower baseline variance, so the z-scoresand thus the detection thresholds-remain the same. ε * is invariant to model capacity because the detection mechanism operates on relative rather than absolute prediction error.</p><p>This rules out the hypothesis that ε * reflects model approximation error. The threshold is not "the model isn't good enough to see small drift"-it is a property of the drift-to-noise ratio, which is invariant to uniform scaling of both signal and noise.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Discussion</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">From Emergence to Interaction</head><p>Our initial hypothesis was that ε * is an emergent property of the world model's learned noise floor-a single boundary determined by the model's internal structure. The ablation results require a more nuanced account.</p><p>The detection threshold's existence and sharpness (sigmoid shape) are indeed world model properties: every detector, regardless of family or parameters, sees a sharp transition. Its position, however, is jointly determined by three factors:</p><p>1. Noise floor structure: not just baseline MSE (which fails to predict ε * rank order) but the full PE distribution shape, including tail heaviness (captured by the z-exponent α).</p><p>2. Detector sensitivity: the operating point on the sensitivity-specificity curve, determined by detector parameters (z, W , k, p).</p><p>3. Environment dynamics: how prediction error responds to drift (∂PE/∂ε), which varies across environments and is not predictable from baseline statistics alone.</p><p>This reframing is not a retreat-it is a more precise and defensible characterization. What is a world model property (threshold existence, shape, sinusoidal blindness) is cleanly separated from what is not (threshold position).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Predictive Processing Connection</head><p>The three-way interaction framework maps naturally onto predictive processing theory <ref type="bibr" target="#b4">[Friston, 2010</ref><ref type="bibr" target="#b15">, Seth, 2021</ref>]:</p><p>• Noise floor ↔ Precision weighting. The world model's baseline PE distribution determines the "expected" level of prediction error-analogous to the precision assigned to prediction errors in predictive coding.</p><p>• ε * ↔ Precision-weighted PE threshold. Detection occurs when precision-weighted prediction error exceeds a threshold, exactly as in predictive processing accounts of conscious access <ref type="bibr" target="#b2">[Dehaene and Changeux, 2011]</ref>.</p><p>• Detector sensitivity ↔ Meta-monitoring precision. Different detectors correspond to different levels of metacognitive precision-a more sensitive detector is analogous to a brain with stronger prefrontal monitoring.</p><p>• Sinusoidal blindness ↔ Model evidence optimization. The world model absorbs periodic variance because doing so increases model evidence (reduces free energy). This is not a failure but an adaptive response-the model correctly treats zero-mean oscillation as noise rather than signal.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Implications for Deployed Systems</head><p>Our results yield three practical implications:</p><p>1. Sinusoidal-type perturbations are invisible. Any drift pattern that oscillates symmetrically around zero will be absorbed by PE-based monitors. Adversaries could exploit this by designing perturbations with zero cumulative drift.</p><p>2. CBA creates unmonitorable failure modes. For fragile agents, some perturbation intensities cause catastrophic failure before any internal monitor can respond. External monitoring (by other agents or supervisory systems) is necessary.</p><p>3. Baseline MSE is an unreliable predictor of detection capability. Practitioners should characterize their environment's ∂PE/∂ε response before deploying PE-based monitors, as model accuracy alone does not predict the detection boundary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4">Limitations</head><p>Our study is limited to proprioceptive locomotion tasks with MLP world models; generalization to vision-based observations, transformer or RSSM world models, and non-locomotion tasks is unknown </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p>We have shown that world model-based self-monitoring exhibits a sharp detection threshold whose existence and shape are universal across detector families and model capacities, but whose position reflects a three-way interaction between noise floor structure, detector sensitivity, and environment dynamics. Periodic drift is fundamentally invisible-a world model property, not a detector limitation-because the prediction error signal itself contains no extractable drift information. In fragile environments, collapse before awareness creates a regime where drift is lethal but undetectable by any internal monitor. These findings reframe self-monitoring boundaries in RL agents from simple emergent properties to structured interactions, providing both theoretical insight and practical guidance for deploying self-monitoring agents in non-stationary environments.</p><p>Looking ahead, extending these findings to multi-agent settings-where one agent's corrupted perception propagates through interaction-and to vision-based world models (e.g., RSSM, transformer-based) are natural next steps.</p><p>Code availability. Code will be made available upon publication.  </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Sharp sigmoid threshold across detector configurations (linear drift). Detection rate vs. drift intensity for five Doubt Index configurations in HalfCheetah and Ant. All configurations exhibit the same sigmoid shape; the horizontal position (ε * ) shifts with detector parameters. Full results in Appendix A.</figDesc><graphic coords="4,83.70,90.00,444.60,171.75" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Signal detection theory analysis. Each point represents a detector configuration; x-axis is baseline false positive rate (detection rate at ε=10 -4 ), y-axis is detection rate at reference intensity ε=0.003 (chosen as it falls within the transition region for most environments). HalfCheetah and Ant show clear separation (upper-left clustering); Walker2d falls along the diagonal (no detector achieves good sensitivity-specificity separation); Hopper shows a wide spread reflecting the fundamental tradeoff.</figDesc><graphic coords="6,83.70,90.00,444.60,317.57" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Hopper: Collapse Before Awareness analysis. Red triangles show mean time to policy collapse from drift onset; blue squares show mean time to detection (TTA) for episodes where detection occurs. Hopper collapses at nearly all drift intensities; detection only succeeds when T detection &lt; T collapse (high ε). At ε=0.05, collapse occurs within 25 steps and no detector fires.</figDesc><graphic coords="11,83.70,90.00,444.60,217.69" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Top: Prediction error time series for three conditions (HalfCheetah, ε=0.01). After drift onset (dashed line), linear drift PE diverges while sinusoidal PE remains within baseline range. Bottom: Power spectral density (post-drift). Linear drift exhibits 201.6× baseline power; sinusoidal drift is indistinguishable from baseline (0.8×).</figDesc><graphic coords="12,83.70,234.67,444.59,294.83" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="10,83.70,125.97,444.60,317.57" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 :</head><label>1</label><figDesc>Overview of experimental findings across four MuJoCo environments.</figDesc><table><row><cell cols="5">Environment Baseline MSE ε  *  range (DI) Sinusoidal CBA?</cell></row><row><cell>HalfCheetah</cell><cell>0.163</cell><cell>0.0003-0.004</cell><cell>Blind</cell><cell>No</cell></row><row><cell>Hopper</cell><cell>0.002</cell><cell>0.007-0.012</cell><cell>Blind</cell><cell>Yes</cell></row><row><cell>Walker2d</cell><cell>0.095</cell><cell>0.0003-0.003</cell><cell>Blind</cell><cell>Mild</cell></row><row><cell>Ant</cell><cell>0.025</cell><cell>0.0001-0.001</cell><cell>Blind</cell><cell>No</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 :</head><label>2</label><figDesc>Per-environment power law fits: ε * ∝ z α • W β (Doubt Index, excluding W =1). The exponent α quantifies sensitivity to the z-threshold and reflects the noise floor's tail structure.</figDesc><table><row><cell>Environment</cell><cell>R 2</cell><cell cols="3">α (z exponent) β (W exponent) Interpretation</cell></row><row><cell cols="2">HalfCheetah 0.97</cell><cell>0.43</cell><cell>0.23</cell><cell>Clean noise floor; ε  *  insensitive to z</cell></row><row><cell>Hopper</cell><cell>0.95</cell><cell>0.44</cell><cell>0.45</cell><cell>Moderate sensitivity</cell></row><row><cell>Ant</cell><cell>0.89</cell><cell>1.35</cell><cell>0.46</cell><cell>Heavy-tailed noise; ε  *  highly sensitive to z</cell></row><row><cell>Walker2d</cell><cell>0.78</cell><cell>0.61</cell><cell>1.00</cell><cell>High baseline FPR (see Section 4.6)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc>. Classical change-point methods (CUSUM,Page-Hinkley)  are fundamentally unsuited for monitoring world model PE signals: in our experiments, CUSUM achieves &gt;95% false positive rate even without drift, because these methods assume stationary process noise while the PE signal exhibits inherent non-stationarity from the world model's approximation errors. This underscores the necessity of threshold-based detectors calibrated to the learned noise floor. Drift injection is synthetic (additive, axis-aligned); naturalistic distribution shift may exhibit different threshold behavior. We do not investigate causal attribution-the agent detects that something changed but not what.</figDesc><table /></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A Detection Rate Curves (All Detectors)</head><p>Figure <ref type="figure">3</ref>: Detection rate vs. drift intensity (linear profile) for all detector configurations across four environments. Each curve represents a distinct detector with specific hyperparameters. The sigmoid shape is consistent across all detectors; the horizontal position (ε * ) varies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B Per-Environment Regression Details</head><p>Full regression results for the power law model log 10 (ε * ) = a+α•log 10 (z)+β•log 10 (W ), including predicted vs. actual ε * for each detector configuration, are available in the supplementary materials (epsilon_star_analysis.json).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C Walker2d FPR Correction</head><p>For each detector configuration, baseline FPR is measured as the detection rate at ε = 10 -4 . Corrected detection rates are computed as:</p><p>After correction, ε * converges to ≈0.002 across all Doubt Index configurations (corrected R 2 = 0.36, reflecting convergence rather than poor fit).</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">A baseline for detecting misclassified and out-of-distribution examples in neural networks</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hendrycks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Gimpel</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<publisher>ICLR</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Metacognition in computation: A selected research review</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">T</forename><surname>Cox</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">169</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="104" to="141" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Experimental and theoretical approaches to conscious processing</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dehaene</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J.-P</forename><surname>Changeux</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuron</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="200" to="227" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">World models for anomaly detection during model-based reinforcement learning inference</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Domberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Schildbach</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2503.02552</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The free-energy principle: A unified brain theory?</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Friston</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Reviews Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="127" to="138" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A survey on concept drift adaptation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Žliobaitė</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bifet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pechenizkiy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bouchachia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Computing Surveys</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="37" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Green</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Swets</surname></persName>
+		</author>
+		<title level="m">Signal Detection Theory and Psychophysics</title>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Wiley</publisher>
+			<date type="published" when="1966">1966</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schmidhuber</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1803.10122</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">World models. arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hafner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pasukonis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lillicrap</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2301.04104</idno>
+		<title level="m">Mastering diverse domains through world models</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Consciousness, dreams, and inference: The Cartesian theatre revisited</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Hobson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Friston</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Consciousness Studies</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="6" to="32" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Learning under concept drift: A review</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Knowledge and Data Engineering</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2346" to="2363" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Continuous inspection schemes</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S</forename><surname>Page</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">1/2</biblScope>
+			<biblScope unit="page" from="100" to="115" />
+			<date type="published" when="1954">1954</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Inference about the change-point in a sequence of random variables</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">V</forename><surname>Hinkley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="17" />
+			<date type="published" when="1970">1970</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Mastering Atari, Go, Chess and Shogi by planning with a learned model</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schrittwieser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Antonoglou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hubert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">588</biblScope>
+			<biblScope unit="page" from="604" to="609" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schulman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wolski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Klimov</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1707.06347</idno>
+		<title level="m">Proximal policy optimization algorithms</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Being You: A New Science of Consciousness</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Seth</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<pubPlace>Dutton</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

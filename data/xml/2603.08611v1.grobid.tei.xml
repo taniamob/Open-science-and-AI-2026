@@ -1,0 +1,2168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">FOMO-3D: Using Vision Foundation Models for Long-Tailed 3D Object Detection</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2026-03-09">9 Mar 2026</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Anqi</forename><forename type="middle">Joyce</forename><surname>Yang</surname></persName>
+							<email>jyang@waabi.ai</email>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Toronto</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">James</forename><surname>Tu</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Toronto</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Nikita</forename><surname>Dvornik</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Enxu</forename><surname>Li</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Toronto</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Raquel</forename><surname>Urtasun</surname></persName>
+							<email>urtasun@waabi.ai</email>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Toronto</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<address>
+									<settlement>Waabi</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff2">
+								<orgName type="laboratory">⨉T Box Decoder LiDAR Sweeps LiDAR Encoder LiDAR BEV Feature Map LiDAR Decoder LiDAR 3D Proposals Multi-View Images Metric3D Depth Maps Img Feature Map</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">FOMO-3D: Using Vision Foundation Models for Long-Tailed 3D Object Detection</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2026-03-09">9 Mar 2026</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">4BD7E75D02DE4F5B07351535D728A013</idno>
+					<idno type="arXiv">arXiv:2603.08611v1[cs.CV]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2026-03-10T18:11+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Long-Tailed 3D Object Detection</term>
+					<term>Vision Foundation Model</term>
+					<term>Multimodal Fusion</term>
+					<term>Autonomous Vehicles</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>In order to navigate complex traffic environments, self-driving vehicles must recognize many semantic classes pertaining to vulnerable road users or traffic control devices. However, many safety-critical objects (e.g., construction worker) appear infrequently in nominal traffic conditions, leading to a severe shortage of training examples from driving data alone. Recent vision foundation models, which are trained on a large corpus of data, can serve as a good source of external prior knowledge to improve generalization. We propose FOMO-3D, the first multi-modal 3D detector to leverage vision foundation models for longtailed 3D detection. Specifically, FOMO-3D exploits rich semantic and depth priors from OWLv2 and Metric3Dv2 within a two-stage detection paradigm that first generates proposals with a LiDAR-based branch and a novel camera-based branch, and refines them with attention especially to image features from OWL. Evaluations on real-world driving data show that using rich priors from vision foundation models with careful multi-modal fusion designs leads to large gains for long-tailed 3D detection. Project website is at https://waabi.ai/fomo3d/.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text>
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>3D object detection is a fundamental task in modern self-driving systems. State-of-the-art perception models <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2]</ref> can detect and classify common object classes such as car and truck reliably well thanks to their frequent occurrences in large-scale urban driving datasets <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4]</ref>. However, these methods struggle to recognize long-tailed object classes such as construction worker and debris due to a lack of supervision <ref type="bibr" target="#b4">[5]</ref>. To deploy a self-driving vehicle safely on the road, it is crucial to detect both common and rare objects well, regardless of their frequency in the real world. Long-tailed class imbalance has been a long-standing challenge in the deep learning and computer vision community <ref type="bibr" target="#b5">[6]</ref>. Classic class-rebalancing methods such as resampling <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8]</ref> and loss reweighting <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b10">11]</ref> are popular due to their simplicity. However, they are still restricted to the original data with few long-tailed examples, resulting in limited success often at the expense of common class performance <ref type="bibr" target="#b4">[5]</ref>. On the other hand, information augmentation techniques <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b12">13]</ref> address class imbalance by leveraging external training data or pre-trained models <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b14">15]</ref>. Inspired by this, we seek external priors to improve long-tailed 3D detection (LT3D) in self-driving. Recent vision foundation models trained on an enormous corpus of internet images <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17]</ref> exhibit remarkable zero-shot generalization on many vision tasks including detection <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19]</ref>, depth estimation <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b20">21]</ref> and classification <ref type="bibr" target="#b15">[16]</ref>. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, vision foundation models bring promising prior knowledge for long-tailed detection. However, they are limited to processing only images, while state-of-the-art 3D object detectors <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b22">23]</ref> and LT3D methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24]</ref> rely heavily on Li-DAR for its accurate 3D spatial information. Exploiting vision foundation models for 3D detection therefore requires processing their 2D priors with 3D sensory inputs. Fusing LiDAR and camera data is challenging due to their inherently different modalities. On top of this, vision foundation model priors are expressed through different representations, specifically 2D detections <ref type="bibr" target="#b18">[19]</ref>, image features <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b18">19]</ref> and dense depths <ref type="bibr" target="#b20">[21]</ref>. Existing multi-modal fusion techniques <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b26">27]</ref> cannot accommodate all of these representations simultaneously. Thus, we need a novel fusion method.</p><p>To this end, we present FOMO-3D, a multi-modal 3D detector equipped with novel fusion methods to incorporate different types of 2D image priors in conjunction with raw sensor inputs. In particular, we adopt OWLv2 <ref type="bibr" target="#b18">[19]</ref> for zero-shot 2D object detection and Metric3Dv2 <ref type="bibr" target="#b20">[21]</ref> for dense monocular depth estimation. Built upon a two-stage detection paradigm <ref type="bibr" target="#b27">[28]</ref>, our novel camera proposal branch performs early fusion by lifting OWL detections into 3D, using Metric3D depth and LiDAR to recover accurate 3D geometry. On the other hand, our proposal refinement performs feature-level fusion with OWL features to exploit the full semantic and contextual information in images. To the best of our knowledge, FOMO-3D is the first to incorporate prior knowledge from foundation models for closed-set multi-modal 3D detection. We conduct thorough experiments on an urban driving dataset nuScenes <ref type="bibr" target="#b2">[3]</ref> and an in-house highway dataset, both with heavily imbalanced real-world object class distributions. Our evaluations show that FOMO-3D outperforms existing methods trained on driving datasets alone, illustrating how powerful foundation model priors, combined with our careful multi-modal fusion designs, can lead to superior performances on long-tailed 3D detection.</p><p>2 Related Works 3D Object Detection is a well-studied problem in self-driving. Mainstream 3D detectors can be divided into LiDAR-based, camera-based, and multi-modal detectors. Modern 3D LiDAR detectors <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b28">29,</ref><ref type="bibr" target="#b29">30,</ref><ref type="bibr" target="#b30">31]</ref> are inspired by image-based 2D detectors <ref type="bibr" target="#b31">[32,</ref><ref type="bibr" target="#b32">33]</ref>, and usually adopt convolution in the Bird's-Eye-View (BEV) or 3D space to process LiDAR point clouds. On the other hand, camera-based 3D detectors <ref type="bibr" target="#b33">[34,</ref><ref type="bibr" target="#b34">35,</ref><ref type="bibr" target="#b35">36,</ref><ref type="bibr" target="#b36">37,</ref><ref type="bibr" target="#b37">38,</ref><ref type="bibr" target="#b38">39]</ref> commonly learn depth estimation to lift image information to process in 3D, but have limited success because monocular depth estimation from images alone is very challenging. Multi-modal detectors take both LiDAR and camera data as input.</p><p>Early-fusion methods rely on mature detectors for one primary sensor modality, and fuse the other modality in the input space: they either decorate LiDAR points with image features to apply LiDARbased detection <ref type="bibr" target="#b39">[40,</ref><ref type="bibr" target="#b40">41]</ref>, or leverage mature 2D detectors and use point clouds to localize 2D detections in 3D <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b26">27]</ref>. However, these methods are constrained to the primary sensor modality and suffer from LiDAR sparsity or 2D detection errors. Feature-fusion methods fuse image and LiDAR features in the BEV space <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b41">42]</ref> or image and LiDAR space <ref type="bibr" target="#b42">[43]</ref> to decode detections, but they are not designed to incorporate detection outputs from mature detectors. On the contrary, late-fusion methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b43">44]</ref> directly aggregate detections from a LiDAR detector and a camera detector, but usually involve sophisticated heuristics to correct detection errors. Orthogonally, with the success of the two-stage transformer-based 2D detector DETR <ref type="bibr" target="#b27">[28]</ref>, there has been a trend <ref type="bibr" target="#b24">[25,</ref><ref type="bibr" target="#b44">45,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b22">23]</ref> to represent each object as a query token and perform attention to sensor features to refine them.</p><p>Our multi-modal design can be seen as a combination of all these techniques: we use a two-stage DETR-like framework, where the proposal stage consists of a mature LiDAR-based detector and a novel camera-focused 3D detector that performs early fusion on mature 2D detections, and the refinement stage uses attention and feature-level fusion to refine aggregated multi-modal proposals.</p><p>Long-Tailed Perception has been widely studied in image classifications and detection. Classrebalancing <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b10">11]</ref> and information augmentation techniques <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref> are mainstream solutions to tackle this problem <ref type="bibr" target="#b5">[6]</ref>. <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24]</ref> are pioneering works to study long-tailed 3D detec-  tion with simple heuristics. <ref type="bibr" target="#b4">[5]</ref> proposes using a single group-free classifier header for detectors, training with parent object classes for additional supervision, and a multi-modal filtering (MMF) technique which removes LiDAR detections that are not in the vicinity of any 3D camera-based detections. <ref type="bibr" target="#b23">[24]</ref> proposes a multi-modal late fusion (MMLF) heuristic that alters LiDAR detection scores based on image-space associations with 2D detections. Both MMF and MMLF assume high recall from LiDAR detections, which is not true for sparsely observed small and/or distant objects. Furthermore, the camera detectors still suffer from limited training examples of long-tailed objects in driving datasets. In this work we explore using pre-trained foundation models as an external prior.</p><p>Vision foundation models such as CLIP <ref type="bibr" target="#b15">[16]</ref>, DINOv2 <ref type="bibr" target="#b16">[17]</ref> and EVA-02 <ref type="bibr" target="#b45">[46]</ref> are trained on an enormous amount of internet data and contain rich semantic features. Open-vocabulary 2D object detectors <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b46">47,</ref><ref type="bibr" target="#b47">48]</ref> are additionally trained with 2D detection labels and exhibit strong zeroshot 2D detection performance on user-given text prompts. Similarly, monocular depth foundation models <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b48">49,</ref><ref type="bibr" target="#b49">50]</ref> based on DINO-v2 and fine-tuned with labelled depth data also have exceptional zero-shot depth estimations. To leverage vision foundation models, existing camera-based 3D detectors <ref type="bibr" target="#b50">[51,</ref><ref type="bibr" target="#b51">52,</ref><ref type="bibr" target="#b52">53]</ref> observed gains by directly using EVA-02 as the image feature extractor backbone, and existing multi-modal 3D detectors <ref type="bibr" target="#b53">[54,</ref><ref type="bibr" target="#b54">55,</ref><ref type="bibr" target="#b55">56]</ref> focus on open-set 3D detection and seek to detect novel classes without labels in the training set. By contrast, we are the first multi-modal method to utilize vision foundation models in the traditional closed-set 3D detection setting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Background: Vision Foundation Models and Query-based Object Attention</head><p>To improve long-tailed 3D object detection, our method employs two vision foundation models: OWLv2 <ref type="bibr" target="#b18">[19]</ref> for 2D object detection and Metric3Dv2 <ref type="bibr" target="#b20">[21]</ref> for monocular depth estimation. We refer to these models as OWL and M3D for brevity in the rest of this paper.</p><p>OWL is a vision-language model for open-vocabulary object detection. Given an image and any user-specified text prompts, OWL generates corresponding 2D bounding boxes. Due to an enormous training corpus of over 10 billion image-text pairs, OWL generalizes exceptionally well to rare objects in traffic environments. OWL consists of two parallel encoders for image and text inputs. The image is first partitioned into patches of p × p pixels, and a lightweight convolutional neural network (CNN) encodes each patch into a transformer token. The tokens are then processed through a vision transformer <ref type="bibr" target="#b56">[57]</ref> to output a final set of tokens F owl . Each token vector f owl,i subsequently decodes a 2D bounding box b owl,i = (u i , v i , w i , h i ) and a semantic embedding. On the other hand, the text transformer takes a set of input text prompts T and encodes each text prompt t j into the same embedding space. As a result, each box-prompt pair can be assigned an affinity score based on the similarity of their respective embeddings.</p><p>Metric3D is a monocular metric depth estimation model that takes input image I ∈ Z H×W and camera intrinsics K ∈ R 3×3 , and outputs depth map D ∈ R H×W , expressing the depth of every  image pixel in meters. Pixel-level dense depths are particularly useful in self-driving datasets, where typically only sparse depths are available via projecting LiDAR points onto the images. M3D is also trained on a large corpus of data including real and synthetic depth datasets, and exhibits remarkable zero-shot generalization performance on outdoor self-driving images.</p><p>Query-based object detection first introduced by DETR <ref type="bibr" target="#b27">[28]</ref>, represents each object with a learnable object query which is defined as a feature vector q f ∈ R d accompanied by an initial 3D position q p = (q x , q y , q z ). Object queries incorporate various types of information in the scene through transformer attention layers. At a high level, an attention layer takes as input an object query q f and information F from the scene (e.g., LiDAR features, image features, other object queries) and outputs an updated query q ′ f by attending <ref type="bibr" target="#b57">[58]</ref> to F. Details of attention can be found in supp. After q f encodes geometry and semantic information of the object, a multi-layer-perception (MLP) typically processes q f to decode a 3D bounding box and the object class. FOMO-3D adopts query-based attention in the camera proposal branch and in the refinement stage.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">FOMO-3D: Using Vision Foundation Models for Multi-Modal 3D Detection</head><p>FOMO-3D utilizes 3 types of foundation model outputs: image detections and image features from OWL, and dense pixel-level depths from M3D. An overall architecture of how FOMO-3D fuses this information with sensory inputs is shown in Fig. <ref type="figure" target="#fig_1">2</ref>. Built upon a two-stage detection paradigm <ref type="bibr" target="#b27">[28,</ref><ref type="bibr" target="#b44">45,</ref><ref type="bibr" target="#b22">23]</ref>, FOMO-3D first generates detection proposals through two complementary LiDAR and image branches. The LiDAR branch processes input point clouds to generate accurate 3D detections. Complementary to LiDAR, the camera branch generates proposals for rare or small objects that are better distinguished in the image. Here we lift OWL detections into 3D, utilizing dense M3D depths and a novel frustum-based fusion module. We then refine the multi-modal proposals through query-based detection to incorporate additional information from LiDAR, OWL features, and object relationships. Finally, queries are decoded into object classes and BEV bounding boxes (x, y, z, l, w, h, θ), denoting centroid (x, y, z), box size (l, w, h) and heading θ.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.1">LiDAR Proposal Generation</head><p>Following modern multi-modal 3D detectors, we employ a LiDAR proposal branch to process point cloud inputs with accurate spatial information. Specifically, we leverage the single-stage Center-Point <ref type="bibr" target="#b0">[1]</ref> architecture, which, given a LiDAR point cloud (along with aggregated past few sweeps), first voxelizes the points into V x × V y × V z voxels, then applies a convolution-based backbone and a feature pyramid network to obtain a 8× down-sampled BEV feature map F lidar ∈ R V ′ x ×V ′ y ×D . Finally, following <ref type="bibr" target="#b4">[5]</ref>, we employ a group-free header design, which uses a single class header and a single regression header to output multi-class 3D proposals. The class header decodes feature map</p><formula xml:id="formula_0">F lidar into a heatmap H ∈ R V ′ x ×V ′ y ×C</formula><p>, where C is the total number of object classes, and each h ijk ∈ H indicates the probability of an object of class k present at BEV pixel (i, j). The regression header decodes 3D bounding box centroids, dimensions, heading angles and velocities for each BEV coordinate (i, j) in the feature map. See <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b4">5]</ref> for more details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.2">Camera Proposal Generation</head><p>In parallel, FOMO-3D employs a camera proposal branch to discover rare and/or small objects that LiDAR may have missed due to a lack of semantic information or observability. To this end, OWL's exceptional 2D detection capabilities and objectness priors motivate us to use image detections directly. Thus, we design a camera proposal branch which transforms 2D OWL detections to 3D bounding boxes. At a high level, we first initialize each 2D detection as a 3D object query (Sec. 3.1). We then exploit additional spatial information from LiDAR and dense depth images, to provide positional and geometric information to the object queries. Here we introduce a novel frustum-based attention mechanism to incorporate relevant information within the 3D frustum of each 2D box. A summary is illustrated in Fig. <ref type="figure" target="#fig_3">3</ref> and we detail our methodology below. Query Initialization. Following Sec. 3.1, for an input image I and text prompts T pertraining to classes of interest, we first extract OWL token features and 2D detections {(f owl,i , b owl,i )} = OWL(I, T ). Please see supp. for details on prompting. Next, we convert OWL detections into 3D object queries. For each detection b owl,i with token feature f owl,i , we initialize the query feature q f,i = f owl,i + PE([u i , v i , d i ]) + PE(q p,i ), where PE is the positional encoding function <ref type="bibr" target="#b57">[58]</ref>,</p><formula xml:id="formula_1">d i = D(u i , v i )</formula><p>is the M3D depth estimate, and the initial 3D query position</p><formula xml:id="formula_2">q p,i = [R|t] -1 K -1 [u i , v i , d i ] T<label>(1)</label></formula><p>is recovered from unprojecting the 2D box center (u i , v i ) into 3D using M3D depth d i , camera intrinsics K ∈ R 3×3 , and extrinsics [R|t] with rotation R ∈ SO(3) and translation t ∈ R 3 . BEV Feature Construction. The initial query features q f,i are derived from the image and lack 3D geometry information. Moreover, the 3D position of the query may have errors stemming from depth estimation d i . To address this, our camera proposal branch exploits additional 3D information expressed explicitly in LiDAR features F lidar and implicitly through dense image depths D. Specifically, we generate an image-based pseudo point cloud as follows: for each image pixel (u, v) inside any 2D OWL detection, we follow Eq. 1 to lift it to 3D. Each lifted point is accompanied by an OWL feature vector at F owl (u, v) to preserve semantics information. The image-based feature point cloud is then voxelized and encoded into a BEV feature map</p><formula xml:id="formula_3">F owl,bev ∈ R V ′ x ×V ′ y ×D</formula><p>similarly to F lidar . We fuse the two BEV feature maps into F bev by simply concatenating F bev (i, j) = F lidar (i, j)||F owl,bev (i, j) at each BEV pixel (i, j). Frustum Attention. Intuitively, refining the query's 3D position primarily involves correcting the estimated depth by leveraging information along the camera frustum. Therefore, following by <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b26">27]</ref>, we lift the cropped image region from the 2D box b i = (u i , v i , w i , h i ) to obtain a 3D box frustum, which defines the search range to locate the object in 3D. To further efficiently sample BEV features inside the box frustum, we construct a mesh grid of</p><formula xml:id="formula_4">(2N x + 1) × (2N y + 1) × (2N z + 1)</formula><p>sampling locations around the initial 3D query position q p,i :</p><formula xml:id="formula_5">P i =    Unproject     u i + p 2Nx • w i v i + q 2Ny • h i d i + r 2Nz • δ   , K, [R|t]   p = -N x , . . . , N x q = -N y , . . . , N y r = -N z , . . . , N z    (<label>2</label></formula><formula xml:id="formula_6">)</formula><p>where δ is a hyperparameter denoting the search distance along the depth direction, and the unprojection function follows Eq. 1. For each p ℓ = (x ℓ , y ℓ , z ℓ ) ∈ P i unprojected from (u ℓ , v ℓ , d ℓ ), we retrieve feature from F bev via bilinear sampling at BEV location (x ℓ , y ℓ ). We further add spatial information relative to the query point with positional encoding and derive</p><formula xml:id="formula_7">g ℓ = F bev (x ℓ , y ℓ ) + PE([q x,i -x ℓ , q y,i -y ℓ , q z,i -z ℓ ]) + PE([u i -u ℓ , v i -v ℓ , d i -d ℓ ]</formula><p>). Now, for each object query f q,i representing a 2D OWL detection, we apply a series of transformer layers to fuse information from the scene. Specifically, we first apply object self-attention that attends f q,i to all object queries {f q,i } in the image to leverage object relationship cues. Then, we cross-attend with the sampled BEV features {g ℓ } to effectively incorporate 3D information in the object frustum. We finally use lightweight MLP layers to decode 3D box parameters and a class vector c i ∈ [0, 1] C for C classes, where c ik denotes the probability that object i belongs to class k.</p><p>At the end of the proposal stage, we derive a set of LiDAR-based 3D proposals and a set of camerabased 3D proposals. For the multi-camera setting, we apply the camera proposal model to each camera image independently. To fuse these multi-modal proposals, we simply concatenate them and deduplicate with non-maximum suppression (NMS).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.3">Attention-based Refinement Stage</head><p>Next, we refine aggregated multi-modal proposals using more general attention mechanisms to the whole scene. We initialize each proposal as an object query as follows: the initial 3D position q p is assigned directly with the 3D centroid of the proposal, and the query feature q f is either F lidar (i, j) or the final camera query token that decodes the proposal. Then, each query attends to all object queries, image features F owl , and LiDAR features F lidar through a series of attention layers. We follow <ref type="bibr" target="#b44">[45,</ref><ref type="bibr" target="#b22">23]</ref> for object self-attention to exploit scene-level object relationship cues, and LiDARcross attention for additional information from the point cloud. Please see supp. for more details.</p><p>To further leverage rich semantic priors from OWL that is essential for object classification, we perform multi-camera cross-attention to F owl . Note that different from the camera branch where we attend to lifted image features in the BEV, here we attend to the 2D features in the image space directly. Concretely, for each object query, we project its initial 3D position q p onto each camera image j with intrinsics K j and extrinsics [R j |t j ] to obtain image-space coordinates (u j , v j ) = K j [R j |t j ]q p . Then, for each valid projection (u j , v j ) inside the image, we use a simple MLP to decode 2D offsets from q f , sample F owl,j at these locations, and perform deformable attention <ref type="bibr" target="#b58">[59]</ref> to obtain an aggregated feature h j . Then, we fuse all {h j } via mean-pooling, and update the query feature q f in the rest of the transformer layer. Please see supp. for more mathematical details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.4">Training and Loss Functions</head><p>In accordance with two-stage detection models, we follow a two-stage training schedule, which trains FOMO-3D's multi-modal proposals branches first, and then trains the refinement stage with a frozen proposal module. For the LiDAR-branch, we follow the standard box regression loss from <ref type="bibr" target="#b0">[1]</ref> and group-free heatmap sigmoid focal loss from <ref type="bibr" target="#b4">[5]</ref>. For the attention-based camera proposal branch and refinement module, we adopt the DETR-style set loss function <ref type="bibr" target="#b27">[28,</ref><ref type="bibr" target="#b44">45]</ref>, with the modification that for camera proposals, we add a hard constraint in the matching based on the intuition that the corresponding ground-truth for a camera proposal (if the ground-truth exists) must fall in the same object frustum. Please see Fig. <ref type="figure" target="#fig_3">3</ref> for an illustration, and supp. for full details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>We conduct extensive experiments on two real-world datasets to understand the effectiveness of our approach. In this section, we compare FOMO-3D against existing works on both datasets, and perform ablations to justify our application of foundation models. Datasets and Metrics. We experiment with two real-world driving datasets with diverse LT3D challenges pertaining to urban and highway settings. First, for the urban setting, following <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24]</ref>, we use the nuScenes dataset <ref type="bibr" target="#b2">[3]</ref>. nuScenes contains 1000 diverse urban scenes captured by a top 360 • LiDAR and six cameras. We evaluate on all 18 annotated classes in the validation set, which are divided into three groups Many, Medium and Few based on commonality. Following <ref type="bibr" target="#b4">[5]</ref>, the evaluation range-of-interest is set to be 50 meters relative to the self-driving vehicle (SDV) for vehicles, 40 meters for pedestrians, and 30 meters for movable objects. To further evaluate longrange detection, we use an in-house Highway dataset, which contains over 1700 20-second long training sequences and 400 evaluation sequences, mostly collected from U.S. highways. We use one front camera for our experiments, with a detection region of interest of [0, 230] meters longitudinally and [-50, 50] meters laterally relative to the SDV. We focus on 5 object classes: vehicle, towed object (e.g., trailer), cone, person and cyclist, where the latter two classes are severely under-represented in the dataset due to their infrequencies on highways. Fig. <ref type="figure">4</ref> illustrates the class distribution and class imbalance on these two datasets. Following previous works <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24]</ref>, we adopt the mean average precision (mAP) metric over distance thresholds of [0.5, 1, 2, 4] meters. For the aggregated metrics (e.g., Many, Few), we take the average of mAPs from relevant object classes.</p><p>Implementation details. We adopt pre-trained OWL-Large <ref type="bibr" target="#b18">[19]</ref> and M3D-Giant <ref type="bibr" target="#b20">[21]</ref> for best performance. In the camera proposal branch, we set N x , N y , N z , δ to 1,1,20,10 for nuScenes and increase the depth search range N z = 50, δ = 60 for Highway. Frustum-based attention employs object self-attention followed by BEV feature map attention, for 2 repetitions. We follow sinusoidal positional encoding according to <ref type="bibr" target="#b57">[58]</ref>. Our refinement stage employs 2 repetitions of object-image-LiDAR attention blocks. The frustum constraint in Fig. <ref type="figure" target="#fig_3">3</ref> requires the angle to camera origin between proposal and ground truth to be less than 0.03 radians. Please refer to supp. for additional details.</p><p>Comparison with SOTA methods on nuScenes. We compare with previous works in the LT3D benchmark <ref type="bibr" target="#b23">[24]</ref>, including SOTA general end-to-end learnable 3D detectors, and SOTA LT3D methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24]</ref> that address long-tailed performance specifically.  cones and adults. Furthermore, per-class mAP results in Table <ref type="table" target="#tab_2">2</ref> show that FOMO-3D outperforms previous LT3D methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24]</ref> for almost every object class. Fig. <ref type="figure" target="#fig_4">6</ref> shows a qualitative result where FOMO-3D successfully incorporates information from OWL to detect a child.  Long-range evaluation on Highway. Table <ref type="table" target="#tab_5">3</ref> evaluates detectors on the long-range Highway dataset. FOMO-L is CenterPoint <ref type="bibr" target="#b0">[1]</ref> with refinement. For fair comparison, we re-implemented the multi-modal filtering (MMF * <ref type="bibr" target="#b4">[5]</ref>) and latefusion (MMLF * <ref type="bibr" target="#b23">[24]</ref>) techniques with the Li-DAR detections in Row 1 and camera detections from OWL. For MMF that relies on 3D camera detection centroids, we lift 2D OWL detection center to 3D with M3D depths. For long-range objects, M3D has bigger depth errors, leading to worse performance for MMF. In addition, occlusions in busy highway traffic render image-space association unreliable, resulting in smaller gains from MMLF. By contrast, FOMO-3D continues to exhibit large gains on all classes, showcasing its ability to generalize to harder long-range scenarios.  Ablation studies. To understand the effects of our multi-modal fusion design, we perform ablations on both datasets. M 1 → M 2 in Table 4 and the positive gains of FOMO-3D (no cam props) in Fig. <ref type="figure" target="#fig_5">5</ref> show that adding camera attention on top of a LiDAR-only model leads to big gains due to rich image semantics. Furthermore, M 2 → M 4 and the gains of FOMO-3D over FOMO-3D (no cam props) in Fig. <ref type="figure" target="#fig_5">5</ref> show that camera proposals are indeed complementary and help capture less common and/or distant objects. Finally, to justify using OWL for long-tailed detection, we replace OWL with a 2D detector DETR <ref type="bibr" target="#b27">[28]</ref> trained on the 2D detection dataset nuImages which follows similar class distributions as nuScenes. The improvement from M 3 to M 4 in Table <ref type="table" target="#tab_6">4</ref> shows that FOMO-3D's success on rare classes is indeed attributed to rich priors from OWL.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>In this paper, we propose FOMO-3D, the first multi-modal 3D detector that leverages vision foundation models for closed-set 3D object detection. Specifically, our two-stage model incorporates image-based detections and features from OWL and monocular metric depths from Metric3D with a novel camera-based proposal branch and cross-camera-attention in the refinement stage. On both urban and highway datasets, FOMO-3D outperforms SOTA 3D detectors and LT3D methods especially on long-tailed classes and long-range objects, and ablation experiments validate the effectiveness of foundation model priors and our multi-modal fusion design. With the ability to apply powerful foundation models to a downstream long-tailed 3D object detection problem, FOMO-3D is a step towards safer autonomy systems capable of generalizing to rare or unseen events.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Limitations</head><p>FOMO-3D employs heavy image foundation models OWL-Large <ref type="bibr" target="#b18">[19]</ref> and Metric3D-Giant <ref type="bibr" target="#b20">[21]</ref>, which are computationally expensive to run, especially with multiple cameras. As a result, FOMO-3D does not run in real-time, and is therefore better suited as an offline perception algorithm <ref type="bibr" target="#b59">[60,</ref><ref type="bibr" target="#b60">61,</ref><ref type="bibr" target="#b61">62]</ref> which allows a higher compute budget with applications in auto-labelling. To leverage foundation model priors for onboard detection, a future direction is to distill foundation models into smaller models that can run in real-time. Furthermore, in this work, we take off-the-shelf OWL and Metric3D models and use their zero-shot results directly. Although the zero-shot detections and depth estimations are impressive, they are not perfect. One failure mode is that OWL semantics may be misaligned with respect to specific class definitions in a particular dataset. For instance, classes that are described similarly in OWL's internet training corpus (e.g., truck and trailer) may need to be distinguished in driving datasets.</p><p>As a result, pre-trained models may confuse these classes and introduce an information bottleneck compared to processing input images directly. To address this limitation, a future direction is to finetune pre-trained foundation models on the downstream dataset, with the goal of improving semantic alignment while preserving useful priors for long-tailed classes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Materials A Method Details</head><p>A.1 Background: Attention</p><p>We use the attention <ref type="bibr" target="#b57">[58]</ref> mechanism heavily to update object queries with other information in the scene. Here, we provide mathematical details of the attention operation. Attention takes as input a set of N object queries</p><formula xml:id="formula_8">Q ∈ R N ×d , a set of M keys K ∈ R M ×r and a set of M values V ∈ R M ×s to output A = softmax Q KT √ d k Ṽ ∈ R N ×d . (<label>3</label></formula><formula xml:id="formula_9">)</formula><p>d k is the softmax temperature term, and for brevity</p><formula xml:id="formula_10">Q ∈ R N ×l , K ∈ R M ×l , Ṽ ∈ R M ×d denote linear projections of Q, K, V with Q = QP q , K = KP k</formula><p>, and Ṽ = VP v , and</p><formula xml:id="formula_11">P q ∈ R d×l , P k ∈ R r×l , P v ∈ R s×d respectively.</formula><p>Output A is designed to capture values that are relevant to queries, based on the similarity between keys and queries. The attention function is general and object queries can absorb different types of information depending on the choice of K and V. In practice, a multi-head attention (MHA) variation is used for increased expressivity. MHA simply projects Q, K, V with m different projections onto latent dimensions of sizes k/m, k/m, v/m. Then the outputs of attention for each projection are concatenated together. Under popular transformer nomenclature, we also refer to queries, keys, and values generally as tokens.</p><p>Transformer layers typically use feed-forward networks (FFN) in conjunction with attention for best results <ref type="bibr" target="#b57">[58,</ref><ref type="bibr" target="#b44">45]</ref>. Following common transformer architectures, we update object queries following:</p><formula xml:id="formula_12">Ã = LN(Q + MHA(Q, K, V))<label>(4)</label></formula><formula xml:id="formula_13">Q ← LN( Ã + FFN( Ã)).<label>(5)</label></formula><p>Here LN denotes layer normalization <ref type="bibr" target="#b62">[63]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.2 Attention-based Refinement Stage</head><p>Following the two-stage detection paradigm, in a second refinement stage FOMO-3D employs query-based detection to refine all proposals from the first stage. Different from the frustum-based attentions catered to refining camera proposals in the object frustum region, here we rely on more general attention mechanisms to refine the multi-modal proposals in the BEV space. Refinement starts with initializing object queries. From the LiDAR proposal branch, each proposal initializes a query using the feature vector from F lidar which decoded the box. On the other hand, queries from the camera proposal branch are taken directly for continued refinement. We then take the union of these proposals and apply non-maximum suppression (NMS) to remove duplicates. Queries are then refined iteratively through a series of transformer decoder layers. We adopt several kinds of attention layers to model complex correlations between object queries and multi-sensor inputs in an end-to-end manner, which we detail below. LiDAR Cross-Attention adopts the BEV LiDAR feature map F lidar and flattens the feature map to obtain a set of key-value LiDAR feature tokens. Concretely, for</p><formula xml:id="formula_14">F lidar ∈ R V ′ x ×V ′</formula><p>y ×D , we flatten it to obtain V ′</p><p>x × V ′ y LiDAR feature tokens each with dimension D, and we set the values to be the same as the keys in the attention operation. Different from the LiDAR-based proposal stage where each proposal is decoded from features from convolution-backbones and subject to receptive field constraints, the attention mechanism enables object queries to attend to spatially distant LiDAR tokens. This allows object queries to incorporate additional information from the input point cloud. However, since the feature map is a dense representation of the scene, attending to all LiDAR feature tokens is infeasible to scale. For efficiency reasons, we employ deformable attention <ref type="bibr" target="#b58">[59]</ref> -learning a set of spatial offsets which is added to the object query's location to derive a sparse set of key-value LiDAR tokens. Specifically, for each object query q f with initial 3D position q p = (p x , p y , p z ), we apply a lightweight MLP to q f to decode a few 2D spatial offsets {(δ x,i , δ y,i )}, and add to the BEV location (p x , p y ) to obtain {(p x + δ x,i , p y + δ y,i )}. We then locate the associated LiDAR tokens at these BEV locations, and apply the attention mechanism in Sec. A.1 between each query q f and the sampled LiDAR tokens. Camera Cross-Attention incorporates information from cameras, which contains rich semantic cues essential for accurately classifying the object queries. In this attention layer object queries cross attend to OWL tokens F owl which capture semantic and contextual information from the image. Note that we attend to the 2D camera features here, different from the previous attention to image features lifted to BEV. To handle multi-camera inputs, we factorize the attention over each individual camera, and apply adaptive mean pooling to aggregate features across multiple cameras. Specifically, for a proposal with initial 3D position q p with all valid projections {(u j , v j )} in camera j, we first apply an MLP to query feature q f to obtain a set of 2D offsets {(δ u,j,l , δ v,j,l )} unique to each (u j , v j ). Then, we retrieve the set of OWL tokens at each offset location F (cj ) owl = {F owl,j (u j + δ u,j,l , v j + δ v,j,l )}, and MHA at each valid camera yields</p><formula xml:id="formula_15">A (cj ) = MHA(Q, F (cj ) owl , F (cj ) owl )<label>(6)</label></formula><p>We next apply mean pooling among all attention matrices across valid cameras:</p><formula xml:id="formula_16">A = Mean({A (cj ) }).<label>(7)</label></formula><p>Then we apply A to update q f based on Eq. 4.</p><p>Object Self-Attention designates object queries as the key-value tokens as well. This enables the model to exploit correlations between different traffic participants in the scene. The semantic class, object pose, and geometry can all be improved via object relationship cues. For example, children on the street are often accompanied by adults while parking lot vehicles are usually parked in parallel. However, exploiting object relationship cues is highly reliant on understanding the relative positions between object queries. As positional information has yet to be encoded upstream, we also encode each query with positional embedding q (i) ← q (i) + PE(q</p><formula xml:id="formula_17">(i)</formula><p>p ) prior to self-attention. Our positional encoding applies sinusoidal positional encoding from <ref type="bibr" target="#b57">[58]</ref> followed by a 3-layer MLP. Our transformer architecture interleaves multiple repetitions of LiDAR-camera-object attention "blocks". This facilitates learning complex relationships between diverse traffic participants and multi-sensory inputs. Moreover, after each block, we decode each object query into a detection via a lightweight MLP. This enables more dense supervision on intermediate outputs of the transformer, while also allowing refinement to happen in an iterative manner.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A.3 Loss Functions</head><p>For the camera-based proposal branch and refinement stage, we apply DETR-style matching <ref type="bibr" target="#b27">[28]</ref> to pair ground-truth labels with detections, and compute a box regression loss and a classification loss. For the camera-based proposal, we additionally add a frustum-based hard constraint during matching. We next detail the matching and losses. Given N 3D detections and M ground-truths, we first apply Hungarian-based matching based on a cost matrix C ∈ R N ×M where C ij indicates the score between the detection b</p><formula xml:id="formula_18">i = [x i , y i , z i , l i , w i , h i , θ i ] and ground-truth b * j = [x * j , y * j , z * j , l * j , w * j , h * j , θ * j ]. Specifically, C ij = λ giou GIoU(b i , b * j ) + λ l2 ∥Loc(b i ) -Loc(b * j )∥ 2 , (<label>8</label></formula><formula xml:id="formula_19">)</formula><p>where GIoU is the 3D generalized IoU <ref type="bibr" target="#b63">[64]</ref>, Loc(b) = [x, y, z, l, w, h] is the centroid and dimension of the 3D box, and λ giou and λ l2 are hyperparameters.</p><p>In addition, for the camera proposal branch, we compute whether the ground-truth b * j falls inside the object frustum of detection b i as follows: we first transform both 3D boxes from the reference frame to the camera frame with the camera extrinsics matrix  </p><formula xml:id="formula_20">) -Φ(b * cam j )∥ 2 &lt; α ϕ ) and (∥z cam i -z * cam j ∥ &lt; α z ) (9)</formula><p>where the first condition compares the camera angles between the detection and ground-truth and constrains the differences to be under a threshold α ϕ (set to 0.03 radians in practice), and the second condition constrains the depths of the two boxes to be no more than α z apart (set to 5 meters for nuScenes and 30 meters for Highway). If in frustum(i, j) is False, we set the corresponding C ij to inf. With the computed cost matrix C, we conduct Hungarian Matching to assign a ground-truth box for each detection. If the associated matching cost is inf, we discard the matching and the associated detection will remain unmatched. For each matched detection, ground-truth pair (b i , b * i ), we compute a box regression loss:</p><formula xml:id="formula_21">L box (b i , b * i ) = -λ giou GIoU(b i , b * i ) (10) + λ xyz (∥x i -x * i ∥ + ∥y i -y * i ∥ + ∥z i -z * i ∥) (11) + λ lwh (∥l i -l * i ∥ + ∥w i -w * i ∥ + ∥h i -h * i ∥)<label>(12)</label></formula><p>where λ xyz = 0.2 and λ lwh = 0.04 in practice.</p><p>In addition, for each detection i with object class logits c i ∈ R C where C is the total number of object classes, we set the ground-truth c * i ∈ R C as follows: if the detection is matched to a groundtruth label with class 1 ≤ k ≤ C, then we set c * i to be a one-hot vector with 1 at the k th position, otherwise c * i is a zero vector. Then</p><formula xml:id="formula_22">L class (c i , c * i ) = SigmoidFocalLoss(c i , c * i )<label>(13)</label></formula><p>where the SigmoidFocalLoss first applies sigmoid to the logits c i and then uses focal loss <ref type="bibr" target="#b8">[9]</ref>. The final loss is</p><formula xml:id="formula_23">L = 1 N * i L box (b i , b * i ) + 1 N i L class (c i , c * i )<label>(14)</label></formula><p>where N * is the number of matched pairs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B Implementation Details</head><p>B.1 OWL: Cropping and Prompting OWL <ref type="bibr" target="#b18">[19]</ref> usually preprocesses the input image by resizing it to a square image of fixed dimensions (e.g., 960 by 960 pixels for OWL-Medium, and 1008 by 1008 pixels for OWL-Large). If the input image is a rectangular image, it will pad it to a square and then resize. To avoid information loss from padding, we preprocess our input images preemptively by cropping the rectangular input image into multiple square crops. For nuScenes, each input image is 1600 pixels by 900 pixels, and we apply two crops by cropping the leftmost 900 × 900 pixels and rightmost 900 × 900 pixels of the input image, and run inference with the two crops separately. We merge the 2D bounding boxes from the two crops with concatenation and image-based 2D non-maximum suppression with iou threshold 0.85. For camera-based proposal, each box is associated with the feature embedding from the respective crop. For camera-attention during refinement, we zero-pad the feature map of each crop to the original dimension (right-pad for the leftmost crop, and left-pad for the rightmost crop), stack them, and apply a lightweight convolutional network to generate a unified feature map of the same size as the input rectangular image. The convolutional network is:</p><formula xml:id="formula_24">x_proj = Conv2d(in=768*2, out=256, kernel=1)(x) x = Conv2d(in=256, out=256, kernel=3)(x_proj) x = GroupNorm(num_groups=8, out=256)(x) x = GELU(x) x = Conv2d(in=256, out=256, kernel=3)(x_proj) x = GroupNorm(num_groups=8, out=256)(x) x = GELU(x) x = x + x_proj</formula><p>To prompt OWL for 2D detection boxes, we use the following prompts for nuScenes: If an object class corresponds to multiple prompts, then all boxes associated with the prompt belong to this object class. Note that we do not have prompts for barriers and debris because OWL tends to generate a lot of false positives for these two classes. In addition, we found that "a person" is a better prompt for adult. OWL outputs each 2D box with an affinity score for each prompt. We take the argmax of the affinity scores and assigns the object class associated with the argmax prompt to be the class of the 2D box. Before feeding the list of boxes to the camera proposal branch, we additionally perform per-prompt score-based filtering to filter out low confidence 2D boxes. Specifically, we set the confidence score threshold to 0.2 for car, truck, trailer, bus, construction vehicle, police vehicle, stroller, scooter and wheel barrow, 0.15 for bicycle, motorcycle, wheelchair, traffic cone, dolley and shopping cart, 0.1 for ambulance, person, child, construction worker, police officer, and 0.3 for garbage bin.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B.2 Proposal Stage</head><p>For nuScenes, we use LiDAR points within distance [-54, 54], [-54, 54] and [-5, 3] meters for the x, y, z directions respectively. For Highway, we use a longer x range [0, 235] meters along x. For voxelization of both LiDAR and image point clouds, the voxel size is (7.5, 7.5, 20) centimeters along x, y and z. for nuScenes and 15.625cm for Highway.</p><p>For the LiDAR-only branch, we follow the group-free wide-512-channel header CenterPoint implementation from the LT3D codebase <ref type="bibr" target="#b4">[5]</ref> exactly. We did not apply the hierarchical heuristic as we did not find it to help with performance in our experiments. For the camera-based branch, we provide more details of the model architecture.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Query Initialization and Image Point Cloud Encoding</head><p>The camera proposal branch first applies OWL to the input image with details specified in Sec. B.1 to obtain a set of 2D detection boxes with associated OWL tokens that decode each box. Each OWL token is a feature vector ∈ R 1024 . For each box, we sample the M3D depth map at the 2D box center with nearest neighbor interpolation to obtain the initial depth. As M3D can produce degenerate zero depths, we discard the 2D box if the depth is &lt; 0.5. The remaining 2D boxes are initialized as queries to lift to 3D.</p><p>For each pixel inside any valid 2D detection, we query the M3D depth map and lift the pixel if the associated M3D depth confidence is &gt; 0.5. The lifted pixels form a 3D pseudo image-based feature point cloud, where each point is associated with an OWL token of dimension 1024. We then process the lifted point cloud with a feature encoder and construct a BEV image-based feature map. The feature encoder consists of a sparse voxelizer followed by a sparse 3D feature extractor. The voxelizer first voxelizes the 3D point cloud into V x × V y × V z voxels based on the range of interest and voxel sizes specified above. It applies a linear layer to each point-based feature to reduce feature dimension from 1024 to 256, and encodes the xyz position with positional encoding followed by an MLP to add to the reduced feature. To aggregate point features inside each voxel cell, we mean pool all available point features as the voxel feature. The resulting sparse voxel feature grid is of dimension V x × V y × V z × 256. We use a sparse voxelizer that only keeps track of occupied voxels for memory efficiency. Then, we apply the sparse 3D encoder to the image-based voxel feature grid. To simplify notation, we use Conv3d(in=128, out=128, k=3, s=1, bias=False) to denote a 3D sparse convolution layer with input channels 128, output channels 128, kernel size 3 × 3 × 3, stride size 1×1×1 and no bias. The sparse 3D encoder consists of Conv3d(in=256, out=128, k=3, s=1, bias=False), followed by BatchNorm (BN), ReLU, and two repetitions of Conv3d(in=128, out=128, k=3, s=1, bias=False) → BN → ReLU → Conv3d(in=128, out=128, k=3, s=1, bias=False) → BN. For each voxel cell, we further apply a linear layer to the feature with input and output dim 128 and bias=True. Next, we squash the 3D voxel grid to BEV by mean pooling the features along the z dimension. The BEV feature map goes through a dense block of Conv2d(in=128, out=128, k=3, s=1, bias=False) → BN → Conv2d(in=128, out=128, k=3, s=1, bias=False) → BN → ReLU, and then a sequence of Conv2d(in=128, out=256, k=1, s=1, bias=False) → BN → ReLU to finally decode a BEV feature map of size V x × V y × 256.</p><p>Frustum-based Attention For each feature initialized with OWL tokens ∈ R 1024 and positional encodings over xyz and uvd, we first apply a lightweight MLP with Linear(in=1024, out=512, bias=False) → LayerNorm (LN) → ReLU → Linear(in=512, out=512, bias=False) → LN → ReLU → Linear(in=512, out=512, bias=False) to reduce feature dimension to 512.</p><p>To include classification information from OWL, we also encode the OWL class logits that represent the affinity score between the detection and all prompts. We encode the OWL class logits with an MLP that has a similar architecture to the feature dimension reduction MLP except the input dimension of the very first linear layer is the number of OWL prompts. We add these two encodings as the updated query feature to be used in the attention operations.</p><p>To efficiently sample features from the merged LiDAR and image BEV feature map, we sample along frustum rays as detailed in the main paper. We then apply two repetitions of attention blocks, where each block starts with an object-to-object self-attention, and an object-to-sampled-BEV-features cross-attention. The attention layer <ref type="bibr" target="#b57">[58]</ref> follows Sec. A.1 and is a standard pytorch TransformerEncoderLayer layer with the attention operation followed by two FFNs. Both the object-to-object self-attention and the object-to-BEV-feature cross-attention layers are a single transformer encoder block with 8 attention heads, input and FFN feature dimension 512, bias=False and dropout=0. Multi-Modal Proposal Aggregation At the end of the multi-modal proposal stage, we first filter dense LiDAR proposals as follows: we filter out detections with confidence ≤ 0.01 (confidence at BEV pixel (i, j) is max k Sigmoid(h ijk )), apply non-maximum suppression (NMS) with IoU threshold 0.2 in the 2D BEV space, and keep top 500 detections with the highest confidence scores. Next, we aggregate both LiDAR and camera 3D proposals with BEV-space NMS with IoU threshold 0.2. In addition, in practice we found that for nuScenes the camera-proposal branch gives the best performance when it is used to lift small and/or rare objects complementary to the LiDAR proposals.</p><p>Effect of frustum attention. In the camera-based proposal branch, we initialize object queries with 2D OWL detection bounding boxes and associated OWL features and M3D depths, refine the features with frustum-based attention, and decode 3D bounding boxes as camera-based proposals.</p><p>Here we ablate the effect of frustum attention with an experiment where the camera-based proposal branch learns to decode a 3D box directly from the initial query features. Table <ref type="table">6</ref> and Table <ref type="table">7</ref> show results on the nuScenes and Highway datasets respectively and demonstrate that overall frustum attention is effective, especially on rare classes and in the long-range Highway setting with more apparent depth errors.  Effect of frustum attention sampling grid resolution. In frustum attention, we construct a mesh grid to sample from frustum features for computational efficiency. Table <ref type="table" target="#tab_10">8</ref> showcases how various combinations of (N x , N y , N z , δ) affect the final performance. Better performance is achieved with more sampling rays (i.e., bigger N x and N y ) but with heavier computation costs. We chose the hyperparameters in the final row to balance computation and performance.  Effect of frustum-based matching loss. When training the camera proposals, we add a hard constraint in detection to ground-truth label matching that the ground-truth label must be present in the detection frustum space. We perform an ablation on the nuScenes dataset to compare with using regular IoU-based matching without the frustum-based hard constraint. Table <ref type="table" target="#tab_12">9</ref> shows that with this hard constraint (M 1 → M 2 ), the mAP for Few is two points better.  Alternative depths. To understand the effect of using M3D depths, we ablate (1) replacing M3D with (sparse) LiDAR depths, and (2) rescaling M3D depths with LiDAR depths with bucketized median scaling at near (0m-10m), medium (10-30m), and far (30m+) ranges. Table <ref type="table" target="#tab_14">10</ref> shows that using dense M3D depths directly on the nuScenes dataset has the best results.  Effect of refinement modules. To understand how each type of refinement attention in the refinement stage contributes to the final performance, Table <ref type="table" target="#tab_16">11</ref> ablates each attention type in the nuScenes dataset, and shows that all of them are key to maximizing performance on long-tailed detection.</p><p>Ablation table on Highway. In the main paper, the ablation results for the Highway dataset is presented in terms of net gains over the LiDAR-only model in Fig. <ref type="figure" target="#fig_5">5</ref>. For completeness, Table <ref type="table" target="#tab_17">12</ref> shows the detailed numerical metrics for the lidar-only model, lidar-proposal + multi-modal refinement, and multi-modal proposal + multi-modal refinement respectively. The results show that both camera proposal and camera attention during refinement are helpful.  Alternative fusion strategies. In the proposal stage of FOMO-3D, we adopt a late-fusion design where we merge the LiDAR-based 3D proposals and camera-based 3D proposals in the end. Alternatively, due to the effectiveness of feature-level fusion in BEVFusion <ref type="bibr" target="#b1">[2]</ref>, it is also worth exploring feature-level fusion with OWL features in the proposal stage. We therefore designed two alternative proposal-level fusion strategies for exploration.</p><p>In the first method, we replace the proposal stage with a dense feature lifting design, where we lift every OWL token in the image with respective M3D depths, fuse with the LiDAR features with concatenation, and decode a single set of 3D proposals to be refined later. This fusion strategy is similar to BEVFusion, except we are only using a single depth from M3D instead of learning and lifting with a depth distribution.</p><p>In the second method, instead of lifting with the M3D depth directly, we use a learned depth based on M3D. We first create 20 scale factors that are based on uniform intervals in [0.5, 1.5), i.e., s = [0.5, 0.55, 0.6, . . . , 1.45] ∈ R 20 . Each scale factor will be multiplied with the original M3D depth to create 20 depth buckets. We then apply a lightweight MLP on each OWL token to learn p ∈ R 20 , representing the confidence of each depth bucket. We finally aggregate the learned depth with</p><formula xml:id="formula_25">d ′ = 1 20 19 i=0 s i • p i • d</formula><p>where d is the original M3D depth, and p i is the respective confidence in Softmax(p). We lift every OWL token with the learned depth, fuse with the LiDAR features similar to the first method and decode a single set of proposals. Compared to the first method, the second method has more flexibility to correct depth errors. Unlike BEVFusion, we do not lift the same token with multiple depths due to memory constraints. Table <ref type="table" target="#tab_19">13</ref> shows the comparison for these two alternative fusion methods against FOMO-3D on the nuScenes dataset. Interestingly, the feature-level fusion method that uses M3D depth directly (M 1 ) has comparable performance with FOMO-3D, thanks to M3D's accurate zero-shot depths in the short evaluation range of nuScenes <ref type="bibr" target="#b20">[21]</ref>. The learned depth version (M 2 ) is slightly worse, possibly due to the fact that the learned depth introduces more noises to the already accurate M3D initializations. In addition, it's worth noting that M 1 has noticeably better performance on the Medium group, which implies that directly using all features without any prompting combined with feature-level  As addressed in the limitations section, improving run time for real-time applications is an exciting direction for future research (e.g., distillation into a smaller model).</p><p>Additional qualitative results for nuScenes. Fig. <ref type="figure" target="#fig_9">7</ref>, 8, 9, 10 and 11 provide more qualitative examples on the nuScenes dataset. In general, the LiDAR-only model often misses small and/or rare objects such as cone, adult and construction worker. OWL has great zero-shot detections for these small objects, but can have false positives especially when there are true positives in the local region. FOMO-3D is able to recover small and/or rare objects in most cases, with some misclassification and false positive failure cases discussed in Fig. <ref type="figure" target="#fig_10">8</ref> and Fig. <ref type="figure" target="#fig_13">11</ref>.</p><p>Additional qualitative results for Highway.      OWL produces many duplicated construction workers. While FOMO-3D lifts them to the correct construction worker size, it fails to reject some duplicated false positives in the final detections. This is challenging case because these positives are adjacent to true positives in the image. False positives can be generated in the camera proposal stage directly from OWL proposals. In the refinement stage, many proposals which project onto the same image region could pick up features describing construction workers, and multiple proposals can attend to the same image features to generate these false positives. Designing a more optimal false positive and duplicate removal method is a future direction to improve FOMO-3D.   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ground-Truth Labels OWL 2D Detection</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Missed cone detection FP vehicle detections</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>LiDAR-Only 3D Detection</head></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>FOMOFigure 1 :</head><label>1</label><figDesc>Figure 1: Vision foundation models OWL (left) and Metric3D (middle) show remarkable zero-shot generalization capabilities for 2D object detection and monocular depth estimation. Our model FOMO-3D (right) incorporates these strong priors along with LiDAR for multi-modal 3D object detection.</figDesc><graphic coords="2,357.68,72.70,192.20,68.09" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Overview of FOMO-3D, which leverages vision foundation models OWL and Metric3D, and follows a two-stage paradigm with a multi-modal proposal stage and an attention-based refinement stage.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: [Left] Lifting OWL camera proposals to 3D bounding boxes. We first unproject pixels inside the camera proposal into 3D using Metric3D depths, and then encode the points into a BEV feature map. Each OWL token subsequently attends to fused LiDAR and image BEV features sampled along the frustum. [Right] During supervision, camera proposals are only matched to ground truth boxes inside the object frustum.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: [Qualitative results] OWL successfully detects the child but has a false positive cone. The LiDARonly model misclassifies the child as an adult. FOMO-3D fuses multi-modal information and foundation model priors to generate an accurate 3D bounding box of the child, while rejecting the false positive cone.</figDesc><graphic coords="8,119.04,73.36,134.62,75.68" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 5</head><label>5</label><figDesc>further illustrates per-class mAP gains against FOMO-L within three distance buckets [0, 50],<ref type="bibr" target="#b49">[50,</ref> 200]  and[200, 230]  meters. The cyclist class is not shown due to their absence in certain distance buckets. FOMO-3D's consistent gains with increasing distances especially for rare classes highlight its strengths in long-range detection.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head></head><label></label><figDesc>[R|t] to obtain b cam i and b * cam j . Then for any bounding box b in the camera frame, we compute the angles between the box and the camera as Φ(b) = (arctan(x/z), arctan(y/z)), and then we can derive in frustum(i, j) = (∥Φ(b cam</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>i</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Fig. 12 ,FOMO</head><label>12</label><figDesc>13, 14 and 15  provide qualitative examples on the Highway dataset. In general, although OWL has impressive zero-shot 2D detection boxes, it oftentimes outputs false positives and confuses vehicle and towed object classes. LiDAR-only detections learn to distinguish between vehicles and towed objects in most cases, but confuse cone with person (due to their similar cylindrical geometries and smaller sizes) and tends to output false positives around spurious LiDAR points. FOMO-3D is able to leverage both 2D and 3D information for correct detection and classification. For truck/trailer confusion, FOMO-3D shares similar failure cases as the LiDAR-only model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 7 :FOMO</head><label>7</label><figDesc>Figure 7: [nuScenes] Qualitative example #1. In this example, we added OWL prompts for barriers to illustrate low-quality zero-shot barrier detections. As shown in the visualization, OWL produces many false positive barriers without capturing most of the true positive barriers. As a result we removed barrier prompting from the camera proposal branch. In addition, the LiDAR-only model misses small objects such as cones and construction workers, but OWL and FOMO-3D are able to detect them successfully.</figDesc><graphic coords="23,9.09,393.71,297.15,166.69" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Figure 8 :FOMO</head><label>8</label><figDesc>Figure 8: [nuScenes] Qualitative example #2. In this example, OWL correctly detects and classifies an adult and an emergency vehicle. The LiDAR-only model misses the adult (because it is small and sparsely observed by LiDAR) and misclassifies the emergency vehicle as car due to lack of semantics. FOMO-3D is able to successfully detect the adult thanks to OWL, but fails to retain the original OWL emergency vehicle classification.</figDesc><graphic coords="24,9.09,398.69,296.75,166.69" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Figure 9 :FOMO</head><label>9</label><figDesc>Figure 9: [nuScenes] Qualitative example #3. In this example, the LiDAR-only model fails to detect a cone and a construction vehicle, while FOMO-3D is able to detect and classify them successfully.</figDesc><graphic coords="25,9.09,408.65,296.75,166.69" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>Figure 10 :FOMO</head><label>10</label><figDesc>Figure 10: [nuScenes] Qualitative example #4. In this example, the LiDAR-only model fails to detect an adult and a construction worker and also outputs a false positive bicycle, while FOMO-3D is able to detect them successfully while rejecting the false positive.</figDesc><graphic coords="26,8.89,403.67,297.15,166.35" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Figure 11 :</head><label>11</label><figDesc>Figure 11: [nuScenes] Qualitative example #5. This example shows a failure case of OWL and FOMO-3D.OWL produces many duplicated construction workers. While FOMO-3D lifts them to the correct construction worker size, it fails to reject some duplicated false positives in the final detections. This is challenging case because these positives are adjacent to true positives in the image. False positives can be generated in the camera proposal stage directly from OWL proposals. In the refinement stage, many proposals which project onto the same image region could pick up features describing construction workers, and multiple proposals can attend to the same image features to generate these false positives. Designing a more optimal false positive and duplicate removal method is a future direction to improve FOMO-3D.</figDesc><graphic coords="27,305.84,378.76,297.15,166.35" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head>Figure 13 :</head><label>13</label><figDesc>Figure 13: [Highway] Qualitative example #2. Green denotes vehicle. Purple denotes towed object. Blue denotes cyclists. Orange denotes person. Yellow denotes cone. Opacity of the boxes reflects detection confidence (higher confidence corresponds to more solid lines). FP=False Positive. This example shows a very dense traffic scene on the highway. OWL has impressive zero-shot 2D detections, but it also outputs a few false positives. LiDAR-only model mis-classifies a vehicle as a cyclist, and also draws a false positive cone. FOMO-3D is able to correctly classify in most cases without having many false positives. All three detectors miss two cones on the right.</figDesc><graphic coords="29,8.50,382.13,297.41,168.54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_16"><head>Figure 14 :</head><label>14</label><figDesc>Figure 14: [Highway] Qualitative example #3. Green denotes vehicle. Purple denotes towed object. Blue denotes cyclists. Orange denotes person. Yellow denotes cone. Opacity of the boxes reflects detection confidence (higher confidence corresponds to more solid lines). FP=False Positive. Unlike OWL, FOMO-3D is able to utilize 3D LiDAR information and the training data to distinguish between vehicles and towed objects. FOMO-3D is able to effectively fuse 3D and 2D information and learn from the training data. It also outputs fewer false positives compared to the LiDAR-only model.</figDesc><graphic coords="30,8.52,387.11,297.41,168.54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="28,8.74,396.73,296.97,168.54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 :</head><label>1</label><figDesc>Real-world class distribution on nuScenes and Highway. Both exhibit severe class imbalances.</figDesc><table><row><cell>Method</cell><cell>Modality</cell><cell>All</cell><cell>Many</cell><cell>Medium</cell><cell>Few</cell></row><row><cell>FCOS3D [36]</cell><cell>C</cell><cell>20.9</cell><cell>39.0</cell><cell>23.3</cell><cell>2.9</cell></row><row><cell>BEVFormer [38]</cell><cell>C</cell><cell>27.3</cell><cell>52.3</cell><cell>31.6</cell><cell>1.4</cell></row><row><cell>CenterPoint (Group-Free) [1, 5]</cell><cell>L</cell><cell>39.2</cell><cell>76.4</cell><cell>43.1</cell><cell>3.5</cell></row><row><cell>CenterPoint (Group-Free, w/ Hier.) [1, 5]</cell><cell>L</cell><cell>40.4</cell><cell>77.1</cell><cell>45.1</cell><cell>4.3</cell></row><row><cell>BEVFusion-L [2]</cell><cell>L</cell><cell>42.5</cell><cell>72.5</cell><cell>48.0</cell><cell>10.6</cell></row><row><cell>TransFusion [25]</cell><cell>L+C</cell><cell>39.8</cell><cell>73.9</cell><cell>41.2</cell><cell>9.8</cell></row><row><cell>BEVFusion [2]</cell><cell>L+C</cell><cell>45.5</cell><cell>75.5</cell><cell>52.0</cell><cell>12.8</cell></row><row><cell>CMT [22]</cell><cell>L+C</cell><cell>44.4</cell><cell>79.9</cell><cell>53.0</cell><cell>4.8</cell></row><row><cell>MMF [5]</cell><cell>L+C</cell><cell>43.6</cell><cell>77.1</cell><cell>49.0</cell><cell>9.4</cell></row><row><cell>MMF  *  (w/ OWL + M3D) [5]</cell><cell>L+C</cell><cell>44.3</cell><cell>77.7</cell><cell>46.9</cell><cell>13.4</cell></row><row><cell>MMLF [24]</cell><cell>L+C</cell><cell>51.4</cell><cell>77.9</cell><cell>59.4</cell><cell>20.0</cell></row><row><cell>FOMO-3D</cell><cell>L+C</cell><cell>54.6</cell><cell>79.9</cell><cell>59.6</cell><cell>27.6</cell></row></table><note><p><p>[nuScenes]  </p>Comparison with SOTA methods (measured by mAP). L denotes LiDAR, C denotes camera and * is our re-implementation. Our method FOMO-3D improves LT3D performance across all object groups, with a significant 7.6 mAP gain in Few and a 2.0 mAP gain in Many.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 :</head><label>2</label><figDesc>[nuScenes] Class-specific mAP. CV = Construction Vehicle. MC = Motorcycle. CW = Construction Worker. PP = Pushable-Pullable. Medium and Few classes are in blue.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc>Table1shows that FOMO-3D outperforms all existing methods on every aggregated object group. Not only does FOMO-3D boost the mAP of Few from previous best 20.0 to 27.6, it also performs better on small objects in Many, e.g.,</figDesc><table><row><cell></cell><cell></cell><cell>OWL</cell><cell cols="2">Centerpoint (LiDAR Only)</cell><cell>FOMO-3D</cell></row><row><cell>mAP vs LiDAR-Only</cell><cell>0 5 10 15</cell><cell cols="2">MMLF FOMO-3D (no cam prop) FOMO-3D</cell></row><row><cell></cell><cell></cell><cell>[0, 50] [50, 200][200, 230] Vehicle</cell><cell>[0, 50] [50, 200][200, 230] Towed Object</cell><cell>[0, 50] [50, 200][200, 230] Cone</cell><cell>[0, 50] [50, 200][200, 230] Person</cell></row></table><note><p><p><p>Figure 5: [Highway] Per-class mAP gains over the base LiDAR-only detector, for distance buckets [0, 50], [50, 200] and [200, 230] meters relatives to the SDV. FOMO-3D (no cam prop) corresponds to M2 in Table</p>4</p>.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 3 :</head><label>3</label><figDesc>[Highway] mAP comparisons.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 4 :</head><label>4</label><figDesc></figDesc><table><row><cell cols="7">Method Prop Refine Cam Model All Many Medium Few</cell></row><row><cell>M1</cell><cell>L</cell><cell>L</cell><cell>-</cell><cell>42.3 76.3</cell><cell>45.1</cell><cell>10.6</cell></row><row><cell>M2</cell><cell>L</cell><cell>L+C</cell><cell>OWL</cell><cell>53.4 80.1</cell><cell>59.0</cell><cell>24.7</cell></row><row><cell>M3</cell><cell cols="4">L+C L+C DETR [28] 47.9 80.1</cell><cell>55.6</cell><cell>12.2</cell></row><row><cell>M4</cell><cell cols="2">L+C L+C</cell><cell>OWL</cell><cell>54.6 79.9</cell><cell>59.6</cell><cell>27.6</cell></row></table><note><p>[nuScenes] Ablations.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8"><head></head><label></label><figDesc>1.At the end of each attention block, we use a lightweight MLP to decode the 3D proposal box parameters. The box decoder is a sequence of Linear(in=512, out=256, bias=False) → LN → ReLU → Linear(in=256, out=256, bias=False) → LN → ReLU → Linear(in=256, out=8, bias=False) to decode (x, y, z, l, w, h, sin(θ), cos(θ)). After the first attention block, we update the query 3D position with the decoded 3D box, and re-sample the BEV features based on the new 3D position to cross-attend to in the second attention block. After the second attention block, we additionally use a lightweight MLP to decode the proposal object class heatmap c ∈ R C . The class decoder is a sequence of Linear(in=512, out=256, bias=False) → LN → ReLU → Linear(in=256, out=256, bias=False) → LN → ReLU → Linear(in=256, out=C, bias=False) to output a logit for each of the C classes. During training, we supervise both sets of the 3D proposal box parameters, and the final class logits.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10"><head>Table 8 :</head><label>8</label><figDesc>[nuScenes] Sampling resolution ablation.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_12"><head>Table 9 :</head><label>9</label><figDesc>[nuScenes] Ablation for frustum-based matching constraint in camera proposals.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_14"><head>Table 10 :</head><label>10</label><figDesc>[nuScenes] LiDAR depth ablations.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_16"><head>Table 11 :</head><label>11</label><figDesc>[nuScenes] Refinement type ablations.</figDesc><table><row><cell>Method</cell><cell>Prop</cell><cell>Refine</cell><cell>Vehicle</cell><cell>Towed</cell><cell>Cone</cell><cell>Person</cell><cell>Cyclist</cell></row><row><cell>M1</cell><cell>L</cell><cell>L</cell><cell>86.7</cell><cell>73.5</cell><cell>82.6</cell><cell>58.4</cell><cell>74.8</cell></row><row><cell>M2</cell><cell>L</cell><cell>L+C</cell><cell>86.9</cell><cell>73.8</cell><cell>86.0</cell><cell>65.4</cell><cell>77.7</cell></row><row><cell>M3</cell><cell>L+C</cell><cell>L+C</cell><cell>87.2</cell><cell>74.2</cell><cell>88.9</cell><cell>68.7</cell><cell>79.3</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_17"><head>Table 12 :</head><label>12</label><figDesc>[Highway]  Ablations.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_19"><head>Table 13 :</head><label>13</label><figDesc>[nuScenes] Explorations for alternative proposal-level fusion strategies.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_21"><head>Table 14 :</head><label>14</label><figDesc>[Highway]  Explorations for alternative proposal-level fusion strategies. fusion could be very effective at exploiting 2D foundation models when the depth is very accurate. However, on the Highway dataset with challenging longer evaluation ranges, M3D has more errors especially in the far range. As a result, naively lifting and fusing with M3D depths results in worse performance for M 1 in Table14, and learned depths over depth buckets M 2 is overall better than M 1 . FOMO-3D outperforms both these baselines, which shows that FOMO-3D's camera proposal branch with more elaborate 3D lifting and attention-based multi-modal fusion strategies is more robust to M3D depth errors and more effective at lifting 2D foundation model priors to 3D. and 131.2ms for refinement, with 18G memory usage. This is comparable with 80.7ms for CenterPoint, 321.4ms for FUTR3D, 119.2ms for BEVFusion reported in the BEVFusion paper<ref type="bibr" target="#b1">[2]</ref>. These modules can be optimized with custom CUDA kernels to reduce the gap with e.g. BEVFusion, but real-time inference is beyond the scope of this work. Based on the official implementation of M3D-Giant and HuggingFace implementation of OWLv2-Large, inference time is 1590 ms per image for M3D and 834 ms per image crop (960 × 960 pixels) for OWL. During training and evaluation, we cache M3D/OWL outputs as a one-time pre-processing step, so these costs are negligible.</figDesc><table><row><cell>Latency and Memory. Benchmarking nuScenes inference on an RTX A5000 GPU yields 79.8ms</cell></row><row><cell>for lidar proposal (CenterPoint), 97.7ms for camera proposal (excluding foundation model infer-</cell></row><row><cell>ence),</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgments</head><p>We sincerely thank our anonymous reviewers for their helpful comments and suggestions. We also thank the <rs type="institution">Waabi team</rs> for their invaluable assistance and support.</p></div>
+			</div>			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C Additional Experiments Results</head><p>nuScenes results with hierarchical mAP. Following previous works <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b23">24]</ref>, we also adopt the hierarchical mAPs (mAP H ), which reports mAP with three tiers based on the least common ancestor (LCA) distance: LCA0 is the standard per-class mAP, LCA1 treats each object class as one of the three parent classes (vehicle, pedestrian, movable object) and tolerates misclassification with sibling classes, and LCA2 measures class-agnostic mAP on nuScenes. Table <ref type="table">5</ref> showcases per-class hierarchical metrics, comparing ours against previous LT3D methods [ <ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b23">24]</ref>. FOMO-3D improves the hierarchical metrics for almost all classes in all three LCA tiers, showing that FOMO-3D is not only better at fine-grained classification for almost all object classes at LCA0, but also improves the general localization and detection quality at LCA1 and LCA2 as well.      </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Center-based 3d object detection and tracking</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Krahenbuhl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2021-06">June 2021</date>
+			<biblScope unit="page" from="11784" to="11793" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Bevfusion: Multi-task multisensor fusion with unified bird&apos;s-eye view representation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Amini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE International Conference on Robotics and Automation (ICRA)</title>
+		<imprint>
+			<biblScope unit="page">2023</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">nuscenes: A multi-modal dataset for autonomous driving</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Caesar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Bankiti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">E</forename><surname>Liong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Krishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Baldan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Beijbom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Scalability in perception for autonomous driving: Waymo open dataset</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kretzschmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Dotiwalla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chouard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Patnaik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tsui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Caine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF conference on computer vision and pattern recognition</title>
+		<meeting>the IEEE/CVF conference on computer vision and pattern recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="2446" to="2454" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Towards long tailed 3d detection</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Peri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dave</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ramanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CoRL</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Deep long-tailed learning: A survey</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hooi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TPAMI.2023.3268118</idno>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Pattern Analysis and Machine Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="10795" to="10816" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A multiple resampling method for learning from imbalanced data sets</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Estabrooks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Jo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Japkowicz</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.0824-7935.2004.t01-1-00228.x</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Computational Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="18" to="36" />
+			<date type="published" when="2004-02">02 2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Decoupling representation and classifier for long-tailed recognition</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rohrbach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gordo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kalantidis</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=r1gRTCVFvB" />
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Focal loss for dense object detection</title>
+		<author>
+			<persName><forename type="first">T.-Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE international conference on computer vision</title>
+		<meeting>the IEEE international conference on computer vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2980" to="2988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Class-balanced loss based on effective number of samples</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T.-Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Belongie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF conference on computer vision and pattern recognition</title>
+		<meeting>the IEEE/CVF conference on computer vision and pattern recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="9268" to="9277" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Balanced meta-softmax for long-tailed visual recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in neural information processing systems</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="4175" to="4186" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Rethinking the value of labels for improving class-imbalanced learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 34th International Conference on Neural Information Processing Systems, NIPS &apos;20</title>
+		<meeting>the 34th International Conference on Neural Information Processing Systems, NIPS &apos;20<address><addrLine>Red Hook, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Curran Associates Inc</publisher>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Learning from multiple experts: Self-paced knowledge distillation for long-tailed classification</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58558-7_15</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58558-7_15" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2020: 16th European Conference</title>
+		<meeting><address><addrLine>Glasgow, UK; Berlin, Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2020">August 23-28, 2020. 2020</date>
+			<biblScope unit="page" from="247" to="263" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part V</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Why does unsupervised pre-training help deep learning?</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Erhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Courville</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Manzagol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Vincent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<idno type="ISSN">1532-4435</idno>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="625" to="660" />
+			<date type="published" when="2010-03">Mar. 2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Rethinking imagenet pre-training</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollar</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICCV.2019.00502</idno>
+	</analytic>
+	<monogr>
+		<title level="m">2019 IEEE/CVF International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="4917" to="4926" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Learning transferable visual models from natural language supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hallacy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ramesh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Goh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sastry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Askell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mishkin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Krueger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Sutskever</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2103.00020" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<author>
+			<persName><forename type="first">M</forename><surname>Oquab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darcet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Moutakanni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Vo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Szafraniec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Khalidov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fernandez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Haziza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>El-Nouby</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2304.07193</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Learning robust visual features without supervision</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">2</biblScope>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Simple open-vocabulary object detection</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Minderer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gritsenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Stone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Neumann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Weissenborn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mahendran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Arnab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Dehghani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">European conference on computer vision</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="728" to="755" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Scaling open-vocabulary object detection</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Minderer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Gritsenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Houlsby</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=mQPNcBWjGc" />
+	</analytic>
+	<monogr>
+		<title level="m">Thirty-seventh Conference on Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Metric3d: Towards zero-shot metric 3d prediction from a single image</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="9043" to="9053" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Metric3d v2: A versatile monocular geometric foundation model for zero-shot metric depth and surface normal estimation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Cross modal transformer: Towards fast and robust 3d object detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision (ICCV)</meeting>
+		<imprint>
+			<date type="published" when="2023-10">October 2023</date>
+			<biblScope unit="page" from="18268" to="18278" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Mv2dfusion: Leveraging modality-specific object semantics for multi-modal 3d detection</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2408.05945" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Long-tailed 3d detection via multi-modal fusion</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Peri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dave</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hua</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ramanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kong</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2312.10986" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">TransFusion: Robust Lidar-Camera Fusion for 3d Object Detection with Transformers</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-L</forename><surname>Tai</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>CVPR</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Frustum pointnets for 3d object detection from rgb-d data</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE conference on computer vision and pattern recognition</title>
+		<meeting>the IEEE conference on computer vision and pattern recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="918" to="927" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Frustum convnet: Sliding frustums to aggregate local point-wise features for amodal</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jia</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/IROS40897.2019.8968513</idno>
+		<ptr target="https://doi.org/10.1109/IROS40897.2019.8968513" />
+	</analytic>
+	<monogr>
+		<title level="m">2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</title>
+		<imprint>
+			<publisher>IEEE Press</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="1742" to="1749" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">End-to-end object detection with transformers</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Synnaeve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Usunier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kirillov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zagoruyko</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58452-8_13</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58452-8_13" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2020: 16th European Conference</title>
+		<meeting><address><addrLine>Glasgow, UK; Berlin, Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2020">August 23-28, 2020. 2020</date>
+			<biblScope unit="page" from="213" to="229" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part I</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Pointpillars: Fast encoders for object detection from point clouds</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Caesar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Beijbom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF conference on computer vision and pattern recognition</title>
+		<meeting>the IEEE/CVF conference on computer vision and pattern recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="12697" to="12705" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Voxelnet: End-to-end learning for point cloud based 3d object detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Tuzel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE conference on computer vision and pattern recognition</title>
+		<meeting>the IEEE conference on computer vision and pattern recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4490" to="4499" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Voxelnext: Fully sparse voxelnet for 3d object detection and tracking</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Faster r-cnn: towards real-time object detection with region proposal networks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 29th International Conference on Neural Information Processing Systems</title>
+		<meeting>the 29th International Conference on Neural Information Processing Systems<address><addrLine>Cambridge, MA, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="91" to="99" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Ssd: Single shot multibox detector</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Anguelov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Erhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Reed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-Y</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Berg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision-ECCV 2016: 14th European Conference</title>
+		<meeting><address><addrLine>Amsterdam, The Netherlands</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">October 11-14, 2016. 2016</date>
+			<biblScope unit="page" from="21" to="37" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part I 14</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Lift, splat, shoot: Encoding images from arbitrary camera rigs by implicitly unprojecting to 3d</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Philion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fidler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the European Conference on Computer Vision</title>
+		<meeting>the European Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Bevdet: High-performance multi-camera 3d object detection in bird-eye-view</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Du</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.11790</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Fcos3d: Fully convolutional one-stage monocular 3d object detection</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on International Conference on Computer Vision Workshops</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Polarformer: multicamera 3d object detection with polar transformer</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Miao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y.-G</forename><surname>Jiang</surname></persName>
+		</author>
+		<idno type="DOI">10.1609/aaai.v37i1.25185</idno>
+		<ptr target="https://doi.org/10.1609/aaai.v37i1.25185" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Thirty-Seventh AAAI Conference on Artificial Intelligence and Thirty-Fifth Conference on Innovative Applications of Artificial Intelligence and Thirteenth Symposium on Educational Advances in Artificial Intelligence, AAAI&apos;23/IAAI&apos;23/EAAI&apos;23</title>
+		<meeting>the Thirty-Seventh AAAI Conference on Artificial Intelligence and Thirty-Fifth Conference on Innovative Applications of Artificial Intelligence and Thirteenth Symposium on Educational Advances in Artificial Intelligence, AAAI&apos;23/IAAI&apos;23/EAAI&apos;23</meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Bevformer: Learning bird&apos;s-eye-view representation from multi-camera images via spatiotemporal transformers</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sima</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Qiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-20077-9_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-20077-9_1" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022: 17th European Conference</title>
+		<meeting><address><addrLine>Tel Aviv, Israel; Berlin, Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2022">October 23-27, 2022. 2022</date>
+			<biblScope unit="page" from="1" to="18" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Far3d: Expanding the horizon for surround-view 3d object detection</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1609/aaai.v38i3.28033</idno>
+		<ptr target="https://ojs.aaai.org/index.php/AAAI/article/view/28033" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2024-03">Mar. 2024</date>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="2561" to="2569" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Pointpainting: Sequential fusion for 3d object detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Helou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Beijbom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF conference on computer vision and pattern recognition</title>
+		<meeting>the IEEE/CVF conference on computer vision and pattern recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="4604" to="4612" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Pointaugmenting: Cross-modal augmentation for 3d object detection</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2021-06">June 2021</date>
+			<biblScope unit="page" from="11794" to="11803" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+		<title level="m" type="main">Simplebev: Improved lidar-camera fusion architecture for 3d object detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wu</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/2411.05292" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<monogr>
+		<title level="m" type="main">Deepinteraction: 3d object detection via modality interaction</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Miao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<editor>NeurIPS</editor>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<title level="m" type="main">Clocs: Camera-lidar object candidates fusion for 3d object detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Morris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Radha</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Detra: A unified model for object detection and trajectory forecasting</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Casas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Agro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gilles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Urtasun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">European Conference on Computer Vision</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page" from="326" to="342" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Eva-02: A visual representation for neon genesis</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Image and Vision Computing</title>
+		<imprint>
+			<biblScope unit="page">105171</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y.-C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J.-N</forename><surname>Hwang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.05836</idno>
+		<title level="m">Glipv2: Unifying localization and vision-language understanding</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">Grounding dino: Marrying dino with grounded pre-training for open-set object detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2303.05499</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Depth anything: Unleashing the power of large-scale unlabeled data</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2406.09414</idno>
+		<title level="m">Depth anything v2</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">X</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Pei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Su</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">4</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<monogr>
+		<title level="m" type="main">Exploring object-centric temporal modeling for efficient multi-view 3d object detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2303.11926</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Sparsebev: High-performance sparse 3d object detection from multi-camera videos</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Teng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICCV51070.2023.01703</idno>
+	</analytic>
+	<monogr>
+		<title level="m">2023 IEEE/CVF International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="18534" to="18544" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Unsupervised 3d perception with 2d vision-language distillation for autonomous driving</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Najibi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ettinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Anguelov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="8602" to="8612" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Find n&apos; propagate: Open-vocabulary 3d object detection in urban environments</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Etchegaray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Harada</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/arXiv.2403.13556</idno>
+		<ptr target="https://doi.org/10.48550/arXiv.2403.13556" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2024 -The 18th European Conference on Computer Vision</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Opensight: A simple open-vocabulary framework for lidar-based object detection</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-72907-2_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-72907-2_1" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2024: 18th European Conference</title>
+		<meeting><address><addrLine>Milan, Italy; Berlin, Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2024-10-04">September 29 -October 4, 2024. 2024</date>
+			<biblScope unit="page" from="1" to="19" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Tokensto-token vit: Training vision transformers from scratch on imagenet</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z.-H</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">E</forename><surname>Tay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF international conference on computer vision</title>
+		<meeting>the IEEE/CVF international conference on computer vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="558" to="567" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shazeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Uszkoreit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ł</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Polosukhin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in neural information processing systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Vision transformer with deformable attention</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">E</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2022-06">June 2022</date>
+			<biblScope unit="page" from="4794" to="4803" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Offboard 3d object detection from point cloud sequences</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Najibi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Vo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Anguelov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2021-06">June 2021</date>
+			<biblScope unit="page" from="6134" to="6144" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Detzero: Rethinking offboard 3d object detection with long-term sequential point clouds</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Qiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of International Conference on Computer Vision (ICCV)</title>
+		<meeting>International Conference on Computer Vision (ICCV)</meeting>
+		<imprint>
+			<biblScope unit="page">2023</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Labelformer: Object trajectory refinement for offboard perception from LiDAR point clouds</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Casas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Dvornik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Segal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S K</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Urtasun</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=9cTEQWMo1BF" />
+	</analytic>
+	<monogr>
+		<title level="m">7th Annual Conference on Robot Learning</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Ba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Kiros</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1607.06450</idno>
+		<title level="m">Layer normalization</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<monogr>
+		<title level="m" type="main">Generalized intersection over union</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rezatofighi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tsoi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gwak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sadeghian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Reid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Savarese</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019-06">June 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

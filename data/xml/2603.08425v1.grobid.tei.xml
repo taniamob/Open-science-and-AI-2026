@@ -1,0 +1,1911 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">System Design, Multi-Model Orchestration, and Engineering Practice for a General AI Assistant</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2026-03-09">9 Mar 2026</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Xi</forename><surname>Mo</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Niusrobotlab</forename><surname>March</surname></persName>
+						</author>
+						<title level="a" type="main">System Design, Multi-Model Orchestration, and Engineering Practice for a General AI Assistant</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2026-03-09">9 Mar 2026</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">6CD685A56FBBAE14FAB01BC91BD5D90A</idno>
+					<idno type="arXiv">arXiv:2603.08425v1[cs.AI]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2026-03-10T18:11+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>general AI assistant</term>
+					<term>AI agent systems</term>
+					<term>multi-model orchestration</term>
+					<term>local LLM integration</term>
+					<term>persistent memory</term>
+					<term>skill learning</term>
+					<term>tool routing</term>
+					<term>task scheduling</term>
+					<term>MCP compatibility</term>
+					<term>VRAM management</term>
+					<term>safety</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>As large language models evolve from single-turn conversational systems into long-running agents with tool use, memory, and environmental interaction, the practical value of an AI assistant increasingly depends on system architecture rather than model capability alone. This paper presents IronEngine, a general AI assistant platform organized around a unified orchestration core that connects a desktop user interface, REST and WebSocket APIs, Python clients, local and cloud model backends, persistent memory, task scheduling, reusable skills, 24-category tool execution, MCP-compatible extensibility, and hardware-facing integration. IronEngine introduces a three-phase pipeline-Discussion (Planner-Reviewer collaboration), Model Switch (VRAM-aware transition), and Execution (tool-augmented action loop)-that separates planning quality from execution capability. The system features a hierarchical memory architecture with multi-level consolidation, a vectorized skill repository backed by ChromaDB, an adaptive model management layer supporting 92 model profiles with VRAM-aware context budgeting, and an intelligent tool routing system with 130+ alias normalization and automatic error correction. We present experimental results on file operation benchmarks achieving 100% task completion with a mean total time of 1541 seconds across four heterogeneous tasks, and provide detailed comparisons with representative AI assistant systems including ChatGPT, Claude Desktop, Cursor, Windsurf, and open-source agent frameworks. Without disclosing proprietary prompts or core algorithms, this paper analyzes the platform's architectural decomposition, subsystem design, experimental performance, safety boundaries, and comparative engineering advantages. The resulting study positions IronEngine as a system-oriented foundation for general-purpose personal assistants, automation frameworks, and future human-centered agent platforms.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text>
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>List of Figures</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The landscape of AI assistants has undergone a fundamental transformation. Beginning with the Transformer architecture <ref type="bibr" target="#b0">[1]</ref> and scaling through GPT-3's demonstration of few-shot in-context learning <ref type="bibr" target="#b1">[2]</ref>, large language models (LLMs) have progressed from text completion engines to systems capable of reasoning, tool use, and multi-step task execution. The open-source movement, catalyzed by models such as LLaMA <ref type="bibr" target="#b2">[3]</ref>, has made capable models accessible for local deployment, while GPT-4 <ref type="bibr" target="#b3">[4]</ref> and Gemini <ref type="bibr" target="#b4">[5]</ref> have pushed the frontier of multimodal reasoning. This convergence of capability and accessibility creates a unique opportunity: building AI assistants that are not merely wrappers around a single model endpoint, but comprehensive systems that organize model capability into stable, controllable, and reusable behavior.</p><p>Recent research has established several foundational paradigms for AI agents. ReAct demonstrated the value of interleaving reasoning and action within a single model loop <ref type="bibr" target="#b5">[6]</ref>. Chain-of-thought prompting revealed that explicit reasoning traces improve task decomposition <ref type="bibr" target="#b6">[7]</ref>. Toolformer showed that models can learn to invoke external tools autonomously <ref type="bibr" target="#b7">[8]</ref>.</p><p>Retrieval-augmented generation (RAG) established the importance of external non-parametric memory <ref type="bibr" target="#b8">[9]</ref>. Generative Agents demonstrated how memory streams, reflection, and planning can sustain coherent long-horizon behavior in simulated environments <ref type="bibr" target="#b9">[10]</ref>. Reflexion introduced verbal self-critique as a mechanism for iterative improvement <ref type="bibr" target="#b10">[11]</ref>. These contributions collectively define the building blocks of modern agent systems.</p><p>At the framework level, systems such as Auto-Gen <ref type="bibr" target="#b11">[12]</ref>, CAMEL <ref type="bibr" target="#b12">[13]</ref>, MetaGPT <ref type="bibr" target="#b13">[14]</ref>, ChatDev <ref type="bibr" target="#b14">[15]</ref>, OpenManus <ref type="bibr" target="#b15">[16]</ref>, and OpenClaw <ref type="bibr" target="#b16">[17]</ref> have accelerated the move from isolated model calls toward agent ecosystems with role-based collaboration, workflows, and persistent execution surfaces. Meanwhile, productized AI assistants-including ChatGPT with GPT-4o <ref type="bibr" target="#b17">[18]</ref>, Claude Desktop with MCP <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b19">20]</ref>, Cursor <ref type="bibr" target="#b20">[21]</ref>, Windsurf <ref type="bibr" target="#b21">[22]</ref>, and GitHub Copilot <ref type="bibr" target="#b22">[23]</ref>have brought AI agent capabilities to millions of end users.</p><p>Yet upon closer examination, five systemic problems persist across current systems, each representing a distinct engineering challenge that existing solutions address only partially.</p><p>The Fragmentation Problem. Today's AI assistants exist as isolated endpoints: ChatGPT is a web interface, Claude Code is a CLI tool, Cursor is an IDE plugin, and Open Interpreter is a Python library. A user who needs to automate desktop applications, search the web, manipulate files, and send messages through instant messaging platforms must switch between multiple disjoint tools, each with its own model backend, context window, and interaction paradigm.</p><p>No single system provides a unified orchestration core that consolidates all these capabilities under one architectural umbrella, forcing users to choose between convenience (polished but narrow products) and generality (flexible but fragmented frameworks).</p><p>The Single-Model Bottleneck. Most current systems rely on a single model to handle all cognitive functions-planning, self-evaluation, tool invocation, and output generation-within one inference pass. This design creates an inherent tension: large models (30B+ parameters) excel at complex multi-step reasoning but waste computational resources on simple translation or formatting tasks, while small models (3-8B parameters) run efficiently on consumer hardware but cannot sustain coherent multi-round planning. Few systems provide a heterogeneous model allocation architecture that assigns different-sized models to different cognitive roles within a single task, let alone manages the GPU memory lifecycle required to swap models on and off a single GPU.</p><p>The Ephemeral Assistant Problem. Current AI assistants are predominantly stateless across sessions. Each conversation begins from a blank slate, with no memory of past interactions, learned skills, or accumulated domain knowledge. While some systems offer conversation history, none provide a comprehensive solution that combines hierarchical memory with lifecycle policies (creation, consolidation, decay), quality-filtered skill learning from successful executions, rating-driven retrieval that prioritizes proven knowledge, and contradiction detection that supersedes stale information. The absence of structured persistence forces users to re-explain their preferences, re-teach workflows, and re-provide context in every new session.</p><p>The Local Deployment Challenge. Privacysensitive workloads-personal communications, proprietary documents, medical records, financial datademand fully local inference with no data leaving the user's machine. Yet local deployment on consumergrade hardware introduces challenges that cloudhosted systems avoid: model heterogeneity (different architectures require different quantization strategies), context window constraints (VRAM limits the number of tokens a model can process), and intelligent resource scheduling (loading a 14B Planner and an 8B Reviewer sequentially on a single 24 GB GPU). Few systems provide VRAM-aware model lifecycle management that can automatically select, load, and unload models based on available hardware resources.</p><p>The Tool Integration Problem. Each AI assistant implements tools as bespoke plugins with no unified dispatch layer. There is no alias normalization (recognizing that "web_search", "search_web", "google", and "browse" refer to the same capability), no automatic error correction (redirecting a model that specifies a wrong tool type-a common failure mode for small models), no fallback chains (trying alternative execution strategies when the primary method fails), and no cross-category routing (dispatching a single user request to the appropriate tool among 24 categories). When a model specifies an incorrect tool type, the system fails outright rather than intelligently redirecting the request.</p><p>Beyond these five problems, the engineering scale required to address them simultaneously is itself a significant challenge. IronEngine is a large-scale systems engineering project: 46,690 lines of Python code distributed across 97 source files. The core engine layer (iron_engine/) contains 35,157 lines, with the tool routing subsystem (tool_router.py, 8,202 lines) and pipeline orchestrator (pipeline.py, 5,289 lines) as the most complex components. The user interface layer (ui/) comprises 7,348 lines, and the API service layer (api/) adds 298 lines. Twenty-seven key core modules account for 26,932 lines (76.6% of the core engine), covering pipeline orchestration, tool routing, memory management, skill learning, model sessions, permission control, browser automation, desktop GUI control, network utilities, URL safety analysis, and MCP compatibility. This scale reflects IronEngine's nature as a complete platform rather than a singlepurpose component.</p><p>IronEngine is designed from this systems perspective. Rather than optimizing for a single interaction modality or model backend, it provides a unified engine that organizes UI interaction, APIs, local and remote models, hierarchical memory, task execution, skill acquisition, tool routing, MCP-compatible extensibility, and device-facing integration into one coherent platform. The platform introduces a three-phase pipeline-Discussion, Model Switch, and Executionthat separates planning quality (assessed by a Reviewer) from execution capability (handled by a dedicated Executor with tool access). This architectural separation enables heterogeneous model allocation, where different model sizes and capabilities are assigned to different roles based on task requirements and available hardware resources.</p><p>This paper studies IronEngine not as a model benchmark, but as an architectural response to the question of how a practical, general-purpose AI assistant should be engineered. We present the system's design principles, architectural decomposition, subsystem design for tools, memory, skills, and model management, experimental evaluation on file operation benchmarks, and comparative analysis against representative AI assistant systems. Throughout, we focus on engineering design decisions and their rationale without disclosing proprietary prompts, sensitive algorithms, or core implementation details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>The development of AI agent systems spans multiple research traditions. We organize related work into six categories and discuss how IronEngine relates to and extends each line of work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Reasoning and Action Coupling</head><p>The integration of reasoning with environmental action represents a foundational paradigm in agent systems. ReAct <ref type="bibr" target="#b5">[6]</ref> established the interleaving of thought traces and action steps, enabling models to ground their reasoning in observed outcomes. Chain-of-thought prompting <ref type="bibr" target="#b6">[7]</ref> demonstrated that explicit intermediate reasoning improves multi-step problem solving, a principle that extends naturally to agent planning. Reflexion <ref type="bibr" target="#b10">[11]</ref> introduced verbal self-reflection as a learning signal, allowing agents to improve across attempts without weight updates. Cognitive architectures for language agents <ref type="bibr" target="#b23">[24]</ref> provide a theoretical framework connecting these empirical findings to established cognitive science models. IronEngine builds on these foundations by separating reasoning (Planner) from evaluation (Reviewer) and action (Executor) into distinct pipeline phases, each potentially served by different models optimized for their respective roles.</p><p>Subsequent work has extended these paradigms toward more complex architectures. Inner Monologue <ref type="bibr" target="#b24">[25]</ref> showed that feeding environmental feedback into a reasoning loop enables embodied agents to recover from failures. Chain-of-Action approaches decompose high-level goals into grounded action sequences, but typically rely on a single model to both reason and act, creating a bottleneck when reasoning quality and action execution have different computational requirements. A fundamental limitation of these coupled architectures is that the same model must simultaneously maintain planning coherence and generate syntactically correct tool invocations-tasks that favor different model sizes and training objectives. IronEngine addresses this by decoupling reasoning from action at the architecture level: the Planner produces a textual plan evaluated by the Reviewer for quality, and only after the plan passes quality thresholds does a separate Executor model translate it into tool calls. This separation allows using a larger, more capable model for planning and a smaller, toolspecialized model for execution, optimizing both quality and resource efficiency.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Tool Use and API Integration</head><p>Tool-augmented language models represent a critical capability for practical AI assistants. Toolformer <ref type="bibr" target="#b7">[8]</ref> demonstrated self-supervised tool use, where models learn when and how to invoke calculators, search engines, and other utilities. ToolLLM <ref type="bibr" target="#b25">[26]</ref> scaled this approach to 16,000+ real-world APIs with a decision tree-based reasoning framework. Gorilla <ref type="bibr" target="#b26">[27]</ref> focused on accurate API call generation with reduced hallucination through retrieval-augmented fine-tuning. Hug-gingGPT <ref type="bibr" target="#b27">[28]</ref> demonstrated using LLMs as controllers that orchestrate specialized AI models for complex multimodal tasks. WebGPT <ref type="bibr" target="#b28">[29]</ref> pioneered browserassisted question answering with human feedback. These systems typically focus on a single tool-use paradigm or API surface. IronEngine extends this work with a unified tool routing layer that manages 24 tool categories through intelligent dispatch, automatic type correction, and multi-layer fallback chains, enabling a single assistant to handle file operations, web browsing, GUI automation, network management, and multimedia analysis within one execution framework.</p><p>A critical but under-explored dimension of tool integration is breadth versus depth. Most research systems focus on API-level tool calling (HTTP requests to web services), while real-world desktop automation demands tools that span fundamentally different interaction modalities: CLI commands, GUI element inspection via accessibility APIs, browser DOM manipulation via CDP, keyboard and mouse simulation, network socket operations, and multimedia processing pipelines. Furthermore, tool-use reliability degrades significantly with smaller models: a 3.8B parameter tool model may generate syntactically correct JSON but specify the wrong tool type (e.g., "web_read" instead of "web_search"), a failure mode that most systems handle by simply reporting an error. IronEngine introduces two mechanisms absent in prior work: (1) alias normalization, which maps 130+ variant tool type strings to 24 canonical categories through prefix matching, suffix stripping, and semantic equivalence tables; and (2) automatic error correction, which detects tool type mismatches based on the instruction content (e.g., a "browse" type with a search query is redirected to "web_search") and applies content-based heuristics (e.g., instructions mentioning ".exe" files are not incorrectly redirected to binary read). These mechanisms reduce tool dispatch failures by an order of magnitude compared to direct model-specified routing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Memory and Knowledge Management</head><p>Persistent memory is essential for agents that operate across sessions. RAG <ref type="bibr" target="#b8">[9]</ref> established retrieval over external corpora as a mechanism for knowledgeintensive tasks. Generative Agents <ref type="bibr" target="#b9">[10]</ref> introduced memory streams with importance scoring, reflection, and planning as a coherent cognitive architecture. Augmented language models <ref type="bibr" target="#b29">[30]</ref> provide a comprehensive survey of how external memory, retrieval, and tool use extend model capabilities beyond their parametric knowledge. ChromaDB <ref type="bibr" target="#b30">[31]</ref> and similar vector databases provide the infrastructure for embeddingbased retrieval at scale. IronEngine's memory system goes beyond simple RAG by implementing a hierarchical consolidation architecture with four entry types (session, pipeline, daily summary, refined), dual merge strategies (fast deduplication and model-based consolidation), user rating integration, and idle-time background processing. This design treats memory as a managed resource with lifecycle policies rather than a raw transcript log.</p><p>Recent specialized memory systems have advanced the state of the art in specific directions. MemGPT <ref type="bibr" target="#b31">[32]</ref> (later evolved into the Letta framework) introduced an operating system-inspired memory hierarchy with main context and external storage, using function calls to manage memory paging. Mem0 provides a memory layer for LLM applications with automatic extraction and retrieval of user preferences. These systems demonstrate the importance of structured memory but typically address a single aspect of the memory lifecycle. MemGPT focuses on within-session context management (virtual paging to extend effective context length), while Mem0 emphasizes cross-session preference extraction. Iro-nEngine's memory architecture differs in three ways:</p><p>(1) it implements a dual merge lifecycle-Merge A performs fast hash-based deduplication triggered automatically when entry count exceeds a threshold, while Merge B uses a model-based daily consolidation supervised by the Reviewer to produce refined summaries; (2) it integrates user ratings (1-10 scale from the UI) into memory retrieval, so that highly-rated sessions are preferentially recalled while poorly-rated ones are deprioritized; and (3) it performs contradiction detection by comparing numerical values (prices, versions, specifications) in newly retrieved tool results against stored memory entries, automatically superseding stale information rather than allowing the model to hallucinate from outdated memory.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Multi-Agent Collaboration</head><p>Multi-agent systems explore how multiple LLM instances can collaborate effectively. CAMEL <ref type="bibr" target="#b12">[13]</ref> introduced communicative agents with role-based interaction for open-ended exploration. MetaGPT <ref type="bibr" target="#b13">[14]</ref> organized software production as a multi-role process coordinated through standard operating procedures. ChatDev <ref type="bibr" target="#b14">[15]</ref> further explored communicative agents for software engineering workflows. Comprehensive surveys <ref type="bibr" target="#b32">[33]</ref><ref type="bibr" target="#b33">[34]</ref><ref type="bibr" target="#b34">[35]</ref> identify agent profiling, communication topology, shared memory, and evaluation methodology as central themes. AutoGen <ref type="bibr" target="#b11">[12]</ref> and crewAI <ref type="bibr" target="#b35">[36]</ref> provide flexible frameworks for defining multi-agent conversations with customizable interaction patterns. IronEngine adopts a structured multirole approach with fixed pipeline phases rather than free-form multi-agent conversation, prioritizing predictability and controllability over conversational flexibility. The Planner-Reviewer discussion loop provides quality assurance without the overhead of managing arbitrary agent topologies.</p><p>The communication topology chosen by a multiagent system fundamentally shapes its reliability characteristics. CAMEL's role-playing approach allows open-ended dialogue between two agents but provides no formal quality gate-either agent can produce low-quality output that propagates unchecked. MetaGPT's SOP-based coordination imposes structure but couples tightly to software engineering workflows. ChatDev's phase-based approach (designing, coding, testing, documenting) provides sequential quality checks but is domain-specific. AutoGen's conversable agent framework offers maximum flexibility in defining interaction patterns but leaves quality assurance as an application-level concern. IronEngine makes an explicit architectural trade-off: it sacrifices the topological flexibility of free-form multi-agent conversation in favor of a fixed three-phase pipeline with a formal quality gate. The Reviewer's numerical quality score (0.0-1.0) serves as an objective threshold that must be met before execution proceeds, and the Reviewer's structured feedback (ISSUES and SUG-GESTIONS sections) provides actionable improvement signals. This design ensures that every executed plan has passed explicit quality review, a guarantee that flexible multi-agent topologies do not inherently provide. The trade-off is that IronEngine cannot dynamically spawn new agent roles or reconfigure its communication topology at runtime-a limitation accepted in exchange for predictable quality behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5">Web and GUI Agents</head><p>Environment-facing agents that interact with web browsers and desktop applications represent an important frontier. Mind2Web <ref type="bibr" target="#b36">[37]</ref> introduced a bench-YouTube @NiusRobotLab mark and dataset for generalist web agents that operate across diverse websites. WebArena <ref type="bibr" target="#b37">[38]</ref> provided a realistic web environment for evaluating autonomous browsing agents. SWE-agent <ref type="bibr" target="#b38">[39]</ref> and SWE-bench <ref type="bibr" target="#b39">[40]</ref> established benchmarks for automated software engineering through repository-level code modification. Open Interpreter <ref type="bibr" target="#b40">[41]</ref> demonstrated local code execution as a natural language interface. IronEngine integrates both web and desktop GUI automation within its tool routing framework, including CDP-based browser control with antidetection measures <ref type="bibr" target="#b41">[42]</ref>, multi-engine web search with automatic captcha handling, and Windows UI Automation (UIA) for desktop application control.</p><p>Desktop GUI automation presents challenges qualitatively different from web browsing.</p><p>OS-World <ref type="bibr" target="#b42">[43]</ref> established a comprehensive benchmark for evaluating autonomous agents on real desktop operating systems, revealing that even state-of-the-art models achieve below 12% success rates on complex desktop tasks. The difficulty stems from the heterogeneity of desktop UI frameworks: Win32 controls, WPF elements, Qt widgets, and Electron-based applications each expose accessibility information differently or not at all. For instance, WeChat (built on <ref type="bibr">Qt 5.15)</ref> exposes only approximately 16 UIA elements at depth 3, with no contact names accessible through the accessibility tree-requiring a fundamentally different approach based on screenshots and coordinate-based interaction. IronEngine addresses this through a layered automation strategy: UIA-first for applications with rich accessibility support, falling back to screenshot-based visual analysis (using a local vision model) combined with coordinate-based mouse and keyboard simulation for applications with minimal accessibility exposure. The system maintains application-specific knowledge (e.g., WeChat tray icon coordinates, emoji panel layout) as innate skills, while learned skills capture successful interaction sequences for reuse across sessions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.6">Productized AI Assistants and Code Agents</head><p>The productization of AI assistants has accelerated significantly. ChatGPT with GPT-4o <ref type="bibr" target="#b17">[18]</ref> provides multimodal conversation with tool use through a cloud-hosted interface. Claude Desktop with MCP support <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b19">20]</ref> emphasizes protocol-level extensibility for connecting to external tools and data sources.</p><p>Cursor <ref type="bibr" target="#b20">[21]</ref> and Windsurf <ref type="bibr" target="#b21">[22]</ref> focus on code-centric AI assistance with deep IDE integration. GitHub Copilot <ref type="bibr" target="#b22">[23]</ref> provides inline code suggestions and chatbased programming assistance. AutoGPT <ref type="bibr" target="#b43">[44]</ref> pioneered autonomous goal-directed agent behavior. These products can be categorized along two </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.7">The OpenClaw Ecosystem: OpenClaw, NanoClaw, and IronClaw</head><p>The OpenClaw project <ref type="bibr" target="#b16">[17]</ref> and its derivative variants represent a rapidly evolving ecosystem for personal AI assistants. OpenClaw itself is positioned as an alwayson personal AI assistant with a gateway-centric architecture. Its design emphasizes multi-channel message routing (Telegram, WhatsApp, SMS, email), persistent skills, device node management, and a control plane that spans user-owned devices. The system excels at maintaining continuous availability across messaging surfaces and treating the assistant as a longrunning service rather than a session-based tool. NanoClaw <ref type="bibr" target="#b46">[47]</ref> adapts the OpenClaw architecture for edge deployment on resource-constrained devices (Raspberry Pi, mobile SoCs). It achieves this through aggressive model quantization, a stripped-down skill set, and a lightweight gateway that proxies to a more capable upstream node when local inference is insufficient. NanoClaw's contribution is primarily in deployment flexibility: it demonstrates that the personal assistant paradigm can extend to IoT and embedded environments, albeit with reduced autonomy and tool coverage.</p><p>IronClaw <ref type="bibr" target="#b47">[48]</ref> specializes the OpenClaw framework for hardware-oriented AI agent scenarios, targeting embedded systems, robotics control, and industrial automation. It introduces sensor data ingestion pipelines, actuator command abstractions, and safety interlocks for physical-world interactions. IronClaw's primary contribution is bridging the gap between con-versational AI agents and real-time hardware control loops.</p><p>PicoClaw <ref type="bibr" target="#b48">[49]</ref> pushes the OpenClaw paradigm to its extreme miniaturization: microcontroller targets including Arduino, ESP32, and STM32. Pic-oClaw employs pre-compiled skill sets with no runtime model inference, instead relying on an upstream NanoClaw or OpenClaw instance for planning and decision-making. The microcontroller executes only deterministic skill procedures received from its upstream node. PicoClaw represents an exploration of AI agent deployment at the absolute hardware minimum, where the "agent" is reduced to a skill executor with no local intelligence. Its contribution is primarily conceptual-demonstrating how far the agent paradigm can be decomposed across a device hierarchy-though practical applications in sensor networks and simple actuator control are feasible.</p><p>Together, the OpenClaw ecosystem spans a remarkable range from cloud-scale gateway (Open-Claw) through edge devices (NanoClaw) and industrial hardware (IronClaw) to bare-metal microcontrollers (PicoClaw). While this breadth is impressive, certain limitations are shared across the ecosystem. No variant implements formal plan quality review (equivalent to IronEngine's Reviewer role). Multi-model collaboration within a single task is not supported-each variant uses one model per request. Tool dispatch relies on keyword-based skill matching without alias normalization or automatic error correction. Memory systems are flat (skill-level persistence) without hierarchical consolidation or contradiction detection.</p><p>IronEngine differs from the OpenClaw ecosystem in several fundamental ways.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Orchestration depth.</head><p>OpenClaw uses a message-routing gateway model where incoming messages are dispatched to skill handlers. IronEngine instead implements a structured three-phase pipeline with explicit planning, quality review, and execution phases, providing formal quality assurance through the Reviewer role that is absent in the OpenClaw architecture.</p><p>Multi-model collaboration. The OpenClaw ecosystem typically uses a single model per request. IronEngine assigns up to four distinct models (Planner, Reviewer, Executor, Tools) to different cognitive roles within a single task, with VRAM-aware lifecycle management that enables running models larger than available GPU memory through sequential loading.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Tool system sophistication.</head><p>IronEngine's 24-category tool router with intelligent dispatch, 130+ alias normalization, automatic error correction, and multi-layer fallback chains provides significantly deeper tool integration than the skill-based dispatch in OpenClaw. The auto-correction mechanism alone-which detects and redirects mistyped tool types without user intervention-is a unique reliability feature.</p><p>Memory architecture. IronEngine's hierarchical memory with four entry types, dual merge strategies, user rating integration, and idle-time consolidation provides more structured state management than the flat skill memory in the OpenClaw ecosystem.</p><p>Desktop workbench paradigm. While Open-Claw optimizes for headless multi-channel messaging, IronEngine provides a full desktop workbench with real-time orchestration visibility (thinking blocks, tool execution badges, quality scores), making the AI's decision-making process observable and debuggable.</p><p>Figure <ref type="figure" target="#fig_0">1</ref> summarizes the research and product trajectory most relevant to this paper, highlighting the progression from foundational techniques to systemlevel integration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Design Goals</head><p>IronEngine is designed around six goals that address the engineering gaps identified in the introduction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>G1:</head><p>Unified interaction surfaces. All user-facing entry points-desktop UI (PySide6 <ref type="bibr" target="#b49">[50]</ref>), REST/WebSocket API, and Python client-share the same orchestration logic. A task submitted through the UI follows identical planning, review, and execution paths as one submitted through the API.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>G2: Role-based model collaboration.</head><p>Rather than relying on a single model for all cognitive functions, IronEngine assigns distinct roles (Planner, Reviewer, Executor, Tools model) to potentially different models. This enables cost-effective allocation where large models handle complex planning while smaller models execute tool translations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>G3: Local-first and hybrid deployment.</head><p>The platform is designed to run entirely on consumer hardware through integration with Ollama <ref type="bibr" target="#b44">[45]</ref> and LM Studio <ref type="bibr" target="#b45">[46]</ref>, while also supporting cloud API backends. This dual capability ensures that privacysensitive workloads can remain fully local.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>G4: Persistent and proactive behavior.</head><p>Through hierarchical memory, learned skills, scheduled tasks, and an idle-time Pulse system, IronEngine maintains continuity across sessions and can perform background consolidation without user prompting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>G5:</head><p>Protocol-level extensibility. MCP (Model Context Protocol) <ref type="bibr" target="#b18">[19]</ref> compatibility enables the system to discover and integrate external tools at runtime, extending its capability surface without modifying core code. sion management, execution sandboxing, intervention points, and role separation ensure that the assistant operates within user-defined boundaries. The system never executes shell commands directly and validates all tool invocations through a structured dispatch layer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>G6: Safety with controllability. Permis-</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>YouTube @NiusRobotLab</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Overall Architecture</head><p>IronEngine is organized as a four-layer architecture consisting of interaction, orchestration, capability, and environment layers, as shown in Figure <ref type="figure">2</ref>.</p><p>The interaction layer provides three entry points: a PySide6 desktop workbench with model selection, execution monitoring, and theme customization; a FastAPI-based REST/WebSocket server for service integration; and a pure Python client for embedding and scripting. All three share the same pipeline instance.</p><p>The orchestration layer implements the threephase pipeline (Section 7) and manages the lifecycle of each request: context assembly, role-specific model loading, planning, quality review, tool execution, intervention handling, memory storage, and skill learning.</p><p>The capability layer consists of modular subsystems: the provider registry (Ollama, LM Studio, OpenAI-compatible cloud APIs), the memory system (MemoMap with hierarchical consolidation), the skill repository (ChromaDB-backed vectorized storage), the tool router (24 categories with intelligent dispatch), and the task scheduler (recurring daily/weekly/monthly tasks).</p><p>The environment layer connects the system to external resources: MCP-compatible tool servers, local file system and storage, web browsers (via CDP and Playwright), desktop applications (via UIA), network utilities, and hardware devices.</p><p>A major benefit of this architecture is that all entry points share the same orchestration logic while providers, tools, and storage remain modular. Adding a new model backend, tool category, or interaction surface requires changes only at the corresponding layer boundary, not across the entire system.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Implementation Evidence and Engineering Characteristics</head><p>Several central capabilities of IronEngine can be grounded in observable project structure and documentation. Table <ref type="table" target="#tab_2">1</ref> maps major system claims to engineering artifacts in the codebase. The goal is not to disclose sensitive implementation details, but to demonstrate that the system description corresponds to real engineering artifacts rather than an abstract proposal. This evidence mapping suggests that IronEngine is distinguished not by a single component but by the way multiple components are integrated into one orchestration-centered runtime.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Module Decomposition</head><p>The system comprises eight major modules that together form a long-running, extensible platform rather than a single chat front-end.</p><p>Desktop UI module. The PySide6-based interface functions as an operational console rather than a simple chat shell. Figure <ref type="figure" target="#fig_1">3</ref> shows the current interface. The left panel consolidates model selection (Planner, Reviewer, Tools, Vision), execution configuration, and permission settings. The right panel combines the conversation surface with runtime monitoring including thinking blocks (collapsible reasoning traces), tool execution badges, quality scores, and intervention prompts. The UI supports 10 procedurally generated sci-fi themes with glassmorphism effects and continuous background rendering across panels. Memory and skills layer. Described in detail in Section 9.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>API and client</head><p>Task scheduler. The PlannedTaskStore manages recurring tasks (daily/weekly/monthly) with JSON-based persistence and thread-safe operations.</p><p>The Pulse system provides idle-time background processing, triggering memory consolidation and task execution when the system detects 5 minutes of user inactivity.</p><p>Local LLM integration layer. Described in detail in Section 10.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>MCP-compatible extension layer. Described in Section 11.</head><p>Hardware-facing compatibility layer. The system can dispatch tool calls to external scripts, device controllers, and robotic systems through its structured execution interface, enabling integration with Arduino-based platforms and other hardware environments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Three-Phase Pipeline</head><p>The core of IronEngine's orchestration is a threephase pipeline that separates planning quality from execution capability. This design is motivated by the observation that the cognitive demands of task decomposition (requiring broad world knowledge and reasoning) differ fundamentally from those of tool execution (requiring precise syntax and format compliance). Figure <ref type="figure" target="#fig_3">4</ref> illustrates the three phases.  The Reviewer model then evaluates the plan's quality, checking for hallucination (plans that claim results without tool calls), memory recycling (reusing stale memorized data instead of fetching fresh information), completeness, and feasibility. The Reviewer assigns a quality score and provides structured feedback. If the score falls below a configurable threshold, the plan is returned to the Planner for revision with the Reviewer's feedback appended.</p><p>This Discussion loop iterates for up to max_rounds (typically 3-5) or until the quality threshold is met. Four anti-hallucination mechanisms operate during this phase: 1. Memory duplication detection: Extracts information-bearing tokens from loaded memory, checks whether the model cites them without any tool call (threshold: 40% token overlap AND ≥3 hits). Numerical values (prices, versions) receive special treatment: ≥2 shared non-trivial numbers trigger a warning.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Forbidden phrase rejection:</head><p>Six banned phrases ("I cannot browse," "unable to access," "as an AI," etc.) are pattern-matched and autorejected with a score of 0.00. 3. Score-text contradiction detection: If the Reviewer uses ≥2 rejection phrases ("does not meet," "insufficient," "lacks") but assigns a score ≥0.60, the score is clamped to 0.40. This prevents small models from verbally rejecting a plan while numerically approving it. 4. Memory contradiction detection: Compares numerical values in tool execution results with values in loaded memory. When discrepancies are found, stale memory entries are automatically flagged and a warning is injected before the Reviewer evaluates.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2">Phase 2: Model Switch</head><p>Once a satisfactory plan is approved, the system transitions from discussion to execution.  Generative task detection. The system uses regex-based detection to identify creative/generative requests (writing stories, code, poems, tables). A separate detector checks whether the plan contains tool indicators (file save, run, debug, web search, application control). If the task is purely generative AND the plan has no tool indicators, the system allows direct output without tool execution. Hybrid tasks (write code + save/debug) still enforce tool execution.</p><p>Simple-plan optimization. If the approved plan contains four or fewer tool calls, or if the task is purely generative, the Planner model is reused as the Executor, skipping the model switch overhead (approximately 27-90 seconds depending on model sizes). This optimization reduces latency for straightforward tasks while preserving the full pipeline for complex ones.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.3">Phase 3: Execution</head><p>The Executor model receives the approved plan and original user request, then iteratively generates tool call markers in a structured format: [TOOL_CALL: instruction | type: cli/file_ops/...| context: ...].</p><p>Each marker specifies an instruction (what to do), tool type (which handler), and optional context. The Tool Router (Section 8) dispatches these calls and returns timestamped results, which are fed back to the Executor for the next step.</p><p>Skill integration. Before the first execution step, the system searches the skill repository using the user message and plan summary as queries. Matching skills have their procedures expanded (with nested skill references recursively resolved up to 3 levels deep) and provided to the Executor as contextual guidance. The Executor can also invoke skills explicitly via [SKILL: name | param: value] markers.</p><p>The Executor operates for up to 10 steps. It terminates by emitting a FINAL_ANSWER marker, which signals the conclusion to be presented to the user. If the Executor emits both tool calls and a FINAL_ANSWER in the same step, tools are executed first so the conclusion can incorporate actual results. A premature FINAL_ANSWER guard detects when the Executor attempts to conclude at step 1 without any tool calls (for non-generative tasks) and injects a correction prompt for retry.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion source logic.</head><p>The final conclusion presented to the user is selected through a priority chain: (1) Planner's FINAL_ANSWER text if it contains substantive content (not planning-like language such as "To provide. . . " or "Step 1:"); (2) Reviewer's output with meta-review commentary stripped; (3) the last Executor step's output. This logic handles edge cases where models place answers in thinking tags or where the Reviewer self-executes.</p><p>After execution completes, the system stores the interaction in memory (with user rating if provided), evaluates whether the experience constitutes a learnable skill (based on rating ≥7 and cosine distance &gt;0.5 from nearest existing skill), and updates task state if applicable.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8">Tool System Architecture</head><p>The tool system is a central differentiator of Iro-nEngine, providing 24 distinct tool categories within a single unified routing framework. Unlike systems that rely on function-calling APIs or plugin architectures, IronEngine's tool router performs intelligent dispatch with alias normalization, automatic error correction, and multi-layer fallback chains.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.1">Tool Categories</head><p>Table 2 lists the 24 tool categories supported by Iro-nEngine, organized by functional domain.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.2">Intelligent Routing</head><p>The tool routing system implements several mechanisms to improve reliability: Alias normalization. Over 130 aliases are mapped to canonical tool types. For example, "shell," "terminal," "cmd," and "powershell" all normalize to cli; "download," "fetch," and "scrape" normalize to web_read. This reduces the burden on the Planner to use exact tool type names.</p><p>Bidirectional auto-correction. When a model specifies an incorrect tool type, the router detects the mismatch and redirects. For example, a cli call containing file path patterns (copy, move, delete operations) is automatically redirected to file_ops, with CLI-specific flags (e.g., /b, -l) stripped. Conversely, web URLs in a file_ops call are redirected to web_read or browser. Figure <ref type="figure" target="#fig_6">5</ref> illustrates the tool dispatch flow from model output to execution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Multi</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.3">Web Search Architecture</head><p>Web search is the most complex tool category, requiring multiple strategies to handle search engine rate limiting, captcha challenges, and JavaScript-rendered content. The primary strategy uses a persistent Chrome instance with CDP (Chrome DevTools Protocol) on port 19222, navigating Google Search with human-like random delays (3-8 seconds between actions). Results are parsed directly from the DOM without screenshots, and Google redirect URLs are automatically decoded.</p><p>For result enrichment, the system auto-fetches up to 10 top URLs with safety filtering (phishing blocklist with 10-point heuristic scoring, e-commerce URL detection, junk URL filtering). When HTTP fetching fails for JavaScript-heavy or bot-blocking sites, a CDP fallback opens the URL in a new browser tab, reads the rendered DOM, and closes the tab.</p><p>Anti-detection measures include patchright <ref type="bibr" target="#b41">[42]</ref> (an anti-bot Playwright fork), EasyList-based ad blocking (90K rules with search engine domain whitelisting), and Cloudflare Turnstile captcha autosolving through CDP mouse event simulation with randomized offsets.</p><p>Figure <ref type="figure" target="#fig_5">6</ref> illustrates the four-strategy web search fallback chain. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.4">Web Content Extraction</head><p>When fetching web page content, the system follows a multi-stage approach: (1) HTTP GET with browserlike headers; <ref type="bibr" target="#b1">(2)</ref>   ing, reads the DOM, and closes the tab. E-commerce URLs are automatically redirected to the browser handler before HTTP fetch, as these sites typically require JavaScript rendering. Each successful fetch includes a freshness header with the retrieval timestamp.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.5">Multimedia Analysis</head><p>The tool system supports video and audio analysis through dedicated composite tools. Video analysis extracts frames at 1 frame per 10 seconds (up to 30 extracted, 8 evenly-spaced frames sent to the vision model), filters blank frames (&lt;5KB), auto-detects audio tracks for transcription via OpenAI Whisper, and provides both visual and auditory analysis. Audio analysis handles both audio files and video files (extracting the audio track first), using a singleton Whisper model loader for efficient repeated use.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.6">GUI Automation</head><p>IronEngine provides comprehensive desktop GUI automation through three tool categories. Window management supports launching, closing, and focusing applications with a built-in application name mapping and registry-based discovery. Mouse and keyboard automation uses a dual-strategy approach: pyautogui as the primary method (proper scan codes via MapVirtualKeyW), with ctypes SendInput as fallback. Text input uses clipboard paste (pyperclip + Ctrl+V) for reliability. UIA interaction provides element discovery, listing, and interaction through Windows UI Automation, supplemented by screenshotbased visual analysis when UIA exposure is limited.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.7">Execution Safety</head><p>All tool execution follows strict safety principles. The CommandExecutor never uses shell=True for subprocess calls. Template placeholders in commands are detected and rejected before execution. URL safety checks combine a phishing blocklist with 10point heuristic scoring (IP-in-URL, suspicious TLD, brand impersonation, homoglyph detection, dangerous protocol detection). File operations validate paths and never execute arbitrary code. The permission manager provides three levels-auto, ask, denyconfigurable per tool category.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9">Memory and Skill System</head><p>IronEngine's memory system treats persistent state as a managed resource with lifecycle policies, in contrast to systems that simply log conversation transcripts. The system comprises two interconnected subsystems: hierarchical memory (MemoMap) and a vectorized skill repository (SkillStore).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.1">Hierarchical Memory Architecture</head><p>The MemoMap system organizes memories into four entry types with distinct lifespans and consolidation strategies: 1. Session entries capture individual conversation turns with user ratings, tags, and reflection text. These are the raw material from which higher-level memories are derived. 2. Pipeline entries record complete pipeline executions including plans, tool calls, outcomes, and quality scores.</p><p>3. Daily summaries consolidate a day's sessions into thematic summaries through model-based summarization (Merge B). 4. Refined entries represent long-term consolidated knowledge that has been validated across multiple interactions.</p><p>Two merge strategies manage memory consolidation. Merge A (fast deduplication) triggers automatically when the session count exceeds a threshold (default 20), removing near-duplicate entries based on content similarity. Merge B (model-based consolidation) runs during idle time through the Pulse system, using a dedicated summarization model supervised by the Reviewer to produce coherent daily summaries from raw session data.</p><p>Figure <ref type="figure" target="#fig_7">7</ref> illustrates the memory hierarchy and lifecycle.</p><p>Memory retrieval for new requests uses a relevance-based strategy: loading 2 positively-rated sessions and 1 negatively-rated session (to learn from mistakes), combined with an anti-duplication warning that prevents models from recycling memorized data without fresh tool verification. User ratings (1-10 scale, mapped to 1-5 internally) influence future retrieval priority and feed into the reflection update mechanism.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.2">Vectorized Skill Repository</head><p>The SkillStore manages reusable procedural knowledge through ChromaDB <ref type="bibr" target="#b30">[31]</ref> as its sole persistent backend. Each skill is a structured record containing a name, category, tags, step-by-step procedure, parameter definitions, and success/failure counters.</p><p>Skill representation. Skills are embedded using the nomic-embed-text model (768-dimensional vectors) via Ollama's embedding API. A deterministic hash-based fallback is available when Ollama is unavailable. The HNSW index with cosine similarity enables fast nearest-neighbor search across the skill corpus.</p><p>Innate vs. learned skills. The system ships with 26 innate skills covering common scenarios: WeChat messaging (5), web operations (3), media handling (4), file management (4), application control (3), network operations (3), and shell commands <ref type="bibr" target="#b1">(2)</ref>. Each innate skill maps to one concrete scenario with hyphenated action-phrase tags for search matching.</p><p>Skill composition. Skills can reference other skills through inline markers (e.g., a "send WeChat text" skill references "open WeChat" and "select contact" skills). A recursive expansion mechanism resolves these references up to 3 levels deep when providing skill context to the Executor.</p><p>Skill learning. When a pipeline execution re-ceives a user rating of 7 or above and the task is sufficiently novel (cosine distance &gt; 0.5 from the nearest existing skill), the system automatically extracts the executed tool call sequence into a new learned skill. Conversely, ratings of 3 or below trigger a correction request, initiating a new pipeline session to refine the skill procedure. English normalization. All internal processing, including skill tags and procedures, is maintained in English regardless of the user's input language. A CJK detection and translation mechanism converts Chinese queries to English for consistent skill matching.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10">Adaptive Model Management</head><p>Running multiple model roles on consumer hardware with limited GPU memory requires careful resource management. IronEngine implements an adaptive model management system that optimizes token budget, prompt complexity, and model selection based on available hardware resources.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.1">Model Catalog</head><p>The system maintains a catalog of 92 model profiles, each containing the model's parameter count, architecture family, known capabilities (completion, tools, vision, thinking, embedding), and estimated VRAM requirements at various quantization levels. This catalog enables automated model selection and resource planning without requiring users to understand model-specific technical details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.2">VRAM-Aware Context Budgeting</head><p>Context length directly impacts GPU memory consumption through KV-cache allocation. IronEngine computes an effective context length for each model invocation based on three constraints:</p><formula xml:id="formula_0">ctx eff = min (ctx native , ctx mem , ctx user ) (1)</formula><p>where ctx native is the model's native context window, ctx user is any user-configured maximum, and ctx mem is computed from available VRAM:</p><formula xml:id="formula_1">ctx mem = (VRAM free × 0.85) -overhead C kv<label>(2)</label></formula><p>Here C kv is the KV-cache cost per 1K tokens (which varies by model parameter count: 0.08 MB/1K for ≤3B models to 1.2 MB/1K for &gt;30B models) and the 0.85 factor provides a safety margin against VRAM fragmentation. RAM spill is allowed but  capped at 2× VRAM to prevent excessive slowdown from memory-mapped access.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.3">Tiered Prompt System</head><p>Different model sizes have different capacities for processing complex instructions. IronEngine implements a three-tier prompt system based on model parameter count: </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.4">Thinking Depth Control</head><p>For models that support explicit reasoning traces (via &lt;think&gt; tags), IronEngine implements adaptive thinking depth control. A task complexity classifier evaluates each request and determines whether extended reasoning is beneficial: • Simple tasks (file listing, direct answers): thinking disabled (think=False), reducing latency by eliminating reasoning token generation. • Complex tasks (multi-step planning, analysis): thinking enabled (think=True), allowing the model to reason through the problem before responding. • Uncertain tasks: thinking left to model default (think=None).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.5">Dynamic Capability Detection</head><p>The system dynamically detects each model's capabilities through the Ollama /api/show endpoint, which returns a capabilities array (completion, tools, vision, thinking, embedding). This enables automatic routing decisions: models with tool-calling capability can skip the auxiliary translation model; models with vision capability serve as their own image analysis backend. Hardcoded capability tables serve as fallbacks for models whose APIs do not report capabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="11">MCP Compatibility and Open Ecosystem Strategy</head><p>MCP (Model Context Protocol) <ref type="bibr" target="#b18">[19]</ref> is emerging as an open interface for connecting models to external tools and resources. IronEngine implements MCP client support for tool discovery, server connection management, name qualification, and merged dispatch between built-in capabilities and externally provided tools. This creates a layered extensibility strategy. The first layer consists of deeply integrated local capabilities (24 tool categories) optimized for low-latency, high-control operations. The second layer opens the system to external ecosystems through MCPcompatible integration, enabling discovery and use of tools provided by third-party MCP servers at runtime.</p><p>The MCP client manager handles server lifecycle (connection, health monitoring, reconnection), tool schema discovery, input validation, and result formatting. Externally discovered tools are merged into the same dispatch pipeline as built-in tools, with name qualification to prevent conflicts (e.g., mcp_server_name/tool_name).</p><p>This approach allows IronEngine to preserve its native strengths in desktop control, local model workflow, and hardware integration while benefiting from the broader MCP tool ecosystem. As MCP adoption grows, IronEngine can extend its capabilities without requiring internal code changes for each new tool integration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12">Experimental Evaluation</head><p>To validate the practical effectiveness of IronEngine's architecture, we conduct experiments measuring task completion accuracy, execution time, tool routing reliability, and multi-model collaboration efficiency. All experiments use local models on consumer hardware.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.1">Experimental Setup</head><p>Hardware. All experiments are conducted on a single workstation equipped with an NVIDIA RTX 3090 (24 GB VRAM), 32 GB system RAM, running Windows 10 Professional.</p><p>Software. Models are served through Ollama <ref type="bibr" target="#b44">[45]</ref> and LM Studio <ref type="bibr" target="#b45">[46]</ref> This heterogeneous configuration demonstrates the system's ability to assign different model sizes to different roles based on their computational requirements.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.2">File Operation Benchmark</head><p>We design a four-task benchmark that tests the system's ability to handle file operations with challenging path formats (spaces, quotes, special characters). Each task is submitted as a natural language request through the Python client API.</p><p>The results (Table <ref type="table" target="#tab_8">4</ref>) show 100% task completion accuracy across all four tasks. The mean execution time of 385 seconds per task includes Planner reasoning (∼45s), Reviewer evaluation (∼35s), model switching (∼27s), Executor reasoning (∼30s), and tool execution (∼2s), with the remainder consumed by context assembly and communication overhead. The relatively high per-task time is attributable to the use of local models with limited computational resources; cloud-hosted models would significantly reduce inference latency.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.3">Pipeline Phase Time Distribution</head><p>Figure <ref type="figure" target="#fig_9">8</ref> shows the distribution of time across pipeline phases for the four benchmark tasks.</p><p>The figure reveals that model inference dominates execution time (70-80%), while actual tool execution is negligible (&lt;1%). This confirms that IronEngine's performance is primarily bound by local model inference speed rather than tool dispatch or system overhead. The constant model switch time of ∼27 seconds per task suggests potential for optimization through the simple-plan reuse mechanism (Section 7).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.4">Tool Routing Accuracy</head><p>We analyze the tool routing system's ability to correctly dispatch tool calls across the benchmark tasks and additional stress tests. The tool routing system achieves 100% accuracy across all tested scenarios, with auto-correction handling the most common model error (specifying cli  instead of file_ops for file operations). No falsepositive corrections were observed (e.g., web_search was never triggered for local-only tasks).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.5">Multi-Model Collaboration Analysis</head><p>The three-phase pipeline's effectiveness depends on productive collaboration between the Planner and Reviewer. We analyze the quality score distribution and iteration patterns:</p><p>• Round 1 pass rate: 65% of plans are approved in the first round with quality scores ≥ 0.85. • Round 2 pass rate: 30% of initially rejected plans pass after Reviewer feedback incorporation. • Round 3+ rate: Only 5% of tasks require more than 2 discussion rounds. • Quality score range: Approved plans typically score 0.85-0.92; rejected plans score 0.10-0.40. The Reviewer's anti-hallucination detection is particularly effective: plans that cite data without tool calls are rejected with scores of 0.10 (fabricated), and plans that recycle memorized prices or specifications receive 0.20 (training data contamination).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.6">VRAM and Resource Usage</head><p>A key characteristic of the three-phase pipeline is that models do not simultaneously reside in GPU memory. Table <ref type="table" target="#tab_9">6</ref> shows VRAM usage across pipeline phases. On the RTX 3090 (24 GB VRAM), qwen3.5:27b (∼17.5 GB Q4_K_M) can coexist with phi4mini:3.8b (∼2.5 GB), but cannot be loaded simultaneously with gpt-oss:20b. The Discussion phase therefore involves implicit weight swapping between Planner and Reviewer turns. The VRAM-aware context budget mechanism ensures KV-cache allocation never exceeds 85% of available VRAM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.7">Search Deduplication and Caching</head><p>The pipeline includes a search cache mechanism (_WebSearchCache) that deduplicates similar queries across rounds (70% word overlap threshold) and enforces a 10-search hard limit per pipeline execution. In a pipeline integration test (17.3 minutes, 10 GUI browser searches), 14 deduplication hits were recorded, all searches completed successfully with 0 errors. The cache significantly reduces redundant network requests caused by the Reviewer requesting supplementary searches.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.8">Error Patterns and Recovery</head><p>Despite 100% completion in benchmarks, broader usage reveals several systematic error patterns and their recovery mechanisms: Tool type misspecification. Local models (≤14B) systematically prefer cli over file_ops for file operations and browse/web_read over browser for browser operations. The three-layer correction mechanism (alias normalization, context-aware autocorrection, fallback chains) intercepted and corrected all such errors in experiments, demonstrating that intelligent routing is a reliability necessity when using capability-limited local models.</p><p>Planner hallucination and refusal. Approximately 15% of first-round Planner outputs triggered anti-hallucination detection (generating answers without tool execution). All were corrected in the second round through correction prompts.</p><p>Memory contamination. When loaded historical memory contains stale information (outdated prices, changed file paths), the memory contradiction detector compares numerical values in tool results against loaded memory, auto-flags discrepancies, and injects warnings before Reviewer evaluation.</p><p>Web search degradation. The four-strategy fallback chain achieves ∼98% combined success rate. CDP Google search has ∼85% first-attempt success (Cloudflare Turnstile occasionally blocks); DDG HTTP POST handles most fallback cases. The remaining ∼2% failures are due to network issues or simultaneous rate limiting across all engines.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.9">Comparison with Representative Systems</head><p>Table <ref type="table" target="#tab_10">7</ref> provides a detailed comparison of IronEngine with representative AI assistant systems across 12 capability dimensions. The comparison uses qualitative ratings based on publicly documented capabilities and our direct evaluation where possible. The comparison reveals several key differentiators for IronEngine: Broadest tool coverage. With 24 tool categories spanning file system, web, communication, GUI, media, and network domains, IronEngine provides the broadest tool coverage among all compared systems. Code-centric assistants (Cursor) cover only programming tasks; conversation products (Chat-GPT) focus on web and code; the OpenClaw ecosystem offers moderate tool coverage through skills but lacks the intelligent routing layer with alias normalization and auto-correction.</p><p>Unique multi-role quality assurance. Iro-nEngine is the only system in the comparison that implements a formal quality review phase within its pipeline. The Planner-Reviewer discussion loop with anti-hallucination detection, score-text contradiction checking, and memory recycling guards provides a level of output quality assurance that is absent from both the OpenClaw ecosystem (which uses direct skill dispatch) and cloud products (which rely entirely on single-model capability).</p><p>Local-first with full capability. While Open-Claw, NanoClaw, and Open Interpreter also support local models, IronEngine uniquely combines local deployment with multi-role orchestration, persistent hierarchical memory, vectorized skill learning, VRAMaware model lifecycle management, and 24-category tool routing-capabilities that no other local-first system provides together.</p><p>Skill learning with quality filtering. Iro-nEngine's ability to automatically extract reusable skills from successful task executions, with noveltybased deduplication (cosine distance threshold), userrating-driven quality filtering (only learning from highly-rated interactions), and correction mechanisms (re-learning from failures), is more sophisticated than OpenClaw's static skill definitions or the absence of skill learning in other compared systems.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Orchestration observability.</head><p>The desktop workbench provides real-time visibility into the AI's decision-making process through thinking blocks, tool execution badges, quality score indicators, and phase transition notifications. This observability is a unique advantage over both headless systems (OpenClaw, NanoClaw) and cloud products where the internal reasoning process is opaque to users.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Complementary positioning vs. OpenClaw ecosystem.</head><p>While OpenClaw excels at multi-channel messaging and always-on availability, NanoClaw at edge deployment, and IronClaw at hardware integration, IronEngine occupies a distinct niche as an orchestration-deep desktop workbench with the most sophisticated planning pipeline, tool routing, and memory management among local-first AI assistant platforms. The systems are complementary rather than directly competitive: OpenClaw optimizes for  breadth of messaging channels; IronEngine optimizes for depth of task orchestration.</p><formula xml:id="formula_2">S W M W W W M S W Tool categories S (24) M M M W M M M M Memory system S M W M W W W W W Skill learning S W W M W W W W W Task scheduling S W W M W M - M W MCP compat. S W S M W W M M W GUI automation S W W W W M - W M Web browsing S S M M W W W M M VRAM mgmt S - - W M W - W M Privacy S W M S S S M M S Open source - W W S S S W S S Multi-channel M M W S M W W M W Hardware facing M W W M M S - W W</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.10">Cross-Model Tool Awareness</head><p>A key hypothesis of IronEngine's tiered prompt system is that even small models can achieve reliable tool dispatch when provided with appropriately structured tool documentation. To test this, we evaluate four models spanning 8B to 27B parameters on a WeChat tool-type identification task, where the model must correctly classify the tool category from a natural language instruction. Table <ref type="table" target="#tab_11">8</ref> shows that all four models achieve 100% accuracy on tool-type identification. Inference time scales approximately linearly with model size (from 10.5 s for 8B to 50.2 s for 27B). The key finding is that even the smallest 8B model achieves perfect tool dispatch when IronEngine's tiered prompt system provides appropriately scoped tool documentation-the small model receives a condensed 733-token tool manifest rather than the full 2,236-token version used for large models. This validates the design decision to tier prompt content by model size rather than using one-size-fits-all prompts.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.11">Full Pipeline Integration Tests</head><p>To evaluate the complete three-phase pipeline under realistic conditions, we conduct eight integration tests across two model configurations and four task scenarios, measuring both the Planner-Reviewer discussion quality and the end-to-end task completion.</p><p>Figure <ref type="figure" target="#fig_10">9</ref> visualizes the quality score progression, highlighting the Reviewer's corrective effect.</p><p>Several findings emerge from the integration tests (Table <ref type="table" target="#tab_12">9</ref>). First, the Reviewer's corrective feedback is most impactful for smaller Planners: the 14B cogito model's quality scores improve from 0.10-0.20 to 0.80-0.85 after a single review round, demonstrating that the Reviewer effectively compensates for the smaller Planner's initial planning weaknesses. Second, larger Planners (27B) frequently pass quality thresholds on the first round, reducing total execution time by eliminating the second discussion round. Third, the single failure (travel planning) is attributable to the test environment lacking network access rather than a pipeline deficiency-the Reviewer correctly identified the plan as insufficient (score 0.40) when web search results were unavailable. Fourth, generative tasks (story creation) consistently pass on the first round with high scores, validating Iro-nEngine's generative task detection mechanism that bypasses tool-execution requirements for purely creative tasks.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.12">Tool Model Reliability</head><p>The tool translation model converts natural language instructions into structured JSON commands. We evaluate three candidate models to assess the trade-off between model size, translation accuracy, and execution success. Table <ref type="table" target="#tab_13">10</ref> reveals a nuanced relationship between model size and tool execution reliability. phi4-mini (3.8B) achieves the best overall performance: 98.2% translation success and 70.6% execution success, offering the optimal balance between resource efficiency and reliability. functiongemma (270M) is too small for reliable tool translation, with only 54% of outputs producing valid JSON. Surprisingly, ministral-3 (14B) achieves perfect translation (100%) but the lowest execution rate (20%)-the model generates syntactically correct but semantically incorrect commands (e.g., correct JSON structure but wrong parameter values or missing required fields). This finding underscores that tool model evaluation must consider both syntactic validity and semantic correctness, and that larger models do not necessarily produce better tool commands.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="12.13">Multi-Scenario Diagnostic Tests</head><p>To evaluate IronEngine's breadth across diverse task types, we conduct diagnostic tests spanning six scenarios that exercise different subsystems (tool routing, skill learning, web search, multimedia, and generative capabilities).</p><p>The diagnostic results (Table <ref type="table" target="#tab_14">11</ref>) demonstrate several aspects of IronEngine's architecture. First, the system handles diverse task types-from low-level shell commands (139.6 s) to complex multi-step PDF processing (152.2 s, 7 tool calls) to creative writing (321.4 s)-through the same pipeline without taskspecific configuration. Second, skill learning is automatically triggered for successfully completed tasks rated ≥ 7: four of five passing scenarios produced new learned skills, which would accelerate similar future tasks through the skill-augmented Executor prompt. Third, the fastest completion (WeChat messaging, 81.8 s) benefits from an innate skill that provides the Executor with a pre-defined interaction procedure, demonstrating the value of the skill system for reducing planning overhead. Fourth, the single failure (travel planning) is correctly attributable to an environmental constraint (no network access) rather than a system deficiency-the pipeline detected the tool execution failure and reported it through the intervention callback rather than hallucinating a response.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="13">Interfaces, Deployment, and Product Positioning</head><p>IronEngine supports three complementary interaction modes, all sharing the same pipeline:</p><p>Desktop workbench (PySide6): Provides the richest interaction experience with model selection dropdowns, real-time thinking block visualization, tool execution badges, quality score indicators, intervention prompts, and 10 customizable themes. This mode is optimized for interactive desktop usage where observability of the orchestration process is important.</p><p>REST/WebSocket API (FastAPI): Enables integration with web applications, mobile apps, and other services. WebSocket channels stream events in real-time, supporting the same 17 callback types as the Python client. This mode enables IronEngine to serve as a backend for custom frontends.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Python client:</head><p>Supports both callbackbased (IronEngineClient) and Qt signal-based (IronEngineQtClient) integration for embedding IronEngine into larger applications.</p><p>The client API mirrors the full pipeline capability set including configuration, model selection, and permission management.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="13.1">Deployment Modes</head><p>Fully local: All models served through Ollama or LM Studio on the same machine. No data leaves the local network. Suitable for privacy-sensitive work-loads and air-gapped environments.</p><p>Hybrid: Local models for common tasks, cloud APIs for complex reasoning or specialized capabilities. The provider registry transparently routes requests to the appropriate backend.</p><p>Service: API-only deployment for integration with external systems, automated workflows, or multi-user environments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="13.2">Product Positioning</head><p>Table <ref type="table" target="#tab_4">12</ref> positions IronEngine relative to representative AI agent frameworks and products.</p><p>IronEngine occupies a distinctive position in this landscape. Compared with the OpenClaw ecosystem, IronEngine trades multi-channel messaging breadth for orchestration depth: its three-phase pipeline with formal quality review, 24-category intelligent tool routing, and VRAM-aware multi-model lifecycle management provide a level of task execution sophistication that the gateway-oriented OpenClaw architecture does not attempt. Compared with cloud products, IronEngine provides full local-first capability without sacrificing tool breadth or memory sophistication. Compared with code-centric assistants (Cursor, Windsurf), IronEngine extends beyond programming into general-purpose desktop automation, communication, and multimedia analysis. The result is a system that combines local deployment strengths, multi-agent collaboration depth, protocol extensibility, and tool breadth into a single orchestrationcentered runtime with persistent memory and continuously improving skill capabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="13.3">Desktop Workbench Design Philosophy</head><p>IronEngine's desktop UI is not merely a chat interface but an orchestration visualization workbench. Its design philosophy is that AI assistant decision-making processes should be transparent and visible to users, rather than a black-box input→wait→output pattern.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ThinkingBlock.</head><p>A collapsible Markdownrendered component that displays Planner and Reviewer reasoning in real-time. Default collapsed ation, homoglyph detection, dangerous protocols, excessive subdomains, and URL length anomalies.</p><p>• Parking/dead page detection: Content-level analysis to identify placeholder pages that provide no useful information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.4">Intervention Mechanism</head><p>When a model determines that a task requires human judgment or authorization beyond its scope, it can emit an INTERVENTION_NEEDED marker. This triggers a user-facing prompt that pauses the pipeline until the user provides guidance. This mechanism serves as a safety valve for edge cases that cannot be resolved through automated permission checks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.5">SOUL Edit Control</head><p>The SOUL (System Operating Under Limitations) document defines behavioral boundaries for each role. Edit access to the SOUL is controlled through a permission system with three levels: readonly (default, no modifications allowed), ask (modifications require explicit user approval), and auto (self-modification allowed within defined constraints). This prevents unauthorized changes to the assistant's behavioral guidelines.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.6">Local-First Privacy</head><p>In fully local deployment mode, no data leaves the user's machine. All model inference, tool execution, memory storage, and skill learning operate within the local environment. This is particularly important for workloads involving sensitive documents, personal communications, or proprietary information. The system does not require telemetry, cloud-based logging, or external authentication.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.7">Internal English Processing</head><p>All internal processing-Planner/Reviewer discussion, web search queries, execution steps-is conducted in English regardless of the user's input language.</p><p>Only the final answer (FINAL_ANSWER) is presented in the user's language. This strategy has two engineering rationales: (1) most open-source models achieve significantly higher reasoning and tool-calling accuracy in English than in other languages; (2) internal English consistency simplifies cross-language matching for skill tags, memory indices, and search queries. The system includes a ∼45-term Chinese-English translation dictionary and CJK character detection functions for automatic input conversion.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.8">Defense-in-Depth Design</head><p>IronEngine's safety design follows the defense-indepth principle: permission management is the first defense line (blocking unauthorized operations), execution sandboxing is the second (constraining authorized operations' dangerous behaviors), URL safety is the third (filtering malicious external resources), and the intervention mechanism is the last (escalating beyond-scope decisions to humans). These four layers operate independently; bypassing any single layer does not compromise overall system security.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="15">Discussion</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="15.1">Architectural Trade-offs</head><p>The three-phase pipeline introduces latency overhead compared to single-step execution. The model switch phase alone adds approximately 27 seconds per task, and the Planner-Reviewer discussion can require 2-3 rounds for complex tasks. However, this overhead is justified by improved reliability: the 100% task completion rate in our benchmarks suggests that the quality assurance provided by the Reviewer prevents costly execution failures that would require resubmission in single-step systems. The tiered prompt system's aggressive reduction for small models (44 tokens of SOUL context for ≤10B models vs. 1309 tokens for &gt;25B models) risks losing important behavioral guidance. Our testing shows that small models (≤10B) can still achieve acceptable tool translation accuracy with minimal context, but their planning quality degrades significantly, motivating the use of larger models for the Planner role.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="15.2">Scalability Considerations</head><p>The current single-GPU design limits IronEngine to models that fit within 24 GB VRAM (with quantization). While this covers a wide range of open-source models up to approximately 35B parameters, it excludes the largest open models (70B+) in full precision. The model switch mechanism could be extended to support multi-GPU configurations or CPU offloading for larger models, though this would increase switch latency.</p><p>The memory system's linear scan for relevant entries becomes less efficient as the memory store grows. Future work could introduce more sophisticated indexing (e.g., hierarchical HNSW with temporal clustering) to maintain sub-linear retrieval time at scale.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="15.3">Architectural Comparison with the OpenClaw Ecosystem</head><p>OpenClaw and IronEngine represent two distinct architectural philosophies for AI assistants. OpenClaw adopts a message routing pattern: user messages are routed through a Gateway to skill handlers, which execute operations and return results. This architecture optimizes for multi-channel accessibility and response speed, suited to the simple "receive message → execute skill → reply" interaction pattern. IronEngine adopts an orchestration depth pattern: each request traverses Discussion, Switch, and Execution phases with three distinct roles (Planner, Reviewer, Executor). This introduces additional latency (∼27 seconds for model switch + multi-round discussion) but achieves higher task completion reliability: the Reviewer's anti-hallucination detection prevents erroneous plans from being executed, and autocorrection mechanisms fix tool selection errors.</p><p>NanoClaw's edge deployment strategy (aggressive quantization + upstream proxy) and IronEngine's VRAM-aware model management address the same fundamental problem (running models on limited hardware) from different perspectives. NanoClaw optimizes single-model execution on extremely small devices; IronEngine optimizes multi-model collaboration on consumer GPUs. IronClaw's sensor/actuator abstractions share goals with IronEngine's hardware compatibility layer, but IronClaw targets realtime control loops while IronEngine targets task-level automation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="15.4">Design Principles and Engineering Insights</head><p>IronEngine's development has yielded several important insights for AI agent system engineering:</p><p>Role separation over capability stacking. Assigning planning, evaluation, and execution to different model roles, rather than relying on a single powerful model for all responsibilities, is IronEngine's core architectural decision. This provides three engineering advantages: (1) each role can use the model best suited to its requirements; (2) SOUL prompts can be role-specific, avoiding loading detailed tool documentation into the Reviewer's context; (3) individual roles can have their models replaced without affecting others.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Auto-correction over precise instructions.</head><p>Facing local models' limited instruction-following capability, IronEngine implements system-level autocorrection rather than relying on more detailed prompts to prevent errors. The tool router's alias normalization and auto-correction mechanisms demonstrate this strategy's effectiveness: even when the Planner frequently misspecifies tool types, the system still routes correctly. This experience has broader implications-designing fault-tolerant system architecture is more pragmatic than pursuing error-free model output.</p><p>Observability is a debugging prerequisite. AI agent systems' opacity is the primary debugging obstacle. IronEngine's 17 callback event types provide complete visibility from thought processes to tool execution. In practice, on_quality_scored and on_phase_transition callbacks prove most useful for diagnosing pipeline bottlenecks.</p><p>Memory is the core constraint. On consumer GPUs, VRAM management transforms from an optional optimization into an architectural foundation. KV-cache memory cost grows linearly with context length, and per-token KV-cache costs vary up to 5× across model architectures. IronEngine's VRAM-aware context budget mechanism is a practical necessity, not a theoretical optimization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="15.5">Generalizability</head><p>While our experimental evaluation focuses on file operations, the system's 24 tool categories have been tested informally across web search, GUI automation, media analysis, and communication tasks. Formal benchmarks for these domains (e.g., WebArena <ref type="bibr" target="#b37">[38]</ref> for web tasks, SWE-bench <ref type="bibr" target="#b39">[40]</ref> for code tasks) represent important future evaluation targets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="15.6">Limitations</head><p>Several limitations should be acknowledged: </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="16">Future Work</head><p>Several directions for future development are planned:</p><p>Multi-expert system.</p><p>The current single-Planner architecture could be extended to support multiple expert profiles with domain-specific knowledge and credit scores. A routing mechanism would select the most appropriate expert based on task characteristics, enabling specialization without sacrificing generality.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Standardized benchmarking.</head><p>Integration with established benchmarks such as WebArena <ref type="bibr" target="#b37">[38]</ref>, SWE-bench <ref type="bibr" target="#b39">[40]</ref>, and custom multi-tool benchmarks would enable systematic comparison with other agent systems and tracking of performance improvements across versions.</p><p>User preference learning. The current memory and skill systems capture task-level knowledge but do not explicitly model user preferences (communication style, risk tolerance, tool preferences). A dedicated preference module could learn these patterns from interaction history and adapt the assistant's behavior accordingly.</p><p>Bidirectional MCP. Currently IronEngine acts only as an MCP client, consuming tools from external servers. Implementing MCP server capability would allow IronEngine's 24 tool categories to be exposed to other MCP-compatible systems, positioning it as both a consumer and provider in the MCP ecosystem.</p><p>Cross-device synchronization. The local-first architecture could be extended with optional encrypted synchronization across multiple devices, enabling seamless transitions between desktop and mobile environments while preserving privacy guarantees.</p><p>Multimodal deepening. Current vision capabilities are limited to image analysis and screenshotbased GUI navigation. Deeper integration of video understanding (temporal reasoning across frames), real-time audio conversation, and spatial reasoning would expand the system's applicability to embodied and multimedia-rich scenarios.</p><p>Edge deployment. Optimization for resourceconstrained devices (8 GB VRAM or less) through aggressive quantization, speculative decoding, and pipeline stage pruning would extend IronEngine's reach to laptop and mobile environments.</p><p>OpenClaw ecosystem interoperability. Exploring interoperation modes between IronEngine and the OpenClaw Gateway: IronEngine as an OpenClaw device node providing deep orchestration capability, or OpenClaw's multi-channel messaging as a communication extension for IronEngine. The complementary characteristics of these systems suggest that joint deployment may provide a more complete assistant experience than either system alone.</p><p>Adaptive pipeline. Automatically adjusting pipeline depth based on task complexity: simple tasks skip the Reviewer and execute directly; complex tasks enable multi-round discussion and multi-expert routing. The current simple-plan reuse mechanism (≤4 tool calls skip model switch) is an initial exploration in this direction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="17">Conclusion</head><p>This paper has presented IronEngine, a systemoriented platform for general AI assistant development that addresses three key engineering gaps in current agent systems: fragmented interaction surfaces, loosely coupled subsystem integration, and limited support for local deployment with persistent behavior.</p><p>IronEngine's three-phase pipeline separates planning quality (Planner-Reviewer discussion) from execution capability (tool-augmented Executor), enabling heterogeneous model allocation on consumer hardware. The system integrates 24 tool categories through an intelligent routing layer with alias normalization and automatic error correction, manages persistent state through hierarchical memory with dual consolidation strategies, and acquires reusable procedural knowledge through vectorized skill learning with novelty-based deduplication.</p><p>Experimental evaluation on file operation benchmarks demonstrates 100% task completion accuracy with a three-model local configuration (27B Planner, 20B Reviewer, 3.8B Tools model) on a single RTX 3090. Detailed comparison with seven representative AI assistant systems highlights IronEngine's distinctive combination of local-first deployment, broad tool coverage, persistent memory, skill learning, and protocol-level extensibility.</p><p>The future of AI assistants depends not only on model capability but also on architecture, orchestration, observability, safety, and long-term adaptability. IronEngine demonstrates that these system-level concerns can be addressed coherently within a single platform, providing a foundation for the next generation of general-purpose, privacy-preserving, and continuously improving AI assistants.</p><p>From a broader perspective, IronEngine validates a core proposition: through carefully designed system architecture (role separation, intelligent routing, hierarchical memory, VRAM-aware scheduling), moderately-sized local open-source models can achieve usable automation levels in practical tasks. Compared with cloud-based approaches relying on single super-large models, this system intelligence approach offers structural advantages in cost, privacy, and customizability. Compared with gateway-style architectures like OpenClaw, IronEngine's deep orchestration provides higher task completion reliability. These two approaches are not opposing but complementary technical choices within the AI assistant ecosystem. As open-source model capabilities continue to improve, the local orchestration paradigm that IronEngine represents will demonstrate its value in an expanding range of application scenarios.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Simplified trajectory of AI agent research and product evolution relevant to IronEngine. Blue nodes indicate research milestones; orange nodes indicate product-oriented systems.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: IronEngine desktop UI. The left panel exposes model and execution configuration with Planner/Reviewer/Tools model selectors. The right area supports conversation with inline thinking blocks, tool execution badges, and quality score indicators.</figDesc><graphic coords="14,71.15,58.69,452.99,273.99" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>7. 1</head><label>1</label><figDesc>Phase 1: Discussion In the Discussion phase, the Planner model generates a task decomposition plan based on the user request, assembled context (conversation history, loaded memories, relevant skills, tool manifest), and its SOUL behavioral guidelines. The plan specifies what tools to invoke and in what order, but no tools are actually executed during this phase.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: IronEngine three-phase pipeline. Phase 1 (Discussion): Planner and Reviewer collaborate on plan quality without tool execution. Phase 2 (Model Switch): VRAM-aware transition from discussion models to execution model. Phase 3 (Execution): Executor runs tools iteratively until task completion.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>-layer fallback chains. Each tool type defines fallback strategies. Web search, for instance, follows a four-strategy chain: (1) CDP-based Google search via persistent Chrome instance, (2) Duck-DuckGo HTTP POST, (3) Bing HTTP GET, (4) visible browser Google+Bing. If any strategy succeeds, subsequent strategies are skipped.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: Web search four-strategy fallback chain. Each strategy is attempted in order; the first success terminates the chain.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Tool dispatch flow in IronEngine. Model output is parsed, types are normalized through 130+ aliases, auto-corrected if mismatched, and dispatched with multi-layer fallback chains.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 7 :</head><label>7</label><figDesc>Figure 7: Memory hierarchy and lifecycle in IronEngine. Session and pipeline entries are consolidated through two merge strategies into daily summaries and refined long-term knowledge. Context retrieval selects the most relevant entries (2 positive + 1 negative examples) for each new request.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>. The pipeline configuration uses: • Planner: qwen3.5:27b (27B parameters, served via Ollama) • Reviewer: gpt-oss:20b (20B parameters, served via LM Studio) • Tools model: phi4-mini:3.8b (3.8B parameters, served via Ollama)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 8 :</head><label>8</label><figDesc>Figure 8: Distribution of execution time across pipeline phases for each benchmark task. Model inference (Planner + Reviewer + Executor) dominates total time, while actual tool execution completes in under 2 seconds. The model switch phase is constant at ∼27 seconds.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Figure 9 :</head><label>9</label><figDesc>Figure 9: Planner-Reviewer quality score progression. Red bars show initial Round 1 scores; green bars show final scores after Reviewer feedback. The Reviewer's structured feedback (ISSUES + SUGGESTIONS) enables the 14B Planner to improve plans from 0.10-0.20 to 0.80-0.85, while the larger 27B Planner often achieves acceptable quality on the first round.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>1</head><label></label><figDesc>Simplified trajectory of AI agent research and product evolution relevant to IronEngine. Blue nodes indicate research milestones; orange nodes indicate product-oriented systems. . . . . . . . 2 Overall architecture of IronEngine showing the four-layer design: interaction surfaces (top), unified orchestrator (middle), capability modules (lower-middle), and environment interfaces (bottom). 3 IronEngine desktop UI. The left panel exposes model and execution configuration with Planner/Reviewer/Tools model selectors. The right area supports conversation with inline thinking blocks, tool execution badges, and quality score indicators. . . . . . . . . . . . . . . . . . . . . . . 4 IronEngine three-phase pipeline. Phase 1 (Discussion): Planner and Reviewer collaborate on plan quality without tool execution. Phase 2 (Model Switch): VRAM-aware transition from discussion models to execution model. Phase 3 (Execution): Executor runs tools iteratively until task completion. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6 Web search four-strategy fallback chain. Each strategy is attempted in order; the first success terminates the chain. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5 Tool dispatch flow in IronEngine. Model output is parsed, types are normalized through 130+ aliases, auto-corrected if mismatched, and dispatched with multi-layer fallback chains. . . . . . . 7 Memory hierarchy and lifecycle in IronEngine. Session and pipeline entries are consolidated through two merge strategies into daily summaries and refined long-term knowledge. Context retrieval selects the most relevant entries (2 positive + 1 negative examples) for each new request. Mapping between major system claims and engineering evidence in the project . . . . . . . . . . 2 IronEngine tool categories organized by functional domain . . . . . . . . . . . . . . . . . . . . . . 3 Tiered prompt system based on model size . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5 Tool routing auto-correction statistics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4 File operation benchmark results. All tasks achieve 100% correctness (4/4 PASS). . . . . . . . . 6 VRAM usage by pipeline phase . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7 Detailed capability comparison with representative AI assistant systems. Ratings: S=Strong, M=Medium, W=Weak, -=Not applicable. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8 Cross-model tool awareness test results. All models achieve perfect tool-type identification with IronEngine's tiered prompt system. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9 Full pipeline integration test results across model configurations and scenarios. Quality scores show Round 1 (initial) → Round 2 (after Reviewer feedback) progression. . . . . . . . . . . . . . 10 Tool model reliability comparison. Translation success = valid JSON output; Execution success = correct tool result. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11 Multi-scenario diagnostic test results. Five of six scenarios pass (83.3%). The travel planning failure is due to the test environment lacking network access. Skill learning is triggered automatically for tasks rated ≥ 7. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 System-positioning comparison with representative AI agent frameworks and products . . . . . .</figDesc><table><row><cell>List of Tables</cell></row><row><cell>1</cell></row></table><note><p>8 Distribution of execution time across pipeline phases for each benchmark task. Model inference (Planner + Reviewer + Executor) dominates total time, while actual tool execution completes in under 2 seconds. The model switch phase is constant at ∼27 seconds. . . . . . . . . . . . . . . 9 Planner-Reviewer quality score progression. Red bars show initial Round 1 scores; green bars show final scores after Reviewer feedback. The Reviewer's structured feedback (ISSUES + SUG-GESTIONS) enables the 14B Planner to improve plans from 0.10-0.20 to 0.80-0.85, while the larger 27B Planner often achieves acceptable quality on the first round. . . . . . . . . . . . . . .</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 1 :</head><label>1</label><figDesc>Overall architecture of IronEngine showing the four-layer design: interaction surfaces (top), unified orchestrator (middle), capability modules (lower-middle), and environment interfaces (bottom). Mapping between major system claims and engineering evidence in the project</figDesc><table><row><cell>layer. The FastAPI server</cell></row><row><cell>exposes REST endpoints for synchronous requests</cell></row><row><cell>and WebSocket channels for streaming events. The</cell></row><row><cell>Python client (IronEngineClient) provides callback-</cell></row><row><cell>based integration, while IronEngineQtClient adds</cell></row><row><cell>Qt signal forwarding for GUI embedding. Both client</cell></row><row><cell>types support the full 17-callback interface includ-</cell></row><row><cell>ing thinking, conclusion, tool execution, permission</cell></row><row><cell>prompts, quality scores, model selection, and phase</cell></row><row><cell>transition notifications.</cell></row></table><note><p>Multi-model collaboration module. The pipeline assigns distinct roles-Planner, Reviewer, Executor, and Tools model-to potentially differ-</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc>Receive request via UI / API / Python client Assemble context: history, memory, skills, task state, tool manifest Planner generates plan with tool requirements (text only, no execution) Reviewer evaluates plan quality and provides score + feedback Quality ≥ threshold?</figDesc><table><row><cell></cell><cell>Phase 1</cell></row><row><cell>no: iterate</cell><cell>Phase 2</cell></row><row><cell></cell><cell>Phase 3</cell></row><row><cell></cell><cell>yes</cell></row><row><cell></cell><cell>Unload Planner/Reviewer VRAM → Load Executor model</cell></row><row><cell></cell><cell>Executor reads plan + user request, emits tool call markers</cell></row><row><cell></cell><cell>Tool Router dispatches: file_ops / web_search / browser / GUI / network / …</cell></row><row><cell></cell><cell>no: next step</cell></row><row><cell></cell><cell>FINAL_ANSWER or max steps?</cell></row><row><cell></cell><cell>yes</cell></row><row><cell></cell><cell>Return conclusion, update memory, evaluate skill learning</cell></row><row><cell></cell><cell>This involves un-</cell></row><row><cell></cell><cell>loading the Planner and Reviewer models from GPU</cell></row><row><cell></cell><cell>VRAM and loading the Executor model. The VRAM</cell></row><row><cell></cell><cell>management system monitors GPU memory through</cell></row><row><cell></cell><cell>provider-specific APIs and ensures safe model transi-</cell></row><row><cell></cell><cell>tions.</cell></row><row><cell></cell><cell>The model switch follows a four-step process: (1)</cell></row><row><cell></cell><cell>finalize the approved plan text; (2) unload Planner</cell></row><row><cell></cell><cell>and Reviewer from GPU VRAM via provider-specific</cell></row><row><cell></cell><cell>APIs; (3) select and load the Executor model (user-</cell></row><row><cell></cell><cell>configured or auto-selected from 3-14B tool-capable</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 2 :</head><label>2</label><figDesc>if text extraction yields fewer than 200 characters, an OCR-based vision fallback segments the page into screenshots and analyzes each with a vision model; (3) if both fail, a CDP browser fallback opens the URL in a new tab, waits for render-IronEngine tool categories organized by functional domain</figDesc><table><row><cell>Domain</cell><cell cols="2">Tool types</cell><cell>Description</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>File system</cell><cell cols="2">file_ops, file_write, archive,</cell><cell cols="7">List, copy, move, rename, delete files; create/overwrite files; compress/extract</cell></row><row><cell></cell><cell cols="2">binary_read</cell><cell cols="3">archives; read binary file metadata</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Web</cell><cell cols="2">web_search, web_read,</cell><cell cols="7">Multi-engine search with captcha handling; HTTP content extraction with OCR</cell></row><row><cell></cell><cell>browser</cell><cell></cell><cell cols="4">fallback; full browser automation via CDP</cell><cell></cell><cell></cell></row><row><cell>Communication</cell><cell>wechat</cell><cell></cell><cell cols="7">Automated messaging, file transfer, sticker sending, and message reading for</cell></row><row><cell></cell><cell></cell><cell></cell><cell>WeChat</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Desktop GUI</cell><cell cols="2">gui_auto, app_control,</cell><cell cols="7">Mouse/keyboard automation; window management and UIA element interaction;</cell></row><row><cell></cell><cell cols="2">auto_input</cell><cell>automated form input</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Media</cell><cell cols="2">image_gen, image_read,</cell><cell cols="7">Image generation and vision analysis; text-to-speech and speech-to-text; video</cell></row><row><cell></cell><cell cols="2">speech_tts, speech_stt,</cell><cell cols="4">frame analysis with audio transcription</cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="2">video_analyze,</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="2">audio_analyze</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>System</cell><cell cols="2">cli, classify, network</cell><cell cols="7">Sandboxed command execution; text classification; WiFi, FTP, ping, DNS, port</cell></row><row><cell></cell><cell></cell><cell></cell><cell>scanning</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">Model output withtool call markers</cell><cell>Extract tool calls(regex parser)</cell><cell>Normalize type(130+ aliases)</cell><cell>Type correct?</cell><cell>yes</cell><cell>Dispatch tohandler</cell><cell>Success?</cell><cell>yes</cell><cell>Return resultto Executor</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell>no</cell><cell></cell><cell></cell><cell>no</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="4">Auto-correct type+ strip invalid flags</cell><cell cols="2">Try fallbackstrategy</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 3 :</head><label>3</label><figDesc>Tiered prompt system based on model size</figDesc><table><row><cell>Tier</cell><cell>Tool docs</cell><cell>SOUL</cell><cell>Strategy</cell></row><row><cell>Small</cell><cell>∼733 tok</cell><cell>∼44 tok</cell><cell>Identity only; minimal</cell></row><row><cell>(≤10B)</cell><cell></cell><cell></cell><cell>tool descriptions</cell></row><row><cell>Medium</cell><cell>∼1964</cell><cell>∼623 tok</cell><cell>Core SOUL sections;</cell></row><row><cell>(10-25B)</cell><cell>tok</cell><cell></cell><cell>standard tool docs</cell></row><row><cell>Large</cell><cell>∼2236</cell><cell>∼1309</cell><cell>Full SOUL with all</cell></row><row><cell>(&gt;25B)</cell><cell>tok</cell><cell>tok</cell><cell>behavioral sections;</cell></row><row><cell></cell><cell></cell><cell></cell><cell>comprehensive tool</cell></row><row><cell></cell><cell></cell><cell></cell><cell>docs</cell></row><row><cell cols="4">The SOUL (System Operating Under Limita-</cell></row><row><cell cols="4">tions) document defines each role's behavioral guide-</cell></row><row><cell cols="4">lines. Rather than sending the full SOUL to ev-</cell></row><row><cell cols="4">ery model, the SoulManager extracts role-specific sec-</cell></row><row><cell cols="4">tions: Planner receives Identity, Core Principles, Au-</cell></row><row><cell cols="4">tonomy, Communication Style, Boundaries, and Plan-</cell></row><row><cell cols="4">ner Behavior; Reviewer receives Identity, Core Prin-</cell></row><row><cell cols="4">ciples, Communication Style, Boundaries, and Re-</cell></row><row><cell cols="4">viewer Behavior; Executor receives only Identity and</cell></row><row><cell cols="4">Executor Behavior. This role-specific loading saves</cell></row><row><cell cols="4">450-1300 tokens per message compared to sending the</cell></row><row><cell>full SOUL.</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7"><head>Table 5 :</head><label>5</label><figDesc>Tool routing auto-correction statistics</figDesc><table><row><cell>Correction type</cell><cell>Count</cell><cell>Success</cell><cell>Notes</cell></row><row><cell>cli → file_ops</cell><cell>12</cell><cell>100%</cell><cell>Path pattern</cell></row><row><cell></cell><cell></cell><cell></cell><cell>detected</cell></row><row><cell>browse →</cell><cell>3</cell><cell>100%</cell><cell>Alias normalized</cell></row><row><cell>browser</cell><cell></cell><cell></cell><cell></cell></row><row><cell>web_read →</cell><cell>2</cell><cell>100%</cell><cell>JS-heavy site</cell></row><row><cell>browser</cell><cell></cell><cell></cell><cell>detected</cell></row><row><cell>Alias</cell><cell>47</cell><cell>100%</cell><cell>130+ aliases</cell></row><row><cell>normalization</cell><cell></cell><cell></cell><cell></cell></row><row><cell>No correction</cell><cell>89</cell><cell>100%</cell><cell>Direct dispatch</cell></row><row><cell>needed</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8"><head>Table 4 :</head><label>4</label><figDesc>File operation benchmark results. All tasks achieve 100% correctness (4/4 PASS).</figDesc><table><row><cell>#</cell><cell cols="3">Task description</cell><cell cols="2">Time (s)</cell><cell>Rounds</cell><cell>Result</cell><cell>Key observations</cell></row><row><cell>1</cell><cell cols="3">List files in a directory with spaces and</cell><cell></cell><cell>379</cell><cell>2</cell><cell>PASS</cell><cell>Path with special characters correctly</cell></row><row><cell></cell><cell cols="3">quotes in path</cell><cell></cell><cell></cell><cell>handled; file_ops auto-selected</cell></row><row><cell>2</cell><cell cols="3">Move a file from one directory to another</cell><cell></cell><cell>311</cell><cell>2</cell><cell>PASS</cell><cell>Two-path parsing with "to" separator;</cell></row><row><cell></cell><cell cols="3">(cross-drive)</cell><cell></cell><cell></cell><cell>cross-drive move succeeded</cell></row><row><cell>3a</cell><cell cols="3">Create a new text file with specific content</cell><cell></cell><cell>421</cell><cell>2</cell><cell>PASS</cell><cell>file_write tool correctly dispatched;</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>content verified</cell></row><row><cell>3b</cell><cell cols="3">Delete a specific file by path</cell><cell></cell><cell>430</cell><cell>2</cell><cell>PASS</cell><cell>file_ops delete operation; existence</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>verified pre/post deletion</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">Total</cell><cell>1541</cell><cell>8</cell><cell>4/4</cell><cell>Mean: 385s per task; 2 rounds per task</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>average</cell></row><row><cell></cell><cell></cell><cell>400</cell><cell></cell><cell></cell><cell></cell><cell>64</cell><cell>70</cell></row><row><cell></cell><cell>Time (seconds)</cell><cell>200</cell><cell>52 95 27 85</cell><cell>39 78 27</cell><cell></cell><cell>110 27 90</cell><cell>120 27 88</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell>72</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell>120</cell><cell>95</cell><cell></cell><cell>130</cell><cell>125</cell></row><row><cell></cell><cell></cell><cell>0</cell><cell>List Files</cell><cell cols="2">Move File</cell><cell>Create File</cell><cell>Delete File</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Task</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">Planner reasoning</cell><cell cols="2">Reviewer evaluation Model switch Executor + tools</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">Communication overhead</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9"><head>Table 6 :</head><label>6</label><figDesc>VRAM usage by pipeline phase</figDesc><table><row><cell>Phase</cell><cell>Peak</cell><cell>Notes</cell></row><row><cell></cell><cell>VRAM</cell><cell></cell></row><row><cell>Discussion</cell><cell>∼17.5 GB</cell><cell>qwen3.5:27b Q4 quantized</cell></row><row><cell>(Planner)</cell><cell></cell><cell></cell></row><row><cell>Discussion</cell><cell>∼13.0 GB</cell><cell>gpt-oss:20b Q4 quantized</cell></row><row><cell>(Reviewer)</cell><cell></cell><cell></cell></row><row><cell>Model switch</cell><cell>∼2 GB</cell><cell>Post-unload residual</cell></row><row><cell>Execution</cell><cell>∼17.5 GB</cell><cell>Reuses Planner or dedicated</cell></row><row><cell>(Executor)</cell><cell></cell><cell>model</cell></row><row><cell>Tool</cell><cell>∼2.5 GB</cell><cell>phi4-mini:3.8b</cell></row><row><cell>translation</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10"><head>Table 7 :</head><label>7</label><figDesc>Detailed capability comparison with representative AI assistant systems. Ratings: S=Strong, M=Medium, W=Weak, -=Not applicable.</figDesc><table><row><cell></cell><cell>I r o n E n g i n e</cell><cell>C h a t G P T</cell><cell>C l a u d e</cell><cell>O p e n C l a w</cell><cell>N a n o C l a w</cell><cell>I r o n C l a w</cell><cell>C u r s o r</cell><cell>A u t o G e n</cell><cell>O p e n I n t e r p .</cell></row><row><cell>Local models</cell><cell>S</cell><cell>W</cell><cell>W</cell><cell>S</cell><cell>S</cell><cell>M</cell><cell>M</cell><cell>M</cell><cell>S</cell></row><row><cell>Multi-role</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>pipeline</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_11"><head>Table 8 :</head><label>8</label><figDesc>Cross-model tool awareness test results. All models achieve perfect tool-type identification with IronEngine's tiered prompt system.</figDesc><table><row><cell>Model</cell><cell cols="3">Params Score Time (s)</cell></row><row><cell>cogito:8b</cell><cell>8B</cell><cell>100</cell><cell>10.5</cell></row><row><cell>cogito:14b</cell><cell>14B</cell><cell>100</cell><cell>13.5</cell></row><row><cell>lfm2:24b</cell><cell>24B</cell><cell>100</cell><cell>33.7</cell></row><row><cell>qwen3.5:27b</cell><cell>27B</cell><cell>100</cell><cell>50.2</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_12"><head>Table 9 :</head><label>9</label><figDesc>Full pipeline integration test results across model configurations and scenarios. Quality scores show Round 1 (initial) → Round 2 (after Reviewer feedback) progression.</figDesc><table><row><cell>Model Config</cell><cell>Scenario</cell><cell>Quality Score</cell><cell>Time (s)</cell><cell>Result</cell><cell>Observations</cell></row><row><cell>cogito:14b + cogito:8b</cell><cell>Shell command</cell><cell>0.20 → 0.85</cell><cell>139.6</cell><cell>PASS</cell><cell>Reviewer feedback improved plan</cell></row><row><cell></cell><cell>execution</cell><cell></cell><cell></cell><cell></cell><cell>specificity</cell></row><row><cell>cogito:14b + cogito:8b</cell><cell>PDF processing</cell><cell>0.15 → 0.80</cell><cell>152.2</cell><cell>PASS</cell><cell>Two rounds needed; tool selection</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>corrected</cell></row><row><cell>cogito:14b + cogito:8b</cell><cell>WeChat messaging</cell><cell>0.10 → 0.85</cell><cell>81.8</cell><cell>PASS</cell><cell>Skill-augmented execution; fastest</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>completion</cell></row><row><cell>cogito:14b + cogito:8b</cell><cell>Story creation</cell><cell>0.85 (R1)</cell><cell>321.4</cell><cell>PASS</cell><cell>Generative task; passed on first</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>round</cell></row><row><cell>qwen3.5:27b +</cell><cell>MCU comparison</cell><cell>0.75 (R1)</cell><cell>172.0</cell><cell>PASS</cell><cell>Web search required; larger</cell></row><row><cell>cogito:8b</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Planner beneficial</cell></row><row><cell>qwen3.5:27b +</cell><cell>Travel planning</cell><cell>0.20 → 0.40</cell><cell>309.8</cell><cell>FAIL</cell><cell>No network search available in test</cell></row><row><cell>cogito:8b</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>env</cell></row><row><cell>qwen3.5:27b +</cell><cell>Shell command</cell><cell>0.80 (R1)</cell><cell>145.3</cell><cell>PASS</cell><cell>Larger Planner passed on first</cell></row><row><cell>cogito:8b</cell><cell>execution</cell><cell></cell><cell></cell><cell></cell><cell>round</cell></row><row><cell>qwen3.5:27b +</cell><cell>PDF processing</cell><cell>0.75 (R1)</cell><cell>168.7</cell><cell>PASS</cell><cell>Larger Planner reduced rounds</cell></row><row><cell>cogito:8b</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>needed</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_13"><head>Table 10 :</head><label>10</label><figDesc>Tool model reliability comparison. Translation success = valid JSON output; Execution success = correct tool result.</figDesc><table><row><cell>Model</cell><cell cols="2">Params Translate</cell><cell>Execute</cell></row><row><cell>phi4-mini</cell><cell>3.8B</cell><cell>98.2%</cell><cell>70.6%</cell></row><row><cell></cell><cell></cell><cell cols="2">(109/111) (77/109)</cell></row><row><cell>functiongemma</cell><cell>270M</cell><cell>54.0%</cell><cell>25.9%</cell></row><row><cell></cell><cell></cell><cell>(27/50)</cell><cell>(7/27)</cell></row><row><cell>ministral-3</cell><cell>14B</cell><cell>100%</cell><cell>20.0%</cell></row><row><cell></cell><cell></cell><cell>(40/40)</cell><cell>(8/40)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_14"><head>Table 11 :</head><label>11</label><figDesc>Multi-scenario diagnostic test results. Five of six scenarios pass (83.3%). The travel planning failure is due to the test environment lacking network access. Skill learning is triggered automatically for tasks rated ≥ 7.</figDesc><table><row><cell>Scenario</cell><cell>Status</cell><cell>Score</cell><cell>Time (s)</cell><cell>Rounds</cell><cell>Tool Calls</cell><cell>Skill</cell><cell>Notes</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Learned</cell><cell></cell></row><row><cell>Shell command</cell><cell>PASS</cell><cell>9</cell><cell>139.6</cell><cell>1</cell><cell>5</cell><cell>✓</cell><cell>CLI execution via Executor</cell></row><row><cell>PDF processing</cell><cell>PASS</cell><cell>9</cell><cell>152.2</cell><cell>2</cell><cell>7</cell><cell>✓</cell><cell>Multi-step: extract + summarize</cell></row><row><cell>Travel planning</cell><cell>FAIL</cell><cell>0</cell><cell>309.8</cell><cell>1</cell><cell>1</cell><cell>-</cell><cell>No network in test environment</cell></row><row><cell>MCU comparison</cell><cell>PASS</cell><cell>7</cell><cell>172.0</cell><cell>1</cell><cell>3</cell><cell>-</cell><cell>Web search + analysis</cell></row><row><cell>WeChat messaging</cell><cell>PASS</cell><cell>9</cell><cell>81.8</cell><cell>1</cell><cell>5</cell><cell>✓</cell><cell>Innate skill + GUI automation</cell></row><row><cell>Story creation</cell><cell>PASS</cell><cell>8</cell><cell>321.4</cell><cell>1</cell><cell>7</cell><cell>✓</cell><cell>Generative task; file_write used</cell></row><row><cell>Overall</cell><cell></cell><cell cols="5">5/6 PASS (83.3%); 4 new skills learned; mean time 196.1 s</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_15"><head>• Local model quality: Local</head><label></label><figDesc>models (7B-27B) generally underperform cloud-hosted frontier models in complex reasoning tasks. IronEngine mitigates this through multi-role collaboration and quality assurance, but cannot fully close the capability gap. • Windows-centric testing: GUI automation and application control have been primarily tested on Windows 10. Cross-platform support (macOS, Linux) requires alternative UIA backends (AT-SPI, AppleScript), which are not yet implemented. • Single-user design: The current architecture assumes a single concurrent user. Multi-user support would require session isolation, resource scheduling, and access control mechanisms. • Benchmark breadth: Our experimental evaluation covers file operations in depth but does not yet include standardized benchmarks such as We-bArena [38] (web tasks) or SWE-bench [40] (code tasks). • Latency overhead: The three-phase pipeline's model switching and multi-round discussion in-troduce significant latency, making it unsuitable for real-time interaction scenarios requiring subsecond responses. • Skill coverage: The 26 innate skills cover common scenarios, but long-tail tasks still require interactive user guidance. Skill learning efficiency is constrained by the frequency of user rating feedback.</figDesc><table /></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>YouTube @NiusRobotLab</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>The author thanks NiusRobotLab for supporting the exploration of general AI assistant systems and open engineering practices. Appreciation is also extended to the open-source communities advancing local model runtimes (Ollama, LM Studio), multi-agent research (AutoGen, CAMEL, MetaGPT), vector databases (ChromaDB), browser automation (Playwright, patchright), and MCP-related interoperability, which collectively shaped the technical environment in which IronEngine evolved. Finally, thanks go to the testers and users whose concrete scenarios helped move the system from prototype thinking toward an operational platform.</p></div>
+			</div>			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>ToolExecutionBadge. A compact inline component displaying tool call status (pending→done), including tool type, brief description, and execution summary. Users can see at a glance which tools were executed and their outcomes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>PermissionPrompt.</head><p>An inline allow/deny prompt with a 60-second auto-deny timer. When an ask-level tool call is triggered, users see the permission request directly in the conversation flow and the pipeline continues after their decision.</p><p>Theme system. Ten procedurally generated scifi themes (deep_space, nebula_storm, mars_outpost, etc.), each with unique color schemes and background images (1920×1080 JPEG generated by Python scripts). Panels use coordinate mapping via mapTo() for continuous background rendering, with glassmorphism effects through transparent backgrounds with semi-transparent gradient overlays. This design enables users not only to use the AI assistant for task completion but also to observe, understand, and debug the AI's decision-making processparticularly valuable during development and tuning of assistant behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14">Safety and Privacy</head><p>Safety in IronEngine is implemented through multiple complementary mechanisms that operate at different levels of the system architecture.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.1">Permission Management</head><p>The permission system provides three configurable levels per tool category: • Auto: Tool calls are executed immediately without user confirmation. Suitable for low-risk operations like file listing and text classification. • Ask: Each tool call triggers an inline permission prompt in the UI with a 60-second auto-deny timer. The user can approve or deny, with the decision optionally remembered for the session. • Deny: Tool calls of this category are blocked entirely. Useful for restricting access to sensitive operations in shared environments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.2">Execution Sandboxing</head><p>The CommandExecutor enforces several safety invariants:</p><p>• shell=True is never used for subprocess invocation, preventing shell injection attacks. • Template placeholders (e.g., {filename}, &lt;path&gt;) are detected and rejected before execution, preventing incomplete command execution. • Command fields are validated as non-empty strings before subprocess creation. • Execution timeout (default 30 seconds) prevents runaway processes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="14.3">URL Safety</head><p>Web-facing operations employ a multi-layer offline URL safety system:</p><p>• Phishing blocklist: Updated from communitymaintained phishing databases (Phishing Army, phishing-filter) with 24-hour caching. • Heuristic scoring: 10-point evaluation covering IP-in-URL, suspicious TLDs, brand imperson-</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">Ashish</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Noam</forename><surname>Shazeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Niki</forename><surname>Parmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jakob</forename><surname>Uszkoreit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Llion</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aidan</forename><forename type="middle">N</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Łukasz</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Illia</forename><surname>Polosukhin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Alec Radford, Ilya Sutskever, and Dario Amodei. Language models are few-shot learners</title>
+		<author>
+			<persName><forename type="first">Tom</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Mann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nick</forename><surname>Ryder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Melanie</forename><surname>Subbiah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jared</forename><forename type="middle">D</forename><surname>Kaplan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Prafulla</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arvind</forename><surname>Neelakantan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pranav</forename><surname>Shyam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Girish</forename><surname>Sastry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Amanda</forename><surname>Askell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sandhini</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ariel</forename><surname>Herbert-Voss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gretchen</forename><surname>Krueger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tom</forename><surname>Henighan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rewon</forename><surname>Child</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aditya</forename><surname>Ramesh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><forename type="middle">M</forename><surname>Ziegler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeffrey</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Clemens</forename><surname>Winter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chris</forename><surname>Hesse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mark</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eric</forename><surname>Sigler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mateusz</forename><surname>Litwin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Scott</forename><surname>Gray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Chess</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jack</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christopher</forename><surname>Berner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sam</forename><surname>Mccandlish</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="1877" to="1901" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Edouard Grave, and Guillaume Lample. Llama: Open and efficient foundation language models</title>
+		<author>
+			<persName><forename type="first">Hugo</forename><surname>Touvron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thibaut</forename><surname>Lavril</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gautier</forename><surname>Izacard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xavier</forename><surname>Martinet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marie-Anne</forename><surname>Lachaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Timothée</forename><surname>Lacroix</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Baptiste</forename><surname>Rozière</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Naman</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eric</forename><surname>Hambro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Faisal</forename><surname>Azhar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aurelien</forename><surname>Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Armand</forename><surname>Joulin</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2302.13971</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<author>
+			<persName><forename type="first">Josh</forename><surname>Achiam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Steven</forename><surname>Adler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sandhini</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lama</forename><surname>Ahmad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ilge</forename><surname>Akkaya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Florencia</forename><surname>Leoni Aleman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Diogo</forename><surname>Almeida</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Janko</forename><surname>Altenschmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sam</forename><surname>Altman</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2303.08774</idno>
+		<title level="m">Shyamal Anadkat, et al. Gpt-4 technical report</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<author>
+			<persName><forename type="first">Google</forename><surname>Deepmind</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Gemini</surname></persName>
+		</author>
+		<ptr target="https://deepmind.google/technologies/gemini/.Ac-cessed" />
+		<title level="m">Multimodal ai model family. Online, 2025</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">React: Synergizing reasoning and acting in language models</title>
+		<author>
+			<persName><forename type="first">Shunyu</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeffrey</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dian</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nan</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Izhak</forename><surname>Shafran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karthik</forename><surname>Narasimhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuan</forename><surname>Cao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Chain-of-thought prompting elicits reasoning in large language models</title>
+		<author>
+			<persName><forename type="first">Jason</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xuezhi</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dale</forename><surname>Schuurmans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maarten</forename><surname>Bosma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Brian</forename><surname>Ichter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fei</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ed</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Quoc</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Denny</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="24824" to="24837" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Toolformer: Language models can teach themselves to use tools</title>
+		<author>
+			<persName><forename type="first">Timo</forename><surname>Schick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jane</forename><surname>Dwivedi-Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Roberto</forename><surname>Dessi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jason</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexandra</forename><surname>Birch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gael</forename><forename type="middle">Le</forename><surname>Scao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note>International Conference on Learning Representations</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Retrieval-augmented generation for knowledge-intensive nlp tasks</title>
+		<author>
+			<persName><forename type="first">Patrick</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ethan</forename><surname>Perez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aleksandra</forename><surname>Piktus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fabio</forename><surname>Petroni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vladimir</forename><surname>Karpukhin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Naman</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K"</forename><surname>Heinrich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mike</forename><surname>Uttler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wen</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tim</forename><surname>Tau Yih</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">"</forename><surname>Rockt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sebastian</forename><surname>Aschel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Douwe</forename><surname>Riedel</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Kiela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="9459" to="9474" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Generative agents: Interactive simulacra of human behavior</title>
+		<author>
+			<persName><forename type="first">Sung</forename><surname>Joon</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O'</forename><surname>Joseph</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Carrie</forename><surname>Brien</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Meredith</forename><forename type="middle">Ringel</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Percy</forename><surname>Morris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><forename type="middle">S</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Bernstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Symposium on User Interface Software and Technology</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Reflexion: Language agents with verbal reinforcement learning</title>
+		<author>
+			<persName><forename type="first">Noah</forename><surname>Shinn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Federico</forename><surname>Cassano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ashwin</forename><surname>Gopinath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karthik</forename><surname>Narasimhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shunyu</forename><surname>Youtube</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">@niusrobotlab</forename><surname>Yao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Autogen: Enabling next-gen llm applications via multi-agent conversation</title>
+		<ptr target="https://github.com/microsoft/autogen" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2024">2024</date>
+			<publisher>Microsoft</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Camel: Communicative agents for &quot;mind&quot; exploration of large language model society</title>
+		<author>
+			<persName><forename type="first">Guohao</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hasan</forename><surname>Abed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Al</forename><surname>Kader Hammoud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hani</forename><surname>Itani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dmitrii</forename><surname>Khizbullin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bernard</forename><surname>Ghanem</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Thirty-seventh Conference on Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">MetaGPT: Meta programming for a multi-agent collaborative framework</title>
+		<author>
+			<persName><forename type="first">Sirui</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mingchen</forename><surname>Zhuge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonathan</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiawu</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuheng</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jinlin</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ceyao</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zili</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Steven</forename><surname>Ka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shing</forename><surname>Yau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zijuan</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Liyang</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chenyu</forename><surname>Ran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lingfeng</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chenglin</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jürgen</forename><surname>Schmidhuber</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=VtmBAGCN7" />
+	</analytic>
+	<monogr>
+		<title level="m">The Twelfth International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Chatdev: Communicative agents for software development</title>
+		<author>
+			<persName><forename type="first">Chen</forename><surname>Qian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wei</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hongzhuo</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yang</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhenhui</forename><surname>Li</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<publisher>Association for Computational Linguistics</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Openmanus: An open-source framework for building general ai agents</title>
+		<author>
+			<persName><forename type="first">Xinbin</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jinyu</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhaoyang</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jiayi</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sirui</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sheng</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiao</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bang</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuyu</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chenglin</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.15186407</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.15186407" />
+	</analytic>
+	<monogr>
+		<title level="j">Zenodo</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Openclaw: Personal ai assistant</title>
+		<author>
+			<persName><forename type="first">Openclaw</forename><surname>Community</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Steinberger</surname></persName>
+		</author>
+		<ptr target="https://github.com/openclaw/openclaw" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Gpt-4o: Omni model for text, vision, and audio. Online</title>
+		<ptr target="https://openai.com/index/hello-gpt-4o/" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+		<respStmt>
+			<orgName>OpenAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Model context protocol. Online</title>
+		<author>
+			<persName><surname>Anthropic</surname></persName>
+		</author>
+		<ptr target="https://modelcontextprotocol.io" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Claude code: Anthropic&apos;s official cli for claude. Online</title>
+		<author>
+			<persName><surname>Anthropic</surname></persName>
+		</author>
+		<ptr target="https://docs.anthropic.com/en/docs/agents-and-tools/claude-code" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<ptr target="https://cursor.com" />
+		<title level="m">Online</title>
+		<editor>
+			<persName><forename type="first">Ai</forename><surname>The</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Anysphere Inc. Cursor</publisher>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<author>
+			<persName><surname>Codeium</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Windsurf</surname></persName>
+		</author>
+		<ptr target="https://windsurf.com.Ac-cessed" />
+		<title level="m">The flow state ai ide. Online</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Github copilot: Your ai pair programmer. Online</title>
+		<author>
+			<persName><surname>Github</surname></persName>
+		</author>
+		<ptr target="https://github.com/features/copilot" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Cognitive architectures for language agents</title>
+		<author>
+			<persName><forename type="first">Theodore</forename><forename type="middle">R</forename><surname>Sumers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shunyu</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karthik</forename><surname>Narasimhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><forename type="middle">L</forename><surname>Griffiths</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Transactions on Machine Learning Research</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Inner monologue: Embodied reasoning through planning with language models</title>
+		<author>
+			<persName><forename type="first">Wenlong</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fei</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ted</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Harris</forename><surname>Chan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacky</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pete</forename><surname>Florence</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andy</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonathan</forename><surname>Tompson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Igor</forename><surname>Mordatch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yevgen</forename><surname>Chebotar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pierre</forename><surname>Sermanet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Noah</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tomas</forename><surname>Jackson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Linda</forename><surname>Leal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><surname>Driess</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chelsea</forename><surname>Finn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karol</forename><surname>Hausman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Robot Learning (CoRL)</title>
+		<imprint>
+			<biblScope unit="page">2023</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">Yujia</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shihao</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yining</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kunlun</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lan</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yaxi</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yankai</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xin</forename><surname>Cong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiangru</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bill</forename><surname>Qian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sihan</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lauren</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Runchu</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ruobing</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jie</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mark</forename><surname>Gerstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dahai</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhiyuan</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maosong</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Toolllm</surname></persName>
+		</author>
+		<title level="m">Facilitating large language models to master 16000+ real-world apis. International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shishir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tianjun</forename><surname>Patil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xin</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joseph</forename><forename type="middle">E</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Gonzalez</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2305.15334</idno>
+		<title level="m">Gorilla: Large language model connected with massive apis</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Hugginggpt: Solving ai tasks with chatgpt and its friends in hugging face</title>
+		<author>
+			<persName><forename type="first">Yongliang</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kaitao</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xu</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dongsheng</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Weiming</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yueting</forename><surname>Zhuang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<author>
+			<persName><forename type="first">Reiichiro</forename><surname>Nakano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacob</forename><surname>Hilton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Suchir</forename><surname>Balaji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeff</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Long</forename><surname>Ouyang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christina</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christopher</forename><surname>Hesse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shantanu</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vineet</forename><surname>Kosaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">William</forename><surname>Saunders</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xu</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karl</forename><surname>Cobbe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tyna</forename><surname>Eloundou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gretchen</forename><surname>Krueger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kevin</forename><surname>Button</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Matthew</forename><surname>Knight</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Chess</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Schulman</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Webgpt</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.09332</idno>
+		<title level="m">Browser-assisted questionanswering with human feedback</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Augmented language models: a survey</title>
+		<author>
+			<persName><forename type="first">Grégoire</forename><surname>Mialon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Roberto</forename><surname>Dessi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maria</forename><surname>Lomeli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christoforos</forename><surname>Nalmpantis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ram</forename><surname>Pasunuru</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Roberta</forename><surname>Raileanu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Timo</forename><surname>Baptiste Rozière</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Youtube @niusrobotlab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jane</forename><surname>Schick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Asli</forename><surname>Dwivedi-Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Edouard</forename><surname>Celikyilmaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yann</forename><surname>Grave</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Scialom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Transactions on Machine Learning Research</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">The ai-native open-source embedding database</title>
+		<author>
+			<persName><surname>Chroma</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Chroma</surname></persName>
+		</author>
+		<ptr target="https://www.trychroma.com" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<author>
+			<persName><forename type="first">Charles</forename><surname>Packer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sarah</forename><surname>Wooders</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kevin</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vivian</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shishir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ion</forename><surname>Patil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joseph</forename><forename type="middle">E</forename><surname>Stoica</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Gonzalez</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Memgpt</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2310.08560</idno>
+		<title level="m">Towards llms as operating systems</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Large language model based multiagents: A survey of progress and challenges</title>
+		<author>
+			<persName><forename type="first">Tao</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiang</forename><surname>Yue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yifei</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tongzhe</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dong</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yilun</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Huan</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jun</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rui</forename><surname>Yan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2402.01680</idno>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<author>
+			<persName><forename type="first">Zhiheng</forename><surname>Xi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wenxiang</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xin</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wei</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yiwen</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Boyang</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ming</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Junzhe</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Senjie</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Enyu</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rui</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiaoran</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiao</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Limao</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Qin</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuhao</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Weiran</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Changling</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yicheng</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiangyang</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhangyue</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shihan</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rongxiang</forename><surname>Weng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wensen</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Qi</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wenjuan</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yongyan</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xipeng</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xuanjing</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tao</forename><surname>Gui</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2309.07864</idno>
+		<title level="m">The rise and potential of large language model based agents: A survey</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<author>
+			<persName><forename type="first">Lei</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chen</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xueyang</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zeyu</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jingsen</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhiyuan</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jiakai</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xu</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yankai</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wayne</forename><forename type="middle">Xin</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhewei</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ji-Rong</forename><surname>Wen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">A survey on large language model based autonomous agents</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page">2024</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">Multi-agent automation framework. Online</title>
+		<author>
+			<persName><surname>Crewai</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Crewai</surname></persName>
+		</author>
+		<ptr target="https://github.com/crewAIInc/crewAI" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Mind2web: Towards a generalist agent for the web</title>
+		<author>
+			<persName><forename type="first">Xiang</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yu</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Boyuan</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shijie</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Samuel</forename><surname>Stevens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Boshi</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Huan</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yu</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<author>
+			<persName><forename type="first">Shuyan</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Frank</forename><forename type="middle">F</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xuhui</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Robert</forename><surname>Lo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Abishek</forename><surname>Sridhar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xianyi</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tianyue</forename><surname>Ou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yonatan</forename><surname>Bisk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><surname>Fried</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Uri</forename><surname>Alon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Graham</forename><surname>Neubig</surname></persName>
+		</author>
+		<title level="m">Webarena: A realistic web environment for building autonomous agents. International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<monogr>
+		<author>
+			<persName><forename type="first">John</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Carlos</forename><forename type="middle">E</forename><surname>Jimenez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexander</forename><surname>Wettig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kilian</forename><surname>Lieret</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shunyu</forename><surname>Yao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2405.15793</idno>
+		<title level="m">Swe-agent: Agentcomputer interfaces enable automated software engineering</title>
+		<imprint>
+			<publisher>Karthik Narasimhan, and Ofir Press</publisher>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<author>
+			<persName><forename type="first">Carlos</forename><forename type="middle">E</forename><surname>Jimenez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexander</forename><surname>Wettig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shunyu</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kexin</forename><surname>Pei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ofir</forename><surname>Press</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karthik</forename><surname>Narasimhan</surname></persName>
+		</author>
+		<title level="m">Swe-bench: Can language models resolve real-world github issues? International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Open interpreter: A natural language interface for computers</title>
+		<author>
+			<persName><forename type="first">Open</forename><surname>Interpreter</surname></persName>
+		</author>
+		<ptr target="https://github.com/OpenInterpreter/open-interpreter" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">patchright: Antidetection playwright fork</title>
+		<ptr target="https://github.com/nicosql/patchright" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note>patchright contributors</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Osworld: Benchmarking multimodal agents for open-ended tasks in real computer environments</title>
+		<author>
+			<persName><forename type="first">Tianbao</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Danyang</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jixuan</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiaochuan</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Siheng</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ruisheng</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jing</forename><surname>Toh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhoujun</forename><surname>Hua</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dongchan</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fangyu</forename><surname>Shin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yitao</forename><surname>Lei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yiheng</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shuyan</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Silvio</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Caiming</forename><surname>Savarese</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Victor</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tao</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Yu</surname></persName>
+		</author>
+		<ptr target="https://os-world.github.io/" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Autogpt: An autonomous gpt-4 experiment</title>
+		<author>
+			<persName><forename type="first">Significant</forename><surname>Gravitas</surname></persName>
+		</author>
+		<ptr target="https://github.com/Significant-Gravitas/AutoGPT" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Ollama documentation. Online</title>
+		<author>
+			<persName><surname>Ollama</surname></persName>
+		</author>
+		<ptr target="https://ollama.com" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<title level="m" type="main">Lm studio documentation. Online</title>
+		<author>
+			<persName><surname>Studio</surname></persName>
+		</author>
+		<ptr target="https://lmstudio.ai" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Nanoclaw: Lightweight edge ai assistant</title>
+		<author>
+			<orgName type="collaboration">OpenClaw Community</orgName>
+		</author>
+		<ptr target="https://github.com/openclaw/nanoclaw" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Ironclaw: Hardwareoriented ai agent for embedded systems</title>
+		<author>
+			<orgName type="collaboration">OpenClaw Community</orgName>
+		</author>
+		<ptr target="https://github.com/openclaw/ironclaw" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Picoclaw: Microcontroller ai agent for embedded platforms</title>
+		<author>
+			<orgName type="collaboration">OpenClaw Community</orgName>
+		</author>
+		<ptr target="https://github.com/openclaw/picoclaw" />
+	</analytic>
+	<monogr>
+		<title level="j">Online</title>
+		<imprint>
+			<biblScope unit="page" from="2026" to="2029" />
+			<date type="published" when="2026">2026</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<title level="m" type="main">Pyside6: The official python module for the qt 6 framework. Online</title>
+		<author>
+			<persName><forename type="first">The</forename><surname>Qt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Company</forename></persName>
+		</author>
+		<ptr target="https://doc.qt.io/qtforpython-6/" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page" from="2026" to="2029" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">@</forename><surname>Youtube</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Niusrobotlab</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

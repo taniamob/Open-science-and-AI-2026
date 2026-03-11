@@ -1,0 +1,3217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Leaderboard Incentives: Model Rankings under Strategic Post-Training</title>
+				<funder>
+					<orgName type="full">ICLR AIMS</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2026-03-09">9 Mar 2026</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Yatong</forename><surname>Chen</surname></persName>
+							<email>yatong.chen@tuebingen.mpg.de</email>
+							<affiliation key="aff0">
+								<orgName type="department">Max Planck Institute for Intelligent Systems</orgName>
+								<address>
+									<settlement>Tübingen and Tübingen AI Center</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Guanhua</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Max Planck Institute for Intelligent Systems</orgName>
+								<address>
+									<settlement>Tübingen and Tübingen AI Center</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Max Planck Institute for Intelligent Systems</orgName>
+								<address>
+									<settlement>Tübingen and Tübingen AI Center</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Leaderboard Incentives: Model Rankings under Strategic Post-Training</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2026-03-09">9 Mar 2026</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">D31C38196C5B99B7A7632BDE19AF703E</idno>
+					<idno type="arXiv">arXiv:2603.08371v1[cs.GT]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2026-03-10T18:10+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Influential benchmarks incentivize competing model developers to strategically allocate post-training resources towards improvements on the leaderboard, a phenomenon dubbed benchmaxxing or training on the test task. In this work, we initiate a principled study of the incentive structure that benchmarks induce. We model benchmarking as a Stackelberg game between a benchmark designer who chooses an evaluation protocol and multiple model developers who compete simultaneously in a subgame given by the designer's choice. Each competitor has a model of unknown latent quality and can inflate its observed score by allocating resources to benchmark-specific improvements. First, we prove that current benchmarks induce games for which no Nash equilibrium between model developers exists. This result suggests one explanation for why current practice leads to misaligned incentives, prompting model developers to strategize in opaque ways. However, we prove that under mild conditions, a recently proposed evaluation protocol, called tune-before-test, induces a benchmark with a unique Nash equilibrium that ranks models by latent quality. This positive result demonstrates that benchmarks need not set bad incentives, even if current evaluations do.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text>
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Traditionally, machine learning benchmarks came with a fixed training set, requiring that all models under comparison train on the same data. The situation has changed with large language model benchmarks that typically only provide test data, leaving the choice of training data to the model developer. This has raised the concern that model developers can inflate benchmark performance with benchmark-specific tweaks that don't broadly improve model capabilities. The resulting problem, called benchmaxxing or training on the test task, confounds model comparisons and may cause misleading leaderboards, as prior work shows <ref type="bibr" target="#b13">[Dominguez-Olmedo et al., 2024</ref><ref type="bibr" target="#b68">, Singh et al., 2025]</ref>. But the situation need not be a sign of cheating or wrongdoing. Rather, influential benchmarks incentivize competing model developers to strategically allocate posttraining resources towards improvements on the leaderboard. Although widely recognized, there is currently no formal understanding of the incentives that benchmarks set.</p><p>In this work, we initiate a principled study of the incentive structure that benchmarks induce. We model benchmarking as a Stackelberg game between a benchmark designer and multiple competing model developers. The designer chooses an evaluation protocol, and the model developers compete in a simultaneous-move subgame given by the designer's choice. Each competitor has a model of a latent quality -unknown to the benchmark designer -and can inflate the observed model score by allocating additional resources to benchmark-specific improvements at a cost. The designer aims to choose an evaluation protocol so that the resulting benchmark yields a ranking by latent quality at equilibrium when competitors best respond to each other.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1">Our Results</head><p>Our first result is descriptive and negative: Current benchmarks induce games in which generally no Nash equilibrium between model developers exists. Model developers are always incentivized to strategize in opaque ways, leading to uninterpretable leaderboards that may not reflect a ranking by latent quality. In contrast, our second result is prescriptive and positive. Under mild conditions, the designer has a cost-effective evaluation strategy that induces a subgame with a unique Nash equilibrium that ranks models by latent quality. In addition, at this equilibrium solution, model developers refrain from benchmaxxing altogether, investing no additional effort in benchmark-specific improvements.</p><p>What makes the incentive design problem challenging is that the benchmark creator has no control over the utility each model developer has for gains on the leaderboard, does not know latent capabilities, and cannot limit how much effort model developers invest. The evaluation protocol we study tunes each model on the same small amount of task-specific data before evaluation. The intuition is that a small amount of task-specific preparation levels the playing field by washing out minor benchmark-specific tweaks. Previous work showed empirically that this intervention, called tune-before-test (TbT), leads to consistent model rankings across a wide range of benchmarks <ref type="bibr" target="#b81">[Zhang et al., 2025]</ref>. Our main result adds a game-theoretic justification: Tunebefore-test creates incentives that lead to rankings by latent quality at equilibrium. Surprisingly, a small amount of data suffices to realize the same effect as orders of magnitude more training, as we show.</p><p>Complementing our theoretical results, we demonstrate empirically that the assumptions of our theorem hold in a case study of a representative benchmark. After applying tune-before-test with only 3,000 steps, a model developer would have to invest at least 384,668 additional training steps to change model rankings. This captures why TbT can be such an effective intervention: by pushing all models into a diminishing-returns regime, it greatly increases the marginal cost of further score improvements. As a result, overtaking nearby competitors requires substantially more additional effort, amplifying the asymmetry in local overtaking incentives predicted by our theory (see Figure <ref type="figure" target="#fig_0">1 right</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2">Related Work</head><p>Benchmarks have been the key driver of machine learning progress by enabling frictionless comparison and competition <ref type="bibr">[Donoho, 2024]</ref> between models. In the traditional supervised learning paradigm, benchmarks typically come with a fixed training set and a held-out test set <ref type="bibr" target="#b46">[Lyons, 1993</ref><ref type="bibr" target="#b39">, LeCun and Cortes, 2010</ref><ref type="bibr" target="#b65">, Sang and Meulder, 2003</ref><ref type="bibr" target="#b43">, Liberman, 2015</ref><ref type="bibr" target="#b26">, Hardt and Recht, 2022]</ref>, enabling relatively controlled comparisons across methods. Although test-set One mechanism behind the ranking variation is what <ref type="bibr" target="#b13">Dominguez-Olmedo et al. [2024]</ref> call training on the test task. Model providers conduct benchmark-aware post-training <ref type="bibr" target="#b72">[Touvron et al., 2023]</ref> and data curation <ref type="bibr" target="#b24">[Guha et al., 2025]</ref> to achieve large gains on measured tasks without comparable improvements in general capability <ref type="bibr">[Zhou et al., 2023b</ref><ref type="bibr" target="#b68">, Singh et al., 2025]</ref>. Training on the test task differs from training on the test set <ref type="bibr" target="#b77">[Yang et al., 2023]</ref>, or data contamination <ref type="bibr" target="#b33">[Jiang et al., 2024</ref><ref type="bibr">, Yang et al., 2023</ref><ref type="bibr" target="#b4">, Bordt et al., 2024]</ref>, where models train directly on the test data. Instead, it captures optimization to the evaluation's task distribution or protocol, such as curating instruction data that matches a benchmark's format and rubrics or tuning with feedback aligned to its scoring procedure <ref type="bibr" target="#b13">[Dominguez-Olmedo et al., 2024]</ref>. Because such task-level alignment is difficult to detect and is often not explicitly ruled out by benchmark rules, it can confound leaderboard interpretation: scores conflate latent capability <ref type="bibr" target="#b61">[Ruan et al., 2024]</ref> with benchmarkspecific effort <ref type="bibr" target="#b67">[Schaeffer et al., 2023]</ref>. Model providers can strategically choose how much benchmark-specific effort to invest per benchmark, which yields inconsistent rankings.</p><p>A natural way to mitigate benchmark-specific advantages is to reduce heterogeneity in how models are prepared for the evaluation. <ref type="bibr" target="#b81">Zhang et al. [2025]</ref> propose tune-before-test (TbT), in which all models are fine-tuned on benchmark-specific data before evaluation to equalize preparation. Their empirical results show that TbT can restore ranking consistency across tasks from different domains and reveal that post-TbT scores are dominated by a low-dimensional latent capability factor. While <ref type="bibr" target="#b81">Zhang et al. [2025]</ref> motivate TbT as a post-hoc correction for observed rankings, we study it as an ex ante mechanism design choice <ref type="bibr" target="#b48">[Manheim and Garrabrant, 2018]</ref>. In our setting, a benchmark designer commits to an evaluation protocol (including a TbT baseline), anticipating that competing model providers will respond strategically by allocating additional post-training effort. We ask when an equilibrium exists in this competition and whether equilibrium rankings recover a ranking by latent capability. Treating TbT as a designer-controlled policy parameter instead allows us to isolate its incentive effects and ask how much evaluator-side adaptation is required to stabilize rankings.</p><p>Relevant to our work is the literature on strategic classification <ref type="bibr" target="#b5">[Brückner and</ref><ref type="bibr">Scheffer, 2011, Hardt et al., 2016]</ref>, which studies decision-making when individuals may adapt their features in response to a deployed model. See <ref type="bibr" target="#b60">Rosenfeld [2024]</ref> for a survey. These interactions are typically modeled as a Stackelberg game, where a decision-maker commits to a classifier and strategic individuals best respond myopically to the classifier. An important question in this literature is how to incentivize genuine improvements rather than superficial gaming <ref type="bibr" target="#b35">[Kleinberg and Raghavan, 2020</ref><ref type="bibr">, Miller et al., 2020b</ref><ref type="bibr" target="#b1">, Alon et al., 2020</ref><ref type="bibr">, Chen et al., 2023]</ref>. Our work shares this focus on incentives. In a departure from the classification setting, however, ranking inherently creates competition between participants: when one model moves up in rank, another must move down. The leaderboard therefore induces a game between competitors. This aspect of our work also connects to recent work on markets induced by predictive systems <ref type="bibr" target="#b18">Einav and Rosenfeld [2025]</ref>, <ref type="bibr">Sommer et al. [2025]</ref>. Closely related is the work on strategic ranking <ref type="bibr" target="#b44">Liu et al. [2022]</ref>, where a continuous population of individuals competes for acceptance by an institution, such as a school or an employer. The institution may set the rewards for achieving a given quantile rank within the continuous population. The results characterize how quantile-based incentive design shapes effort, welfare, and fairness at equilibrium. Our work shares this focus on rank-based competition, but studies the setting of machine learning benchmarking. Here, the designer cannot directly control the downstream rewards associated with a higher rank, such as more attention or increased reputation, since these are exogenous. Instead, the designer's primary lever is not the reward design but the evaluation protocol itself, which needs to make sense for a machine learning benchmark. Second, <ref type="bibr" target="#b44">Liu et al. [2022]</ref> model a continuum of agents, leading to a smooth equilibrium characterization with monotone effort profiles. In contrast, leaderboard competition typically involves a finite number of strategic model providers, where small performance changes can swap adjacent ranks and generate discontinuous payoff changes. These local "just-overtake" incentives can, in our setting, make equilibrium stability itself a central design concern. Finally, strategic ranking also relates to a vast literature in economics on designing tournaments and contests, see <ref type="bibr" target="#b10">Corchón [2007]</ref>, <ref type="bibr" target="#b9">Connelly et al. [2014]</ref>, <ref type="bibr">Fu and Wu [2019]</ref>, that we cannot survey here.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Preliminaries</head><p>Capability, effort, and post-effort score. Consider a set of LLM model developers N = {1, . . . , n} who submit a model to a benchmark leaderboard curated by a leaderboard designer. Each model has a latent variable θ i ∈ R ≥0 capturing general model capabilities. This abstraction is empirically motivated by evidence that performance across diverse language-model benchmarks admits a low-dimensional structure and is often dominated by a general capability factor <ref type="bibr" target="#b61">[Ruan et al., 2024</ref><ref type="bibr">, Zhang et al., 2025]</ref>. The setting extends straightforwardly to a multi-dimensional latent capabilities vector ⃗ θ i ∈ R d ≥0 with a benchmark-specific coefficient vector w so that θ i = ⟨w, ⃗ θ i ⟩. Without loss of generality, we index models in decreasing order of latent capability, i.e.,</p><formula xml:id="formula_0">θ 1 &gt; θ 2 &gt; • • • &gt; θ n .</formula><p>Capabilities are known to model developers but not to leaderboard designer.</p><p>Before evaluation, a model may undergo additional benchmark-specific adaptation. We represent the total amount of benchmark-specific preparation by a scalar e ∈ R ≥0 , which may be performed by the model developer, and/or applied uniformly by the leaderboard designer (as in tune-beforetest). Following the empirical tune-before-test approach of <ref type="bibr" target="#b81">Zhang et al. [2025]</ref>, we use the amount of benchmark-specific fine-tuning data (e.g., number of training examples) as a concrete and measurable proxy for this adaptation. We model benchmark performance through a post-effort score mapping v = v(θ, e): Definition 2.1 (Post-Effort Score). The post-effort score of a model with capability θ and total benchmark-specific training effort e is v(θ, e) : R ≥0 × R ≥0 → [0, 1].</p><p>The function v(θ, e) captures how capability and benchmark-specific effort translate into its actual benchmark performance. For simplicity, we model v deterministically; equivalently, our results can be interpreted in terms of expected scores under evaluation noise.</p><p>Leaderboard rewards. Let {R j } n j=1 denote the reward assigned to the model ranked j, where rewards are non-increasing in rank, i.e., R 1 ≥ R 2 ≥ • • • ≥ R n ≥ 0. This means higher-ranked models receive greater downstream benefits (e.g., more downstream users, higher visibility) from their leaderboard positions. Example 2.2. Two canonical leaderboard reward settings:</p><p>1. Winner-take-all: only the top-ranked model receives a reward, i.e., R 1 &gt; 0 and R j = 0 for all j ̸ = 1.</p><p>2. Top-k rewards: the top k models receive the same reward, i.e., R j = R &gt; 0 for j ∈ [k] and R j = 0 for j &gt; k.</p><p>Tune-before-test methodology. We model tune-before-test (TbT) as a designer-chosen baseline effort ∆ tbt ≥ 0 that applies the same amount of benchmark-specific fine-tuning to every submitted model prior to evaluation. We treat TbT as an explicit component of the evaluation protocol: the leaderboard designer commits to ∆ tbt , and model developers choose any additional benchmarkspecific effort in response. Setting ∆ tbt = 0 recovers standard evaluation without TbT, so the conventional leaderboard protocol is a special case of our framework.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Stackelberg Ranking Game</head><p>We model leaderboard evaluation as a Stackelberg game with a single leader and multiple followers <ref type="bibr" target="#b73">[Von Stengel and Zamir, 2010]</ref>. The leader (the leaderboard designer) first commits to an evaluation protocol, after which the followers (model developers) simultaneously choose benchmark-specific effort. We study outcomes in which the developers play a Nash equilibrium of the induced follower game, and the leader chooses its action, anticipating this equilibrium response. Such an outcome is often referred to as a Stackelberg-Nash equilibrium <ref type="bibr" target="#b50">[Marchesi, 2021]</ref>. Definition 3.1 (Stackelberg Ranking Game). The players are a leaderboard designer (the leader) and a set of model developers N = {1, . . . , n} (the followers). Model developers have latent capabilities (θ i ) n i=1 , which are common knowledge among the model developers but unknown to the designer. A public rank-based reward {R j } n j=1 assigns reward R j to the model ranked j. The sequence of actions is as follows:</p><p>• The designer commits to a benchmark and a tune-before-test baseline ∆ tbt ≥ 0.</p><p>• After observing ∆ tbt , developers simultaneously choose additional effort levels e i ≥ 0. Scores are realized as v i = v(θ i , e i + ∆ tbt ), and models are ranked by v = (v 1 , . . . , v n ) (ties broken deterministically). Both parties' utilities are specified in Theorem 3.2 and Theorem 3.4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Model Developer's Utility and Externalities</head><p>Model developers are modeled as rational agents whose utility equals the rank-based reward minus the cost of additional effort. We use a cost function c : R ≥0 → R ≥0 to capture the effort costs<ref type="foot" target="#foot_0">1</ref> . Because rewards depend on rank, incentives are inherently interdependent: improving one model's rank necessarily lowers another's. As a result, a developer's optimal effort depends not only on its own capability and cost, but also on competitors' efforts. Let e -i denote the vector of the efforts of all models except i. We define the utility of developer i as follows: Definition 3.2 (Model Developer's Utility). Given a rank-based reward (R j ) n j=1 and a fixed tunebefore-test adjustment level ∆ tbt ≥ 0, the utility of model i with capability θ i and effort e i is</p><formula xml:id="formula_1">U i (e i ; e -i , ∆ tbt ) = R rank(v i ) -c(e i ),<label>(1)</label></formula><formula xml:id="formula_2">v i = v(θ i , ∆ tbt + e i ), rank(v i ) := 1 + ∑ j∈N\{i} I v j &gt; v i .</formula><p>Nash equilibrium of the induced follower game. For a fixed TbT level ∆ tbt , the developers' interaction forms the induced follower game, for which we use pure-strategy Nash equilibrium <ref type="bibr" target="#b53">[Nash, 1950]</ref> as the solution concept. Intuitively, an effort profile is at equilibrium if no developer can improve its utility by unilaterally changing the amount of benchmark-specific effort it invests:</p><formula xml:id="formula_3">Definition 3.3 (Follower Game's Nash Equilibrium). Fix a TbT level ∆ tbt . An effort profile e * = (e * 1 , • • • , e * n ) is a pure-strategy Nash equilibrium (PNE) of the induced follower game if, for every model developer i ∈ N, e * i ∈ arg max e≥0 U i (e; e * -i , ∆ tbt ),</formula><p>where e * -i denotes the equilibrium efforts of other models. Although real-world leaderboard competition involves repeated submissions over time, equilibrium analysis still provides a useful baseline: it clarifies whether incentives can ever settle, or whether the leaderboard instead induces persistent "arms-race" behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Leaderboard Designer's Utility</head><p>While model developers seek to maximize rank-based rewards, the leaderboard designer evaluates a benchmark by how well its induced ranking reflects the models' latent capabilities. Because the designer only observes benchmark scores, it aims to choose an evaluation protocol that yields a ranking aligned with the capability ordering, while incurring a cost for interventions such as tune-before-test. A minimal way to capture this objective is through a ranking correctness criterion: Definition 3.4. (Leaderboard Designer's Utility) Given a tune-before-test level ∆ tbt and a follower's effort profile e = (e 1 , • • • , e n ) inducing post-effort scores v i = v(θ i , e i + ∆ tbt ), the leaderboard designer's utility is:</p><formula xml:id="formula_4">U L (∆ tbt ; e) = R L • I[rank(v i ) = rank(θ i ), ∀i] -n • c L (∆ tbt ),<label>(2)</label></formula><p>where R L ≫ 0 is the reward from achieving a capability-consistent ranking, and c L (∆ tbt ) is the per-model cost of applying tune-before-test level ∆ tbt .</p><p>This binary formulation captures the designer's core concern: whether the leaderboard correctly orders models by latent capability. One could alternatively model the designer's objective more smoothly using a rank-correlation metric such as Kendall's τ <ref type="bibr" target="#b34">[Kendall, 1938]</ref>, which rewards partial agreement between score-based and capability rankings, minus the cost of tune-before-test adjustment.</p><p>We assume that achieving a capability-consistent ranking is the designer's primary objective, in the sense that R L is large enough that any capability-consistent ranking is preferred to any inconsistent one, even after accounting for tune-before-test costs. We also assume that c L (∆ tbt ) is increasing in ∆ tbt . Under these preferences, among all tune-before-test levels that induce a follower equilibrium preserving the capability ordering, the designer prefers the cheapest one. The leader's optimal choice then corresponds to the Stackelberg-Nash equilibrium defined below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Stackelberg-Nash Equilibrium</head><p>Formally, a pair (∆ tbt ⋆ , e ⋆ ) is a Stackelberg-Nash equilibrium if: (i) e ⋆ is a pure-strategy Nash equilibrium of the induced follower game under ∆ tbt ⋆ , and (ii) ∆ tbt ⋆ maximizes the designer's utility anticipating this response.</p><p>We begin by fixing ∆ tbt and analyzing the induced follower game. Understanding the existence of follower equilibria and the rankings they generate is a prerequisite for determining the designer's optimal policy. In Section 5, we then study how to choose the optimal TbT level ∆ tbt ⋆ to maximize the leaderboard designer's utility.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Equilibrium Analysis of the Follower Game</head><p>What incentives does a rank-based leaderboard create for the strategic model developers? When model developers can invest in additional benchmark-specific post-training to improve performance, a central question is whether the induced competition admits a pure-strategy Nash equilibrium, that is, whether incentives can settle at a stable effort profile.</p><p>Perhaps surprisingly, our first result is partially optimistic: whenever a pure-strategy equilibrium of the induced follower subgame exists, the resulting leaderboard ranking must preserve the latent capability ordering (Theorem 4.3). In this case, any strategic post-training should still lead to a stable and correct ranking. However, as we point out later, the more subtle issue is that such equilibria need not exist. We show that equilibrium existence depends critically on the reward gaps between adjacent ranks (Theorem 4.6). When rewards are sufficiently flat, developers face persistent incentives to "just overtake" nearby competitors, leading to arms-race dynamics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Assumptions and Empirical Verifications</head><p>To analyze equilibrium behavior in the induced follower game, we need to make some structural assumptions on (i) the cost of benchmark-specific post-training, and (ii) how benchmark performance depends on a model's capability and post-training effort. Initial benchmark-specific data curation may be inexpensive, but getting more data typically becomes progressively more costly <ref type="bibr" target="#b11">[DatologyAI, 2024]</ref>. To capture this, we assume that the cost of Here, we use model size as a proxy for the model's latent capability θ.  C1. (Monotonicity in capability) Holding effort fixed, higher capability yields a higher score:</p><p>∂ θ v(θ, e) &gt; 0.</p><p>C2. (Diminishing returns and saturation in effort) Effort weakly improves performance but with diminishing marginal returns, and scores converge to a finite limit: ∂ e v(θ, e) ≥ 0, ∂ ee v(θ, e) ≤ 0, and v ∞ (θ) := lim e→∞ v(θ, e) exists and is finite.</p><p>C3. (Non-decreasing effort gaps) Let e req (s; θ) := inf{e ≥ 0 : v(θ, e) ≥ s} denote the minimal effort required for capability θ to reach target score s ∈ [0, 1]. For any θ ′ &gt; θ, the effort advantage of higher capability, e req (s; θ)e req (s; θ ′ ), is (weakly) nondecreasing in s.</p><p>These conditions capture three widely observed regularities in post-training scaling behavior: higher-capability models perform better at any fixed effort (C1), benchmark-specific training exhibits diminishing returns and saturation as models approach the benchmark's performance ceiling (C2). C3 further requires that as the target score increases, it does not become easier for a lower-capability model to close the gap through post-training alone. This is a standard single-crossing-type regularity condition in economic theory <ref type="bibr" target="#b71">[Topkis, 1998]</ref>, and is consistent with empirical observations that stronger foundation models tend to make more effective use of additional training, especially at a higher target score <ref type="bibr" target="#b74">[Wei et al., 2021]</ref>.</p><p>Example: generalized power-law scaling. As an illustrative functional form consistent with Assumption 4.2, consider a generalized scaling law motivated by empirical studies of post-training behavior <ref type="bibr" target="#b61">[Ruan et al., 2024</ref><ref type="bibr" target="#b19">, Finnveden, 2020</ref><ref type="bibr" target="#b54">, Owen, 2024]</ref>.</p><formula xml:id="formula_5">Let ṽ(θ, e) := v(θ, e) -L(θ) U(θ) -L(θ) ∈ [0, 1]</formula><p>denote a normalized score, where L(θ) and U(θ) represent model-specific lower and upper performance levels. Suppose</p><formula xml:id="formula_6">σ -1 ṽ(θ, e) = α(θ) + β(θ) log(1 + e),<label>(3)</label></formula><p>where σ -1 is the logit link function, α(θ) is the baseline performance on the logit scale, and β(θ) &gt; 0 is the scaling coefficient governing how efficiently extra compute improves performance. If α(θ) and β(θ) are both weakly increasing in θ, this specification satisfies all conditions in Theorem 4.2 (C1-C3).</p><p>We also provide empirical evidence for Assumption 4.2 using controlled post-training experiments within a single model family. Because latent capability θ and prior benchmark-specific post-training effort are unobserved, we restrict attention to Qwen2.5 models <ref type="bibr">[Yang et al., 2024]</ref>. Within this family, we use model size as a proxy for capability θ, and we treat the models' pre-existing post-training as approximately the same across sizes. We then apply additional benchmark-specific post-training to each model on the benchmark's training set, plotting performance on the validation set as a function of added effort e (measured by the incremental number of training steps).</p><p>Figure <ref type="figure" target="#fig_0">1</ref> (left) shows the results on Winogrande, a large-scale commonsense pronoun resolution benchmark introduced by Sakaguchi et al., while results for the other eight benchmarks are in Section E. For each model size, we fit the generalized power-law specification in Equation (3). The fitted curves track the observed points closely and are consistent with Theorem 4.2. First, at any fixed e, larger models achieve better performance (monotonicity in θ, C1). Second, gains from additional effort diminish and scores approach a plateau (concavity and saturation in e, C2). Third, the horizontal distance between curves-interpretable as the extra effort required for a smaller model to match a larger model's target score-does not shrink at higher target accuracies (increasing effort gaps, C3). For instance, the implied effort gap between Qwen2.5-3B and Qwen2.5-7B is larger at 88% accuracy than at 86%, as illustrated by the dashed guides in Figure <ref type="figure" target="#fig_0">1</ref> (left).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Order Properties of Equilibrium Profiles</head><p>Our first result shows that if the induced follower game admits a pure-strategy equilibrium e * , the resulting leaderboard ordering must respect the latent capability ordering (Theorem 4.3). Intuitively, this means that if all developers choose benchmark-specific post-training optimally, strategic fine-tuning alone cannot cause a lower-capability model to strictly outrank a highercapability one: Proposition 4.3. Under Theorem 4.1 and Theorem 4.2, fix any tune-before-test adjustment level ∆ tbt ≥ 0. If the follower game admits a pure-Nash equilibrium e * , then for any i, j,</p><formula xml:id="formula_7">θ i &gt; θ j ⇒ v(θ i , ∆ tbt + e * i ) ≥ v(θ j , ∆ tbt + e * j ).</formula><p>In particular, post-effort scores at equilibrium preserve the latent capability ordering up to ties.</p><p>Proof sketch. Fix any ∆ tbt ≥ 0 and suppose for contradiction that there exist i, j with</p><formula xml:id="formula_8">θ i &gt; θ j but v(θ i , ∆ tbt + e * i ) &lt; v(θ j , ∆ tbt + e * j )</formula><p>at a pure-strategy Nash equilibrium e * . Let ẽi (resp. ẽj ) be the minimal additional effort for agent i (resp. j) to reach the other agent's equilibrium score. By the single-crossing condition (C3), the higher-capability agent's effort advantage is larger at higher target scores, which implies ẽie *</p><p>i ≤ e * jẽj . By convexity of c, this yields c( ẽi )c(e * i ) ≤ c(e * j )c( ẽj ). On the other hand, Nash optimality implies that any profitable rank improvement must be outweighed by the corresponding increase in cost. Since v * i &lt; v * j , agent i can strictly overtake j by increasing its score to v * j + ε for arbitrarily small ε &gt; 0, which yields a strict rank improvement under any tie-breaking rule. By monotonicity of rank-based rewards, the reward gain from overtaking j is at least the reward loss suffered by j, implying the reverse inequality c( ẽi</p><formula xml:id="formula_9">) -c(e * i ) ≥ c(e * j ) -c( ẽj ). This means c( ẽi ) -c(e * i ) = c(e * j ) -c( ẽj ), a contradiction to v(θ i , ∆ tbt + e * i ) &lt; v(θ j , ∆ tbt + e * j ). Thus we have v(θ i , ∆ tbt + e * i ) ≥ v(θ j , ∆ tbt + e * j ).</formula><p>Theorem 4.3 offers reassuring news: if the leaderboard competition ever settles, it will settle in the right order. However, this positive result comes with an important caveat. As we show next, such equilibria need not exist at all. In particular, if the reward gap between some adjacent ranks is large relative to the cost of overtaking, namely, if there exists r ∈ {2, • • • , n} with R r-1 -R r sufficiently large, the induced follower game fails to admit any pure-strategy Nash equilibrium. In this regime, developers face persistent incentives to "just overtake" nearby competitors, leading to arms-race dynamics rather than convergence.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Existence of Pure-Nash Equilibrium</head><p>Fixing a TbT ∆ tbt , we analyze the induced follower game among developers and characterize when it admits a pure-strategy Nash equilibrium, and when it does not.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>All-Zero additional effort profile.</head><p>A natural reference point is the all-zero additional-effort profile e = (0, • • • , 0), where model i attains the baseline post-TbT score</p><formula xml:id="formula_10">s i (∆ tbt ) = v(θ i , ∆ tbt ).</formula><p>By monotonicity in capability (C1), we have s 1 (∆ tbt ) &gt; • • • &gt; s n (∆ tbt ). Because rewards depend only on rank and effort costs are nondecreasing, any profitable deviation must be an overtaking move, and the cheapest such deviation is to overtake the adjacent competitor directly above: Definition 4.4 (Just-Overtake Effort at TbT Level ∆ tbt ). Fix a TbT level ∆ tbt ≥ 0. For any rank r ∈ {2, • • • , n}, define the "just-overtake "effort as e req r (∆ tbt ) := inf e ≥ 0 : v(θ r , ∆ tbt + e) &gt; s r-1 (∆ tbt ) .</p><p>Equivalently, e req r (∆ tbt ) measures how difficult it is for the model designer r to "climb" from rank r to rank r -1 starting from any common TbT baseline. When e req r (∆ tbt ) is small, even minor fine-tuning can change rank, creating strong overtaking incentives. When it is large, small investments are unlikely to affect the leaderboard ordering. The following proposition precisely states when the all-zero effort profile is a pure Nash equilibrium strategy of the induced follower game: Proposition 4.5 (Zero-effort equilibrium condition). Fix any ∆ tbt ≥ 0. The all-zero profile e = (0, • • • , 0) is a PNE if and only if, for every r ∈ {2, . . . , n}, c e req r (∆ tbt ) ≥ R r-1 -R r .</p><p>(4)</p><p>In words, with TbT level ∆ tbt , no agent can profitably "just overtake" the model immediately above it: the minimal cost required to surpass the adjacent baseline score exceeds the corresponding reward gap.</p><p>Theorem 4.5 further implies that if the adjacent "just-overtake" condition fails for some model designer, then no pure-strategy equilibrium exists: Theorem 4.6 (Equilibrium structure and nonexistence). Fix any ∆ tbt ≥ 0, and suppose ties are broken deterministically in a way that does not favor the lower-capability model<ref type="foot" target="#foot_1">2</ref> . Then any PNE, if it exists, must be the all-zero profile e = (0, • • • , 0). Moreover, if there exists r ∈ {2, . . . , n} such that c e req r (∆ tbt ) &lt; R r-1 -R r ,</p><p>(5)</p><p>then the induced follower game admits no PNE.</p><p>Proof sketch. Suppose a PNE e * exists. By Theorem 4.3, post-effort scores are weakly ordered by capability at equilibrium. Since ties are broken deterministically against the lower-capability model, model n remains last-ranked whenever it only ties a higher-capability model. Thus, it cannot gain from positive effort that does not strictly overtake model n -1, and it weakly improves by setting e n = 0. Hence e * n = 0. Given e * n = 0, model n -1 strictly outranks model n at zero effort by (C1) and cannot lose rank by reducing effort, so e * n-1 = 0. Repeating this argument inductively yields e * i = 0 for all i. Therefore, any PNE must be the all-zero profile e = (0,</p><formula xml:id="formula_11">• • • , 0). If c(e req r (∆ tbt )) &lt; R r-1 -R r</formula><p>for some r ∈ {2, . . . , n}, then at e = (0, • • • , 0) model r can profitably deviate by exerting effort e req r (∆ tbt ), thereby overtaking model r -1 and increasing its reward by R r-1 -R r at lower cost. Hence e = (0, • • • , 0) is not a PNE. Since any PNE must be all-zero, no PNE exists.</p><p>The theorem shows that incentives are governed locally by the adjacent reward gap R r-1 -R r : moving from rank r to rank r -1 is profitable only if this gain is large enough relative to the corresponding overtaking cost. This gives a simple interpretation of common reward schemes. In winner-take-all schemes, incentives are concentrated at the top rank; in top-k schemes, they are concentrated near the cutoff into the rewarded set. By contrast, under a smoothly decaying reward scheme, adjacent reward gaps are spread more evenly across ranks and may all be small. In that case, no single rank improvement creates a large reward jump, so overtaking incentives are correspondingly weaker throughout the leaderboard.</p><p>Our analysis also suggests that the main failure mode of leaderboards is not that they converge to a stable but incorrect ranking. Instead, leaderboards can fail because they may incentivize continuous competitive fine-tuning: developers are motivated to repeatedly invest in benchmarkspecific optimization simply to gain (or defend) a small rank advantage (Equation ( <ref type="formula">5</ref>)).</p><p>This regime is particularly relevant when benchmarks provide limited separation between models, so that even small performance gains translate into meaningful rank changes. Such situations can arise on saturated benchmarks where frontier models perform similarly (e.g., MMLU <ref type="bibr" target="#b29">[Hendrycks et al., 2020]</ref> or HellaSwag <ref type="bibr">[Zellers et al., 2019b]</ref>), as well as on very difficult or early-stage benchmarks where all models perform poorly and remain tightly clustered (e.g., Humanity's Last Exam <ref type="bibr" target="#b57">[Phan et al., 2025]</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Tune-before-Test Aligns Benchmark Incentives</head><p>We now turn to the leaderboard designer's perspective and ask: if small reward gaps can preclude equilibrium in the induced follower game, how should the designer choose ∆ tbt to stabilize incentives? At a high level, tune-before-test shifts the leaderboard's "operating point" by applying the same amount of benchmark-specific training to all models, so the baseline scores become s i (∆ tbt ) = v(θ i , ∆ tbt ). This has two conceptually distinct effects.</p><p>By moving models closer to their benchmark-specific performance limits, TbT directly reduces the leaderboard's sensitivity to who prepared more aggressively from scratch. In the limit as models approach their saturation levels v ∞ (θ) = lim e→∞ v(θ, e), rankings depend only on capability. Under monotonicity in capability (C1), saturation yields a capability-consistent ordering: Proposition 5.1 (Rank preservation at saturation). Suppose the post-effort score v(θ, e) satisfies ∂ θ v(θ, e) &gt; 0 (C1). Then the saturated score v ∞ (θ) := lim e→∞ v(θ, e) is increasing in θ.</p><p>More importantly, TbT also weakens the incentives for strategic post-training. Since v(θ, e) exhibits diminishing returns in effort (C2), increasing ∆ tbt pushes all models into a regime where further improvements are harder.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">TbT Increases Leaderboard Climbing Cost</head><p>To formalize this incentive effect, recall e req r (∆ tbt ), the minimal additional effort required for model r to overtake the adjacent competitor at baseline ∆ tbt (Theorem 4.4). This precisely captures the marginal difficulty of climbing the leaderboard. The next lemma shows that increasing the TbT baseline monotonically raises this overtaking cost: Lemma 5.2 (TbT Increases the Leaderboard Climbing Cost). For any ∆ tbt ≥ 0 and r ∈ {2, . . . , n}, the minimal just-overtake effort e req r (∆ tbt ), and thus also the corresponding cost c(e req r (∆ tbt )), is non-decreasing in ∆ tbt .</p><p>Figure <ref type="figure" target="#fig_0">1</ref> (right) plots the minimal just-overtake effort across all models min r∈{2,...,n} e req r (∆ tbt ) (yaxis), as a function of ∆ tbt (x-axis). We estimate e req r (∆ tbt ) using the fitted post-training trajectories shown in the left panel. For example, for model Qwen2.5-7B at ∆ tbt = 500, we first compute the accuracy of Qwen2.5-14B at ∆ tbt = 500, 91.0%. We then calculate how much additional training data Qwen2.5-7B requires to reach 91.0% based on the fitted curve, which is 5,890. We repeat this for all models (except for the best model Qwen2.5-14B) and plot the minimum across all rank r ≥ 2. The resulting curve shows that leaderboard climbing becomes rapidly more difficult as ∆ tbt grows. At ∆ tbt = 0, only 18 additional steps are needed to change the ranking, whereas at ∆ tbt = 3, 000, the required effort rises to 384, 668 steps.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">TbT Restores Equilibrium Existence</head><p>Since increasing TbT raises the effort required to overtake higher-ranked models, the all-zero equilibrium condition in Theorem 4.5 becomes easier to satisfy at higher TbT levels: Proposition 5.3. Given two tune-before-test adjustment levels 0 ≤ ∆ tbt 1 ≤ ∆ tbt 2 , if the all-zero effort profile e = (0, . . . , 0) is a PNE under ∆ tbt 1 , then it is also a PNE under ∆ tbt 2 . Thus, TbT has a monotone stabilizing effect on post-training incentives: once no model developer finds it profitable to exert additional effort, this remains true under any larger TbT intervention.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">How Much TbT is Enough?</head><p>In practice, a benchmark evaluator may not have enough compute to apply a large TbT adjustment to every submitted model, due to resource, latency, or cost constraints. This raises a natural question: what is the smallest TbT level that eliminates incentives for further strategic fine-tuning? This motivates us to view TbT as an incentive-control parameter with a corresponding threshold. Definition 5.4 (Stabilizing TbT Threshold). Define the stabilizing TbT threshold as</p><formula xml:id="formula_12">∆ tbt ⋆ := inf ∆ tbt ≥ 0 : c e req r (∆ tbt ) ≥ R r-1 -R r , ∀r ∈ {2, • • • , n} ,</formula><p>that is, the smallest TbT adjustment for which no model can profitably overtake the model directly above it at the baseline level.</p><p>At ∆ tbt ⋆ , the cost of overtaking the immediate neighbor weakly exceeds the corresponding reward gain for every adjacent pair. By Theorem 5.3, once this condition holds, it continues to hold for all larger TbT levels. Hence, any ∆ tbt ≥ ∆ tbt ⋆ eliminates profitable overtaking incentives: Corollary 5.5. For any ∆ tbt ≥ ∆ tbt ⋆ , the induced follower game admits a PNE in which all model developers choose zero additional effort, i.e., e * = (0, . . . , 0). In particular, no model developer engages in strategic post-training.</p><p>Under the leaderboard designer objective in Theorem 3.4, ∆ tbt ⋆ is also the optimal TbT choice: since it is the smallest intervention that induces a follower equilibrium preserving the true capability ordering, it therefore achieves the designer's ranking objective at minimum cost.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4">Case Study Under Generalized Power-Law</head><p>To build intuition for the scale of the stabilizing TbT level ∆ tbt ⋆ , we consider the generalized scaling law introduced above:</p><formula xml:id="formula_13">σ -1 ṽ(θ, e) = α(θ) + β(θ) log(1 + e),</formula><p>and assume effort costs satisfy c(e) ≥ κe for some constant κ &gt; 0, so that effort is costly at least linearly. We focus on the regime in which overtaking remains feasible. For an adjacent pair (r -1, r), define ρ r := R r-1 -R r κ , which expresses the reward gap in units of effort. Let e req r (0) denote the minimal effort required for model r to catch up to model r -1 when ∆ tbt = 0. We then define λ r := ρ r e req r (0) , which measures the reward gap relative to the baseline catch-up difficulty.</p><p>The next proposition shows that, under this scaling law, the stabilizing TbT level for pair (r -1, r) grows polynomially in λ r , with exponent γ r := β(θ r )</p><p>β(θ r-1 ) ≤ 1 interpreted as a relative learning-rate ratio between the two models. Proposition 5.6 (Stabilizing TbT under generalized scaling). Under the generalized scaling law, and the cost satisfies c(e) ≥ κe, there exists a stabilizing TbT threshold ∆ tbt ⋆ r such that any ∆ tbt ≥ ∆ tbt ⋆ r eliminates profitable overtaking deviations from rank r to rank r -1. Moreover, in the regime where catch-up remains feasible,</p><formula xml:id="formula_14">∆ tbt ⋆ r = O λ γ r r ,</formula><p>up to a constant factor depending only on e req r (0). The exponent γ r admits a natural interpretation as a relative learning-rate ratio. When γ r is small, the stronger model benefits more from additional effort than the weaker one, so the ranking becomes easier to stabilize. Conversely, when γ r ≈ 1, the two models benefit similarly from effort, and a larger TbT baseline is needed to deter overtaking. Thus, the required TbT level grows polynomially in the effective incentive λ r , and the growth is slower when the effort-response gap between the two models is larger.</p><p>Finally, to stabilize the full leaderboard, it suffices to choose</p><formula xml:id="formula_15">∆ tbt ⋆ := max r∈{2,••• ,n} ∆ tbt ⋆ r ,</formula><p>so that the global threshold is determined by the hardest adjacent pair to stabilize.</p><p>A concrete example. We estimate the baseline catch-up difficulty e req r (0) and the learning-rate ratio γ r from the fitted trajectories in Figure <ref type="figure" target="#fig_0">1</ref>. Among all adjacent pairs, the hardest-to-stabilize pair maximizes ∆ tbt ⋆ = max r ∆ tbt⋆ r . For this pair, we estimate e req r (0) ≈ 13.7 and γ r ≈ 0.33. Suppose the corresponding reward gap translates to ρ r = 1000 units of effort, so the effective incentive is λ r = ρ r e req r (0) ≈ 1000 13.7 ≈ 73. Using Proposition 5.6, a stabilizing TbT level is</p><formula xml:id="formula_16">∆ tbt⋆ r ≈ ρ r e req r (0) γ r = 1000 13.7 0.33 ≈ 4,</formula><p>That is, adding roughly 4 units of baseline TbT effort is already enough to deter overtaking for this hardest-to-stabilize adjacent pair. Detailed estimation is deferred to the appendix.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion, Limitations and Future Work</head><p>We study benchmarking as a mechanism design problem and show that the resulting competition among model developers can induce persistent "just-overtake" incentives and may prevent any Nash equilibrium from existing. We demonstrate that tune-before-test acts as an effective incentivecontrol lever: by pushing models into a diminishing-returns regime, TbT raises the marginal cost of further benchmark-specific post-training and amplifies the effort required to overtake nearby competitors. Our results show that even a small amount of TbT can have a disproportionately large stabilizing effect, which we demonstrate both empirically and theoretically. In practice, leaderboard designers could estimate the minimal stabilizing TbT baseline ∆ tbt ⋆ using historical score gaps and the observed fine-tuning effort required to change rankings. These insights, however, rest on several simplifying assumptions. In particular, our model abstracts from many features of real benchmarking environments in order to isolate the core incentive structure induced by rank-based evaluation. A natural next step is to understand how these incentives interact with features that are common in practice, such as noisy evaluations, uncertainty about competitors, and more flexible budget or cost structures. Extending the framework in these directions would help clarify the robustness of our insights in more realistic benchmarking environments.</p><p>At the same time, TbT is not costless: it requires additional evaluation resources and may blur the distinction between a model's underlying generalization ability and its capacity to adapt during evaluation. More broadly, these trade-offs highlight that benchmark design does not merely determine how models are tested, but also shapes the incentives for how they are developed. TbT should therefore be understood as a useful but imperfect design lever, rather than a complete solution to strategic behavior in evaluation.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A Primary Notation Table</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B Missing Proof in Section 3</head><p>Equivalence of heterogeneous separable costs to a homogeneous same-family cost Proposition B.1 (Equivalence of heterogeneous separable costs to a homogeneous same-family cost). Fix a common cost shape c : R + → R + that is continuous, strictly increasing, and satisfies c(0) = 0. Consider each model i chooses effort e i ∈ R + , is ranked by a score v(θ i , e i ), and has a heterogeneous but multiplicatively separable cost</p><formula xml:id="formula_17">C i (e i ; θ i ) = γ i c(e i )</formula><p>with γ i &gt; 0.</p><p>Then there exists an equivalent game in which every model developer chooses z i ∈ R + , all model developers share the same cost function of the same form c(•) (i.e., homogeneous cost c(z i )), and the only change is a type-dependent relabeling of the score:</p><formula xml:id="formula_18">v(θ i , z i ) := v θ i , c -1 c(z i ) γ i .</formula><p>Specifically, the map</p><formula xml:id="formula_19">Φ i : e i ⇔ z i := c -1 γ i c(e i )</formula><p>is a bijection for each i, and for every profile (e j ) j with image (z j ) j we have</p><formula xml:id="formula_20">R rank(v(θ i ,e i )) -γ i c(e i ) = R rank( v(θ i ,z i )) -c(z i ) for all i.</formula><p>Consequently, the two games induce identical rankings, payoffs, best responses, and Nash equilibria up to the one-to-one reparametrization.</p><p>Proof. Because c is strictly increasing, c -1 exists and is strictly increasing. For each i, define the type-wise bijection Φ i (e) := c -1 (γ i c(e)), with inverse</p><formula xml:id="formula_21">Φ -1 i (z) = c -1 c(z) γ i .</formula><p>Under Φ i , the heterogeneous cost transforms as</p><formula xml:id="formula_22">γ i c(e i ) = c Φ i (e i ) = c(z i ), so all model developers share the same cost function c(•) in the z-parametrization. Define v(θ i , z i ) := v θ i , Φ -1 i (z i ) = v θ i , c -1 (c(z i )/γ i ) .</formula><p>Then for any profile (e j ) j with the reparametrization variable (z j ) j , we have:</p><formula xml:id="formula_23">R rank(v(θ i ,e i )) -γ i c(e i ) = R rank v(θ i ,Φ -1 i (z i )) -c(z i ) = R rank v(θ i ,z i ) -c(z i ),</formula><p>so the utilities are preserved. Hence, the best responses and equilibria correspond one-to-one via Φ, establishing the equivalence between the two settings. i and e * j denote the equilibrium efforts of model developers i and j, respectively. The counterfactual efforts ẽi and ẽj are defined as the efforts each model developer would need to match the other model developer's post-effort score given a TbT effort level ∆ tbt , i.e., v(θ i , ẽi</p><formula xml:id="formula_24">+ ∆ tbt ) = v(θ j , e * j + ∆ tbt ), v(θ j , ẽj + ∆ tbt ) = v(θ i , e * i + ∆ tbt ).</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C Proofs for Section 4</head><p>Proof for Theorem 4.3</p><p>Proof. Fix any ∆ tbt ≥ 0 and let e * be a PNE of the induced follower game. Suppose for contradiction that there exist models i, j such that θ i &gt; θ j but</p><formula xml:id="formula_25">v * i := v(θ i , ∆ tbt + e * i ) &lt; v(θ j , ∆ tbt + e * j ) =: v * j .<label>(6)</label></formula><p>Counterfactual efforts. For any target score s ∈ [0, 1], recall the minimal additional effort (beyond ∆ tbt ) needed for capability θ to reach s is:</p><formula xml:id="formula_26">e req (s; θ, ∆ tbt ) := inf{e ≥ 0 : v(θ, ∆ tbt + e) ≥ s}.</formula><p>Define the counterfactual efforts ẽi := e req (v * j ; θ i , ∆ tbt ), ẽj := e req (v * i ; θ j , ∆ tbt ).</p><p>Then by definition,  </p><formula xml:id="formula_27">v(θ i , ∆ tbt + ẽi ) ≥ v * j , v(θ j , ∆ tbt + ẽj ) ≥ v * i . Moreover, since v * j &gt; v * i and v(θ,</formula><formula xml:id="formula_28">= v * j &gt; v * i gives ∆ θ i ,θ j (v * j ) ≥ ∆ θ i ,θ j (v * i ), i.e., e req (v * j ; θ j , ∆ tbt ) -e req (v * j ; θ i , ∆ tbt ) ≥ e req (v * i ; θ j , ∆ tbt ) -e req (v * i ; θ i , ∆ tbt ).</formula><formula xml:id="formula_29">(v * ) -c(e * i ) ≥ R r i v(θ i ,∆ tbt + ẽi ), v * -i -c( ẽi ), R r j (v * ) -c(e * j ) ≥ R r j v(θ j ,∆ tbt + ẽj ), v * -j -c( ẽj ). Rearranging terms gives R r i v(θ i ,∆ tbt + ẽi ), v * -i -R r i (v * ) ≤ c( ẽi ) -c(e * i ), (9) R r j (v * ) -R r j v(θ j ,∆ tbt + ẽj ), v * -j ≥ c(e * j ) -c( ẽj ).<label>(10)</label></formula><p>Here Equation ( <ref type="formula">9</ref>) is the reward increase when i raises its effort to (at least) match j's score v * j , and Equation ( <ref type="formula" target="#formula_29">10</ref>) is the reward decrease when j lowers its effort to (at least) match i's score v * i .</p><p>Reward comparison via strict overtaking. Fix any ε &gt; 0, and define the ε-overtake effort for model i:</p><formula xml:id="formula_30">ẽ ε i := inf{e ≥ 0 : v(θ i , ∆ tbt + e) ≥ v * j + ε}.</formula><p>Then v(θ i , ∆ tbt + ẽ ε i ) &gt; v * j , so model i strictly outranks model j under any deterministic tie-breaking rule. Hence the reward increase of model i from deviating to ẽ ε i is at least the reward decrease of model j when it deviates to achieve v * i :</p><formula xml:id="formula_31">R r i v(θ i ,∆ tbt + ẽ ε i ), v * -i -R r i (v * ) ≥ R r j (v * ) -R r j v(θ j ,∆ tbt + ẽj ), v * -j . (<label>11</label></formula><formula xml:id="formula_32">)</formula><p>Combining equation 9, equation 10, and equation 11 yields</p><formula xml:id="formula_33">c( ẽ ε i ) -c(e * i ) ≥ c(e * j ) -c( ẽj ). Letting ε ↓ 0 and using continuity of v(θ, •) and c(•) gives c( ẽi ) -c(e * i ) ≥ c(e * j ) -c( ẽj ).</formula><p>Together with equation 8, we must have</p><formula xml:id="formula_34">c( ẽi ) -c(e * i ) = c(e * j ) -c( ẽj ).</formula><p>However, since v * i &lt; v * j by assumption, model i can strictly improve its rank by exerting effort slightly above ẽi (i.e., achieving v * j + ε), which yields a strictly higher reward whenever rewards are strictly decreasing in rank. This would force a strict inequality in the Nash bound for i, contradicting equality.</p><p>Therefore Equation ( <ref type="formula" target="#formula_25">6</ref>) is impossible, and for any θ i &gt; θ j we must have</p><formula xml:id="formula_35">v(θ i , ∆ tbt + e * i ) ≥ v(θ j , ∆ tbt + e * j )</formula><p>. In particular, equilibrium scores are capability-consistent (up to ties).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Proof for Theorem 4.5</head><p>Proof. Fix any tune-before-test adjustment level ∆ tbt ≥ 0. At the all-zero additional-effort profile e = (0, . . . , 0), the realized scores are s</p><formula xml:id="formula_36">i (∆ tbt ) = v(θ i , ∆ tbt ) for i = 1, . . . , n. Since models are indexed so that θ 1 &gt; θ 2 &gt; • • • &gt; θ n and v(θ, e) is increasing in θ (C1), we have s 1 (∆ tbt ) &gt; s 2 (∆ tbt ) &gt; • • • &gt; s n (∆ tbt ). Hence the payoff of model k at this profile is U k (0; 0 -k , ∆ tbt ) = R k for k = 1, . . . , n.</formula><p>Fix a model r ∈ {2, . . . , n}. Consider any unilateral deviation e ′ r &gt; 0 by model r. Because rewards depend only on ranks and c is nondecreasing, among all deviations that improve model r's rank, the cheapest such deviation is to just overtake some model currently above it, i.e., to move from rank r to some rank k &lt; r by achieving a score strictly greater than s k (∆ tbt ). Define the minimal additional effort needed for model r to strictly beat score s k (∆ tbt ) as e req s k (∆ tbt ); θ r , ∆ tbt := inf{e ≥ 0 : v(θ r , ∆ tbt + e) &gt; s k (∆ tbt )}.</p><p>Such a deviation yields utility R kc e req s k (∆ tbt ); θ r , ∆ tbt .</p><p>Therefore, e r = 0 is a best response for model r at the all-zero profile if and only if R r ≥ R kc e req s k (∆ tbt ); θ r , ∆ tbt for all k &lt; r, equivalently, c e req s k (∆ tbt ); θ r , ∆ tbt ≥ R k -R r for all k &lt; r.</p><p>and we shorthand e req r (∆ tbt ) := e req s r-1 (∆ tbt ); θ r , ∆ tbt . Finally, since overtaking a higher-ranked model requires weakly more effort than overtaking the adjacent model r -1, it suffices to check the adjacent deviation k = r -1, yielding Equation (4).</p><p>Solving with equality yields the minimal additional effort:</p><p>1 + ∆ tbt + δ = exp 1 β(θ r ) σ -1 v(θ r-1 ,∆ tbt )-L(θ r )</p><p>U(θ r )-L(θ r )</p><p>α(θ r ) .</p><p>Define e req r (∆ tbt ) to be this minimal δ, then subtracting (1 + ∆ tbt ) gives e req r (∆ tbt ) = exp 1 β(θ r ) σ -1 v(θ r-1 ,∆ tbt )-L(θ r )</p><p>U(θ r )-L(θ r )</p><p>α(θ r ) -(1 + ∆ tbt ).</p><p>Using the scaling law for θ r-1 , σ -1 ṽ(θ r-1 , ∆ tbt ) = α(θ r-1 ) + β(θ r-1 ) log(1 + ∆ tbt ),</p><p>and the definition of γ r = β(θ r )/β(θ r-1 ), we can rewrite the leading term as exp ᾱr (∆ tbt )</p><formula xml:id="formula_37">β(θ r ) (1 + ∆ tbt ) 1/γ r ,</formula><p>where ᾱr (∆ tbt ) = σ -1 ( ṽ(θ r-1 , ∆ tbt ))α(θ r ), yielding the stated expression.</p><p>With costs c(e) ≥ κe, any deviation that uses additional effort δ incurs cost at least κδ, so an adjacent-overtake deviation is unprofitable whenever e req r (∆ tbt ) ≥ ρ r . Finally, in the regime where the leading term in e req r (∆ tbt ) dominates (1 + ∆ tbt ), the condition e req r (∆ tbt ) ≥ ρ r is well-approximated by exp ᾱr (∆ tbt )</p><formula xml:id="formula_38">β(θ r ) (1 + ∆ tbt ) 1/γ r ≳ ρ r .</formula><p>Treating ᾱr (∆ tbt ) as approximately constant over the relevant range (or evaluating it at ∆ tbt = 0 to obtain a conservative rule of thumb) gives 1 + ∆ tbt ≳ ρ r exp( ᾱr (0)/β(θ r ))  Given a reward gap (converted to effort units) ρ r = (R r-1 -R r )/κ, we form the effective incentive λr := ρ r / e req r (0). As a nonparametric check, we also estimate a local slope ratio at a common baseline e = ∆ tbt using finite differences on the fitted trajectories:</p><formula xml:id="formula_39">s i (∆ tbt ) ≈ vi (∆ tbt + h) -vi (∆ tbt ) h , γ slope r</formula><p>(∆ tbt ) := s r (∆ tbt ) s r-1 (∆ tbt ) . </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>E Additional Empirical Results</head><p>Setting We conduct our emprical study on nine benchmarks, Winogrande <ref type="bibr" target="#b63">[Sakaguchi et al., 2019]</ref>,</p><p>HellaSwag <ref type="bibr">[Zellers et al., 2019a]</ref>, NQ-Open <ref type="bibr" target="#b38">[Kwiatkowski et al., 2019]</ref>, ARC-Challenge <ref type="bibr" target="#b7">[Clark et al., 2018]</ref>, Piqa <ref type="bibr" target="#b2">[Bisk et al., 2019]</ref>, CommonsenseQA <ref type="bibr" target="#b70">[Talmor et al., 2019]</ref>, Gsm8k <ref type="bibr" target="#b8">[Cobbe et al., 2021]</ref>,</p><p>MedMcQA <ref type="bibr" target="#b55">[Pal et al., 2022]</ref>, and Social-IQA <ref type="bibr" target="#b66">[Sap et al., 2019]</ref>. Each model is trained with LoRA <ref type="bibr" target="#b30">[Hu et al., 2021</ref><ref type="bibr" target="#b47">, Mangrulkar et al., 2022]</ref> (rank 8, α=32) and AdamW optimizer <ref type="bibr" target="#b45">[Loshchilov and Hutter, 2017]</ref> (weight decay 0.01 and learning rate 5e-5). We use a batch size of 8, so each training step corresponds to eight training data points. For those benchmarks without a validation split, we randomly allocate 20% of the training data as the validation set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>In Figure <ref type="figure" target="#fig_6">3</ref>, we present the results of controlled post-training experiments for all nine benchmarks. The assumption 4.2 still largely holds in most benchmarks, despite a few anomalies.</p><p>In addition, on benchmarks like HellaSwag, continued post-training cannot make a smaller model catch up to a larger one. This is not surprising, since model sizes (the proxy for θ) differ significantly in our controlled setting. As a result, there is no incentive to conduct strategic post-training in this scenario. We argue, however, that in real-world settings with models from diverse sources, θ will not differ so dramatically.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Left: Continued post-training trajectories of Qwen2.5 models of different sizes on Winogrande.Here, we use model size as a proxy for the model's latent capability θ. The x-axis denotes the amount of post-training steps (each step corresponds to 8 data points), reflecting post-training effort e. The y-axis denotes accuracy on the validation set, i.e., v(θ, e). For each model, we fit a curve following Equation (3). The empirical results align with the assumptions of monotonicity in capability, diminishing returns and saturation in effort, and non-decreasing effort gaps in Assumption 4.2. See Appendix E for additional details and results for the other eight benchmarks. Right: For each tune-before-test level ∆ tbt (the amount of benchmark-specific finetuning steps, x-axis), we calculate the minimal additional steps required (y-axis) to change the ranking for at least one model, i.e., min r∈{2,...,n} e</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>effort is non-decreasing and convex: Assumption 4.1 (Cost Function c). The cost of benchmark-specific post-training c : R ≥0 → R ≥0 is non-decreasing and convex, with c(0) = 0 and lim e→∞ c(e) = ∞.Next, we impose structure on the post-effort score function: Assumption 4.2 (Post-effort score function v). Let v : Θ × R ≥0 → [0, 1] denote the post-effort score function, where θ ∈ Θ ⊆ R ≥0 is the capability and e ∈ R ≥0 is the total effort. Assume v is continuous and that for all (θ, e):</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>training effort v(θ, e) ∈ [0, 1] post-effort score (benchmark performance) c(e) cost of exerting effort e (R j ) n j=1 rank-based reward scheme: the model ranked j receives reward R j ∆ tbt ∈ R ≥0tune-before-test (TbT) baseline chosen by the leaderboard designer s r (∆ tbt ) := v(θ r , ∆ tbt ) baseline score of model r under TbT level ∆ tbt e req (s; θ) minimal effort required for a model with capability θ to reach score s, i.e., e req (s; θ) := inf{e ≥ 0 : v(θ, e) ≥ s} e req r (∆ tbt ) minimal additional effort required for model r to overtake model r -1 at TbT level ∆ tbt , i.e., e req r (∆ tbt) := inf{e ≥ 0 : v(θ r , ∆ tbt + e) &gt; s r-1 (∆ tbt )} σ : R → [0, 1] logit link function L(θ)lower attainable performance level for a model with capability θ U(θ) upper attainable performance level for a model with capability θ ṽ(θ, e) := v(θ,e)-L(θ)U(θ)-L(θ) ∈ [0, 1] normalized post-effort score α(θ)logit of the baseline performance when e = 0 β(θ) &gt; 0 coefficient governing how effectively extra effort translates into performance κ &gt; 0 constant lower bound on the marginal cost of effort, i.e., c(e) ≥ κe ρ r := (R r-1 -R r )/κ effective reward gap (in effort units) for model r λ r := ρ r /e req r (0)effective incentive parameter γ r := β(θ r )/β(θ r-1 ) ≤ 1 learning-rate ratio for the pair (r -1, r) ∆ tbt ⋆ r stabilizing TbT threshold for the adjacent pair (r -1, r) ∆ tbt ⋆ := max r∈{2,...,n} ∆ tbt ⋆ r global stabilizing TbT threshold</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Illustration of the notations and functions used in the proof of Theorem 4.3. The post-effort score function v(θ, e) satisfies the conditions in Theorem 4.2. Here, e *i and e * j denote the equilibrium efforts of model developers i and j, respectively. The counterfactual efforts ẽi and ẽj are defined as the efforts each model developer would need to match the other model developer's post-effort score given a TbT effort level ∆ tbt , i.e., v(θ i , ẽi + ∆ tbt ) = v(θ j , e * j + ∆ tbt ), v(θ j , ẽj + ∆ tbt ) = v(θ i , e * i + ∆ tbt ).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>stated scaling. Since λ r = ρ r /e req r (0), we also have ∆ tbt ⋆ r = O(λ γ r r ) up to a constant factor depending only on e req r (0).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>, γ r , and λ r from the post-training trajectories. For each model i, we fit the generalized scaling form σ -1 ( ṽi (e)) = α i + β i log(1 + e) by linear regression of σ -1 ( ṽi ) on log(1 + e) over the observed training range, yielding (α i , βi ). For an adjacent pair (r -1, r) is defined as the minimal additional effort at ∆ tbt = 0 required for model r to match model r -1; under the fitted scaling law, e req r (0) = exp αr-1 -α r βr -1.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Continued post-training trajectories of Qwen models of different sizes on nine benchmarks. Here, we use model size as a proxy for the model's latent capability θ. The x-axis denotes the number of post-training steps, reflecting post-training effort e. The y-axis denotes accuracy on the validation set, i.e.,v(θ, e). For each model, we fit a curve following Equation equation 3.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>based on the fitted curves on the left. With ∆ tbt = 3, 000, at least 384,668 training steps are needed to change the ranking of one model.</figDesc><table /><note><p>The x-axis denotes the amount of post-training steps (each step corresponds to 8 data points), reflecting post-training effort e. The y-axis denotes accuracy on the validation set, i.e., v(θ, e). For each model, we fit a curve following Equation (3). The empirical results align with the assumptions of monotonicity in capability, diminishing returns and saturation in effort, and non-decreasing effort gaps in Assumption 4.2. See Appendix E for additional details and results for the other eight benchmarks. Right: For each tune-before-test level ∆ tbt (the amount of benchmark-specific finetuning steps, x-axis), we calculate the minimal additional steps required (y-axis) to change the ranking for at least one model, i.e., min r∈{2,...,n} e req r (∆ tbt ),</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 :</head><label>1</label><figDesc>Primary notation.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>•) is nondecreasing in effort (C2), we have ẽi &gt; e * i and ẽj ≤ e * j . Let ∆ θ i ,θ j (s) := e req (s; θ j , ∆ tbt )e req (s; θ i , ∆ tbt ) denote the effort gap required for the lower-capability model j to achieve score s relative to the higher-capability model i (at TbT level ∆ tbt ). By (C3), ∆ θ i ,θ j (s) is (weakly) nondecreasing in s. Applying this with s</figDesc><table><row><cell>Effort-gap comparison.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head></head><label></label><figDesc>Using e req (v * i ; θ i , ∆ tbt ) = e * i and e req (v * j ; θ j , ∆ tbt ) = e * j , and the definitions ẽi := e req (v * j ; θ i , ∆ tbt ) and ẽj := e req (v * i ; θ j , ∆ tbt ), this becomes ẽie * ) be the equilibrium score profile and let r k (•) denote the rank of model k under a given score profile (with an arbitrary but fixed deterministic tie-breaking rule). Then</figDesc><table><row><cell>R r i</cell></row></table><note><p><p><p><p><p><p><p><p>i ≤ e * jẽj .</p>(7)</p>By convexity and monotonicity of c (Theorem 4.1), Equation (</p>7</p>) implies</p>c( ẽi )c(e * i ) ≤ c(e * j )c( ẽj ).</p>(8</p>) Nash inequalities. Since e * is a PNE, neither model can gain by deviating unilaterally. Let v * = (v * 1 , . . . , v * n</p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>We assume a common cost function for all model developers for simplicity. In Theorem B.1, we show that multiplicatively separable costs (C i (e i ; θ i ) = γ i c(e i )) yield an equivalent follower game after rescaling rewards.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>Under random tie-breaking, a lower-capability model may benefit from exerting positive effort to enter a tie lottery, so the conclusion that every PNE is all-zero need not hold without further qualification. This is mainly a technical issue: exact ties are rare in practice because leaderboard scores are usually reported at high precision or resolved by fixed secondary rules.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgement</head><p>We thank <rs type="person">Jiduan Wu</rs>, <rs type="person">Vivian Nastl</rs>, <rs type="person">Ana-Andreea Stoica</rs>, <rs type="person">André Cruz</rs>, <rs type="person">Ricardo Dominguez-Olmedo</rs>, <rs type="person">Florian Dorner</rs>, <rs type="person">Dingfan Chen</rs>, <rs type="person">Tom Sühr</rs>, <rs type="person">Nikhil Chandak</rs>, <rs type="person">Mila Gorecki</rs>, <rs type="person">Mina Remeli</rs>, <rs type="person">Omri Ben-Dov</rs>, and anonymous reviewers from the <rs type="funder">ICLR AIMS</rs> workshop for the helpful discussions and feedback on this work.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Proof for Theorem 4.6</head><p>Proof. We first show that if a PNE exists, it must be the all-zero additional-effort profile; we then show that under the stated condition, the all-zero profile cannot be a PNE.</p><p>Fix ∆ tbt ≥ 0 and suppose e * is a PNE. By Theorem 4.3, post-effort scores are weakly ordered by capability at equilibrium: if θ i &gt; θ j , then v(θ i , ∆ tbt + e * i ) ≥ v(θ j , ∆ tbt + e * j ). Under deterministic tie-breaking that favors higher capability, this implies that model n (the lowest capability θ n ) is last-ranked at effort level e * . Since at any effort profile, the last-ranked model receives reward R n regardless of its own effort, thus model n can weakly improve its utility by reducing its effort to zero: its reward cannot decrease, while its cost weakly decreases, since c is nondecreasing and c(0) = 0. Therefore, in any PNE, we must have e * n = 0. Now consider model n -1. Given e * n = 0, if model n -1 sets effort to zero as well, its score becomes v(θ n-1 , ∆ tbt ), which is weakly higher than v(θ n , ∆ tbt ) by the assumption that v(θ, e) is monotonic in capability (C1). Under the same tie-breaking rule, model n -1 cannot fall below model n by choosing zero effort, and its cost decreases. Hence e * n-1 = 0 as well. Proceeding inductively, we obtain e * i = 0 for all i, so any PNE must be e * = (0, . . . , 0). Next, we show that under the stated condition Equation ( <ref type="formula">5</ref>), all-zero is not a PNE. At e = (0, . . . , 0), baseline scores are</p><p>then model r has a profitable deviation, namely that it can exert effort ê = e req r ∆ tbt , so that v(θ r , ∆ tbt + ê) &gt; s r-1 (∆ tbt ), thereby overtaking model r -1 and improving its reward from R r to at least R r-1 . The resulting utility gain is at least R r-1 -R r while the incurred cost is c( ê), which is strictly smaller by assumption. Therefore, the deviation is profitable, so the all-zero profile is not a PNE. As a result, no PNE exists in this case.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D Proof in Section 5</head><p>Proof for Theorem 5.1</p><p>Proof. Fix any pair (i, j) with θ i &gt; θ j and define the score gap at effort level e ≥ 0 as d ij (e) := v(θ i , e)v(θ j , e). By C1 (∂ θ v &gt; 0), we have d ij (e) &gt; 0 for all e. Hence,</p><p>Let e req (s; θ) := inf{e ≥ 0 : v(θ, e) ≥ s} be the minimal total effort to reach score s. Define the (weak) catch-up effort for model r at baseline ∆ tbt by δ r (∆ tbt ) := e req s r-1 (∆ tbt ); θ r -∆ tbt .</p><p>Since s r-1 (∆ tbt ) is achieved by capability θ r-1 at effort ∆ tbt , we also have e req (s r-1 (∆ tbt ); θ r-1 ) = ∆ tbt , hence δ r (∆ tbt ) = e req s r-1 (∆ tbt ); θ re req s r-1 (∆ tbt ); θ r-1 . By (C3), the effort gap e req (s; θ r )e req (s; θ r-1 ) is nondecreasing in S; composing with the nondecreasing map</p><p>Finally, the strict "just-overtake" effort e req r (∆ tbt ) is obtained by requiring v(θ r , ∆ tbt + e) &gt; s r-1 (∆ tbt ) instead of ≥; by continuity of v(θ r , •) this differs only by an arbitrarily small ε &gt; 0, so e req r (∆ tbt ) is also nondecreasing in ∆ tbt .</p><p>Since c is nondecreasing, c(e req r (∆ tbt )) is nondecreasing as well.</p><p>Proof for Theorem 5.3</p><p>Proof. Given 0 ≤ ∆ tbt 1 &lt; ∆ tbt 2 , and assume the all-zero additional-effort profile e = (0, . . . , 0) is a PNE of the induced follower game under baseline ∆ tbt 1 , we know from Theorem 4.5 that ∀r ∈ {2, • • • n}, we have</p><p>Then according to Theorem 5.2, the cost of "just-overtake" effort c(e req r (∆ tbt )) is monotonically increasing in ∆ tbt , which means:</p><p>Proof for Theorem 5.5</p><p>Proof. By definition of ∆ tbt ⋆ , for any ∆ tbt ≥ ∆ tbt ⋆ we have c(e req r (∆ tbt )) ≥ R r-1 -R r for r = {2, . . . , n}, so the all-zero profile is a PNE by Theorem 4.5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Proof for Theorem 5.6</head><p>Proof. Since σ is strictly increasing, the catch-up condition v(θ r ,</p><p>Applying σ -1 and the scaling law for ṽ(θ r , •), this becomes </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">A survey on data selection for language models</title>
+		<author>
+			<persName><forename type="first">Alon</forename><surname>Albalak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yanai</forename><surname>Elazar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sang</forename><surname>Michael Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shayne</forename><surname>Longpre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nathan</forename><surname>Lambert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xinyi</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Niklas</forename><surname>Muennighoff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bairu</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Liangming</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Haewon</forename><surname>Jeong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Colin</forename><surname>Raffel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shiyu</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tatsunori</forename><surname>Hashimoto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">William</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wang</forename></persName>
+		</author>
+		<idno>ArXiv, abs/2402.16827</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:268032975" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Multiagent evaluation mechanisms</title>
+		<author>
+			<persName><forename type="first">Magdalen</forename><surname>Tal Alon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ariel</forename><surname>Dobson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Inbal</forename><surname>Procaccia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jamie</forename><surname>Talgam-Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Tucker-Foltz</surname></persName>
+		</author>
+		<ptr target="https://ojs.aaai.org/index.php/AAAI/article/view/5543" />
+	</analytic>
+	<monogr>
+		<title level="m">Proc. AAAI Conference on Artificial Intelligence</title>
+		<meeting>AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2020-04">Apr. 2020</date>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="1774" to="1781" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Piqa: Reasoning about physical commonsense in natural language</title>
+		<author>
+			<persName><forename type="first">Yonatan</forename><surname>Bisk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rowan</forename><surname>Zellers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Le</forename><surname>Ronan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jianfeng</forename><surname>Bras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yejin</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Choi</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:208290939" />
+	</analytic>
+	<monogr>
+		<title level="m">AAAI Conference on Artificial Intelligence</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The ladder: A reliable leaderboard for machine learning competitions</title>
+		<author>
+			<persName><forename type="first">Avrim</forename><surname>Blum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page">1493191</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">How much can we forget about data contamination?</title>
+		<author>
+			<persName><forename type="first">Sebastian</forename><surname>Bordt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Suraj</forename><surname>Srinivas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Valentyn</forename><surname>Boreiko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ulrike</forename><surname>Von</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Luxburg</forename></persName>
+		</author>
+		<idno>ArXiv, abs/2410.03249</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page">273163321</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Stackelberg games for adversarial prediction problems</title>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Brückner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tobias</forename><surname>Scheffer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 17th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 17th ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<date type="published" when="2011">2011</date>
+			<biblScope unit="page" from="547" to="555" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Learning to incentivize improvements from strategic agents</title>
+		<author>
+			<persName><forename type="first">Yatong</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jialu</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yang</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Transactions on Machine Learning Research</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Think you have solved question answering? try arc, the ai2 reasoning challenge</title>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Isaac</forename><surname>Cowhey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Oren</forename><surname>Etzioni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tushar</forename><surname>Khot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ashish</forename><surname>Sabharwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Carissa</forename><surname>Schoenick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Oyvind</forename><surname>Tafjord</surname></persName>
+		</author>
+		<idno>ArXiv, abs/1803.05457</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:3922816" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Training verifiers to solve math word problems</title>
+		<author>
+			<persName><forename type="first">Karl</forename><surname>Cobbe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vineet</forename><surname>Kosaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mo</forename><surname>Bavarian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mark</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Heewoo</forename><surname>Jun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lukasz</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Matthias</forename><surname>Plappert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jerry</forename><surname>Tworek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacob</forename><surname>Hilton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Reiichiro</forename><surname>Nakano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christopher</forename><surname>Hesse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Schulman</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2110.14168</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page">239998651</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Tournament theory: Thirty years of contests and competitions</title>
+		<author>
+			<persName><forename type="first">Brian</forename><forename type="middle">L</forename><surname>Connelly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Laszlo</forename><surname>Tihanyi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Russell</forename><surname>Crook</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Ashley</forename><surname>Gangloff</surname></persName>
+		</author>
+		<idno type="DOI">10.1177/0149206313498902</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Management</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="16" to="47" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The theory of contests: a survey</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Luis</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Corchón</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10058-007-0032-5</idno>
+		<ptr target="https://doi.org/10.1007/s10058-007-0032-5" />
+	</analytic>
+	<monogr>
+		<title level="j">Review of Economic Design</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="69" to="100" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Technical deep-dive: Curating our way to a state-of-the-art text dataset</title>
+		<author>
+			<persName><surname>Datologyai</surname></persName>
+		</author>
+		<ptr target="https://www.datologyai.com/blog/technical-deep-dive-curating-our-way-to-a-state-of-the-art-text-dataset" />
+		<imprint>
+			<date type="published" when="2024-11">November 2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Imagenet: A large-scale hierarchical image database</title>
+		<author>
+			<persName><forename type="first">Jia</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wei</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Li-Jia</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Li</forename><surname>Fei-Fei</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:57246310" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2009">2009. 2009</date>
+			<biblScope unit="page" from="248" to="255" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<author>
+			<persName><forename type="first">Ricardo</forename><surname>Dominguez-Olmedo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Florian</forename><forename type="middle">E</forename><surname>Dorner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2407.07890</idno>
+		<title level="m">Training on the test task confounds evaluation and emergence</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Data science at the singularity</title>
+		<author>
+			<persName><forename type="first">David</forename><surname>Donoho</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Harvard Data Science Review</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">2024</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Pattern classification and scene analysis</title>
+		<author>
+			<persName><forename type="first">Richard</forename><forename type="middle">O</forename><surname>Duda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><forename type="middle">E</forename></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:12946615" />
+	</analytic>
+	<monogr>
+		<title level="m">A Wiley-Interscience publication</title>
+		<imprint>
+			<date type="published" when="1974">1974</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Generalization in adaptive data analysis and holdout reuse</title>
+		<author>
+			<persName><forename type="first">Cynthia</forename><surname>Dwork</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vitaly</forename><surname>Feldman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Toniann</forename><surname>Pitassi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Omer</forename><surname>Reingold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aaron</forename><surname>Roth</surname></persName>
+		</author>
+		<idno>ArXiv, abs/1506.02629</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:14762349" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The reusable holdout: Preserving validity in adaptive data analysis</title>
+		<author>
+			<persName><forename type="first">Cynthia</forename><surname>Dwork</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vitaly</forename><surname>Feldman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Toniann</forename><surname>Pitassi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Omer</forename><surname>Reingold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aaron</forename><surname>Roth</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:15569600" />
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">349</biblScope>
+			<biblScope unit="page" from="636" to="638" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<author>
+			<persName><forename type="first">Ohad</forename><surname>Einav</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nir</forename><surname>Rosenfeld</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2502.18052</idno>
+		<title level="m">A market for accuracy: Classification under competition</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Extrapolating gpt-n performance</title>
+		<author>
+			<persName><forename type="first">Lukas</forename><surname>Finnveden</surname></persName>
+		</author>
+		<ptr target="https://www.lesswrong.com/posts/k2SNji3jXaLGhBeYP/extrapolating-gpt-n-performance" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Open llm leaderboard v2</title>
+		<author>
+			<persName><forename type="first">Clémentine</forename><surname>Fourrier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nathan</forename><surname>Habib</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alina</forename><surname>Lozovskaya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Konrad</forename><surname>Szafer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Wolf</surname></persName>
+		</author>
+		<ptr target="https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Contests: Theory and topics</title>
+		<author>
+			<persName><forename type="first">Qiang</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zenan</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/acrefore/9780190625979.001.0001/acrefore-9780190625979-e-440</idno>
+		<ptr target="https://oxfordre.com/economics/view/10.1093/acrefore/9780190625979.001.0001/acrefore-9780190625979-e-440" />
+		<imprint>
+			<biblScope unit="page" from="7" to="2019" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Frontiermath: A benchmark for evaluating advanced mathematical reasoning in ai</title>
+		<author>
+			<persName><forename type="first">Elliot</forename><surname>Glazer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ege</forename><surname>Erdil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tamay</forename><surname>Besiroglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Diego</forename><surname>Chicharro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Evan</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alex</forename><surname>Gunning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Caroline</forename><surname>Falkman Olsson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jean-Stanislas</forename><surname>Denain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Anson</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Emily</forename><surname>De Oliveira Santos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Olli</forename><surname>Järviniemi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Matthew</forename><surname>Barnett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Robert</forename><surname>Sandler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Matej</forename><surname>Vrzala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jaime</forename><surname>Sevilla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Qiuyu</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Elizabeth</forename><surname>Pratt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lionel</forename><surname>Levine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Grant</forename><surname>Barkley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Natalie</forename><surname>Stewart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bogdan</forename><surname>Grechuk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tetiana</forename><surname>Grechuk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shreepranav</forename><surname>Varma Enugandla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mark</forename><surname>Wildon</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2411.04872</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page">273877467</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Deep Learning</title>
+		<author>
+			<persName><forename type="first">Ian</forename><surname>Goodfellow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yoshua</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aaron</forename><surname>Courville</surname></persName>
+		</author>
+		<ptr target="http://www.deeplearningbook.org" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<publisher>MIT Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Openthoughts: Data recipes for reasoning models</title>
+		<author>
+			<persName><forename type="first">Etash</forename><surname>Kumar Guha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ryan</forename><surname>Marten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sedrick</forename><surname>Scott Keh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Negin</forename><surname>Raoof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Georgios</forename><surname>Smyrnis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hritik</forename><surname>Bansal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marianna</forename><surname>Nezhurina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jean-Pierre</forename><surname>Mercat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Trung</forename><surname>Vu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zayne</forename><surname>Sprague</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ashima</forename><surname>Suvarna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ben</forename><surname>Feuer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Liangyu</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zaid</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eric</forename><surname>Frankel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sachin</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Caroline</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Niklas</forename><surname>Muennighoff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shiye</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wanjia</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shreyas</forename><surname>Pimpalgaonkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kartik</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Charlie</forename><surname>Cheng-Jie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yichuan</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sarah</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vivek</forename><surname>Pratt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jon</forename><surname>Ramanujan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeffrey</forename><surname>Saad-Falcon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Achal</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alon</forename><surname>Dave</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kushal</forename><surname>Albalak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Blake</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chinmay</forename><surname>Wulfe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Greg</forename><surname>Hegde</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sewoong</forename><surname>Durrett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mohit</forename><surname>Oh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Saadia</forename><surname>Bansal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aditya</forename><surname>Gabriel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kai-Wei</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vaishaal</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aaron</forename><surname>Shankar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mike</forename><forename type="middle">A</forename><surname>Gokaslan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tatsunori</forename><surname>Merrill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yejin</forename><surname>Hashimoto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jenia</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Reinhard</forename><surname>Jitsev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maheswaran</forename><surname>Heckel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexandros</forename><forename type="middle">G</forename><surname>Sathiamoorthy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ludwig</forename><surname>Dimakis</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Schmidt</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2506.04178</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page">279154475</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">The emerging science of machine learning benchmarks</title>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<ptr target="https://mlbenchmarks.org" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note>Manuscript</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Patterns, predictions, actions: Foundations of machine learning</title>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Recht</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>Princeton University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Strategic classification</title>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nimrod</forename><surname>Megiddo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christos</forename><surname>Papadimitriou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mary</forename><surname>Wootters</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2016 ACM conference on innovations in theoretical computer science</title>
+		<meeting>the 2016 ACM conference on innovations in theoretical computer science</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="111" to="122" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Kaiming He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shaoqing</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jian</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Sun</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:206594692" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2015">2016. 2015</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<author>
+			<persName><forename type="first">Dan</forename><surname>Hendrycks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Collin</forename><surname>Burns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Steven</forename><surname>Basart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andy</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mantas</forename><surname>Mazeika</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dawn</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacob</forename><surname>Steinhardt</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2009.03300</idno>
+		<title level="m">Measuring massive multitask language understanding</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Lora: Low-rank adaptation of large language models</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Edward</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yelong</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Phillip</forename><surname>Wallis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zeyuan</forename><surname>Allen-Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuanzhi</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shean</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Weizhu</forename><surname>Chen</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2106.09685</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:235458009" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Does math reasoning improve general llm capabilities? understanding transferability of llm reasoning</title>
+		<author>
+			<persName><forename type="first">Maggie</forename><surname>Huan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuetai</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tuney</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiaoyu</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Seungone</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Minxin</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Radha</forename><surname>Poovendran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Graham</forename><surname>Neubig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xiang</forename><surname>Yue</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2507.00432</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page">280146966</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Livecodebench: Holistic and contamination free evaluation of large language models for code</title>
+		<author>
+			<persName><forename type="first">Naman</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">King</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alex</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wen-Ding</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fanjia</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tianjun</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sida</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Armando</forename><surname>Solar-Lezama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Koushik</forename><surname>Sen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ion</forename><surname>Stoica</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2403.07974</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page">268379413</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title level="m" type="main">Investigating data contamination for pre-training language models</title>
+		<author>
+			<persName><forename type="first">Minhao</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ken</forename><forename type="middle">Ziyu</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ming</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rylan</forename><surname>Schaeffer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Siru</forename><surname>Ouyang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jiawei</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sanmi</forename><surname>Koyejo</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2401.06059</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:266933004" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">A new measure of rank correlation</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Kendall</surname></persName>
+		</author>
+		<ptr target="http://www.jstor.org/stable/2332226" />
+	</analytic>
+	<monogr>
+		<title level="j">Biometrika</title>
+		<idno type="ISSN">00063444</idno>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">1/2</biblScope>
+			<biblScope unit="page" from="81" to="93" />
+			<date type="published" when="1938">1938</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">How do classifiers induce agents to invest effort strategically?</title>
+		<author>
+			<persName><forename type="first">Jon</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Manish</forename><surname>Raghavan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Economics and Computation (TEAC)</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="23" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Do better imagenet models transfer better?</title>
+		<author>
+			<persName><forename type="first">Simon</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonathon</forename><surname>Shlens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Quoc</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Le</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:43928547" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2018">2019. 2018</date>
+			<biblScope unit="page" from="2656" to="2666" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Imagenet classification with deep convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">Alex</forename><surname>Krizhevsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ilya</forename><surname>Sutskever</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Geoffrey</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="84" to="90" />
+			<date type="published" when="2012">2012. 195908774</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Natural questions: A benchmark for answering research</title>
+		<author>
+			<persName><forename type="first">Tom</forename><surname>Kwiatkowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jennimaria</forename><surname>Palomaki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Olivia</forename><surname>Redfield</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Collins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ankur</forename><forename type="middle">P</forename><surname>Parikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chris</forename><surname>Alberti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Danielle</forename><surname>Epstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Illia</forename><surname>Polosukhin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacob</forename><surname>Devlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kenton</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kristina</forename><surname>Toutanova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Llion</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Matthew</forename><surname>Kelcey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ming-Wei</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><forename type="middle">M</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jakob</forename><surname>Uszkoreit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Quoc</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Slav</forename><surname>Petrov</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="j">Transactions of the Association for Computational Linguistics</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">86611921</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<author>
+			<persName><forename type="first">Yann</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Corinna</forename><surname>Cortes</surname></persName>
+		</author>
+		<ptr target="http://yann.lecun.com/exdb/mnist/" />
+		<title level="m">MNIST handwritten digit database</title>
+		<imprint>
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<monogr>
+		<title level="m" type="main">Datacomp-lm: In search of the next generation of training sets for language models</title>
+		<author>
+			<persName><forename type="first">Jeffrey</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alex</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Georgios</forename><surname>Smyrnis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maor</forename><surname>Ivgi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Matt</forename><surname>Jordan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Samir</forename><surname>Yitzhak Gadre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hritik</forename><surname>Bansal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Etash</forename><surname>Kumar Guha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sedrick</forename><surname>Scott Keh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kushal</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Saurabh</forename><surname>Garg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rui</forename><surname>Xin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Niklas</forename><surname>Muennighoff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Reinhard</forename><surname>Heckel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jean-Pierre</forename><surname>Mercat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mayee</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Suchin</forename><surname>Gururangan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mitchell</forename><surname>Wortsman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alon</forename><surname>Albalak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yonatan</forename><surname>Bitton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marianna</forename><surname>Nezhurina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Amro</forename><surname>Abbas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cheng-Yu</forename><surname>Hsieh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dhruba</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Josh</forename><surname>Gardner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maciej</forename><surname>Kilian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hanlin</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rulin</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sarah</forename><surname>Pratt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sunny</forename><surname>Sanyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gabriel</forename><surname>Ilharco</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Giannis</forename><surname>Daras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kalyani</forename><surname>Marathe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aaron</forename><surname>Gokaslan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jieyu</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thao</forename><surname>Khy Athi Chandu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Igor</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Vasiljevic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shuran</forename><surname>Kakade</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sujay</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fartash</forename><surname>Sanghavi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sewoong</forename><surname>Faghri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Luke</forename><forename type="middle">S</forename><surname>Oh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kyle</forename><surname>Zettlemoyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alaaeldin</forename><surname>Lo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hadi</forename><surname>El-Nouby</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexander</forename><surname>Pouransari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stephanie</forename><surname>Toshev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dirk</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Luca</forename><surname>Groeneveld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pang</forename><surname>Soldani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jenia</forename><surname>Wei Koh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Jitsev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexandros</forename><forename type="middle">G</forename><surname>Kollar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yair</forename><surname>Dimakis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Achal</forename><surname>Carmon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ludwig</forename><surname>Dave</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vaishaal</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Shankar</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2406.11794</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page">270560330</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Holistic evaluation of language models</title>
+		<author>
+			<persName><forename type="first">Percy</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rishi</forename><surname>Bommasani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tony</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dimitris</forename><surname>Tsipras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dilara</forename><surname>Soylu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michihiro</forename><surname>Yasunaga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yian</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Deepak</forename><surname>Narayanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuhuai</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ananya</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Binhang</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bobby</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ce</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christian</forename><surname>Cosgrove</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christopher</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Diana</forename><surname>Christopher R'e</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Drew</forename><forename type="middle">A</forename><surname>Acosta-Navas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Hudson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Esin</forename><surname>Zelikman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Faisal</forename><surname>Durmus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Frieda</forename><surname>Ladhak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hongyu</forename><surname>Rong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Huaxiu</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jue</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Keshav</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Laurel</forename><forename type="middle">J</forename><surname>Santhanam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lucia</forename><surname>Orr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mert</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mirac</forename><surname>Yuksekgonul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nathan</forename><forename type="middle">S</forename><surname>Suzgun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Neel</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Niladri</forename><forename type="middle">S</forename><surname>Guha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Chatterji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Khattab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Qian</forename><surname>Henderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ryan</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sang</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shibani</forename><surname>Michael Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Surya</forename><surname>Santurkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tatsunori</forename><surname>Ganguli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thomas</forename><forename type="middle">F</forename><surname>Hashimoto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tianyi</forename><surname>Icard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vishrav</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">William</forename><surname>Chaudhary</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xuechen</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yifan</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuhui</forename><surname>Mai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuta</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Koreeda</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="j">Annals of the New York Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">1525</biblScope>
+			<biblScope unit="page">253553585</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Are we learning yet? a meta review of evaluation failures across machine learning</title>
+		<author>
+			<persName><forename type="first">Thomas</forename><surname>Liao</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="m">NeurIPS Datasets and Benchmarks</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page">244907059</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<author>
+			<persName><forename type="first">Marc</forename><surname>Liberman</surname></persName>
+		</author>
+		<ptr target="https://www.simonsfoundation.org/lecture/reproducible-research-and-thecommon-task-method" />
+		<title level="m">Reproducible research and the common task method</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Strategic ranking</title>
+		<author>
+			<persName><forename type="first">Lydia</forename><forename type="middle">T</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nikhil</forename><surname>Garg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Christian</forename><surname>Borgs</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Artificial Intelligence and Statistics</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="2489" to="2518" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Decoupled weight decay regularization</title>
+		<author>
+			<persName><forename type="first">Ilya</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Frank</forename><surname>Hutter</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page">53592270</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<title level="m" type="main">Darpa timit acoustic-phonetic continuous speech corpus</title>
+		<author>
+			<persName><forename type="first">John</forename><forename type="middle">W</forename><surname>Lyons</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1993">1993</date>
+		</imprint>
+		<respStmt>
+			<orgName>National Institute of Standards and Technology</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">PEFT: State-of-the-art parameter-efficient fine-tuning methods</title>
+		<author>
+			<persName><forename type="first">Sourab</forename><surname>Mangrulkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sylvain</forename><surname>Gugger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lysandre</forename><surname>Debut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sayak</forename><surname>Younes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Paul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marian</forename><surname>Bossan</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Tietz</surname></persName>
+		</author>
+		<ptr target="https://github.com/huggingface/peft" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<monogr>
+		<title level="m" type="main">Categorizing variants of goodhart&apos;s law</title>
+		<author>
+			<persName><forename type="first">David</forename><surname>Manheim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Scott</forename><surname>Garrabrant</surname></persName>
+		</author>
+		<idno>ArXiv, abs/1803.04585</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page">4715794</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<title level="m" type="main">Model similarity mitigates test set overuse</title>
+		<author>
+			<persName><forename type="first">Horia</forename><surname>Mania</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ludwig</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Recht</surname></persName>
+		</author>
+		<idno>ArXiv, abs/1905.12580</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page">168169971</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<author>
+			<persName><forename type="first">Alberto</forename><surname>Marchesi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-62476-7_10</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-62476-7_10" />
+		<title level="m">Leadership Games: Multiple Followers, Multiple Leaders, and Perfection</title>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer International Publishing</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="107" to="118" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<monogr>
+		<title level="m" type="main">The effect of natural distribution shift on question answering models</title>
+		<author>
+			<persName><forename type="first">John</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Karl</forename><surname>Krauth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Recht</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ludwig</forename><surname>Schmidt</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2004.14444</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page">216867120</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Strategic classification is causal modeling in disguise</title>
+		<author>
+			<persName><forename type="first">John</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Smitha</forename><surname>Milli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="6917" to="6926" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Equilibrium points in n-person games</title>
+		<author>
+			<persName><forename type="first">John F</forename><surname>Nash</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="48" to="49" />
+			<date type="published" when="1950">1950</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<monogr>
+		<author>
+			<persName><forename type="first">David</forename><surname>Owen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2401.04757</idno>
+		<ptr target="https://arxiv.org/abs/2401.04757" />
+		<title level="m">How predictable is language model benchmark performance? arXiv preprint</title>
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<analytic>
+		<title level="a" type="main">Medmcqa : A large-scale multi-subject multi-choice dataset for medical domain question answering</title>
+		<author>
+			<persName><forename type="first">Ankit</forename><surname>Pal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Logesh</forename><surname>Kumar Umapathi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Malaikannan</forename><surname>Sankarasubbu</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="m">ACM Conference on Health, Inference, and Learning</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page">247763070</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<monogr>
+		<title level="m" type="main">Evaluating ai model performance on real-world economically valuable tasks</title>
+		<author>
+			<persName><forename type="first">Tejal</forename><surname>Patwardhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rachel</forename><surname>Dias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Elizabeth</forename><surname>Proehl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Grace</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michele</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Olivia</forename><surname>Watkins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marwan</forename><surname>Sim'on Posada Fishman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Phoebe</forename><surname>Aljubeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Laurance</forename><surname>Thacker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Natalie</forename><forename type="middle">S</forename><surname>Fauconnet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Patrick</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Samuel</forename><surname>Chao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gildas</forename><surname>Miserendino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><surname>Chabot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexandra</forename><surname>Sharman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Amelia</forename><surname>Barr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jerry</forename><surname>Glaese</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Tworek</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Gdpval</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2510.04374</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page">281843768</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<monogr>
+		<title level="m" type="main">Humanity&apos;s last exam</title>
+		<author>
+			<persName><forename type="first">Long</forename><surname>Phan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alice</forename><surname>Gatti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ziwen</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nathaniel</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Josephina</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hugh</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chen</forename><surname>Bo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Calvin</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mohamed</forename><surname>Shaaban</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sean</forename><surname>Shi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2501.14249</idno>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Exploring the limits of transfer learning with a unified text-to-text transformer</title>
+		<author>
+			<persName><forename type="first">Colin</forename><surname>Raffel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Noam</forename><surname>Shazeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Adam</forename><surname>Roberts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Katherine</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sharan</forename><surname>Narang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Matena</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yanqi</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wei</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><forename type="middle">J</forename><surname>Liu</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page">204838007</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Do imagenet classifiers generalize to imagenet</title>
+		<author>
+			<persName><forename type="first">Benjamin</forename><surname>Recht</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rebecca</forename><surname>Roelofs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ludwig</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Shankar</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page">67855879</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Strategic ml: How to learn with data that &quot;behaves</title>
+		<author>
+			<persName><forename type="first">Nir</forename><surname>Rosenfeld</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 17th ACM International Conference on Web Search and Data Mining (WSDM)</title>
+		<meeting>the 17th ACM International Conference on Web Search and Data Mining (WSDM)</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page" from="1128" to="1131" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Observational scaling laws and the predictability of langauge model performance</title>
+		<author>
+			<persName><forename type="first">Yangjun</forename><surname>Ruan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chris</forename><forename type="middle">J</forename><surname>Maddison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tatsunori B</forename><surname>Hashimoto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="15841" to="15892" />
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Imagenet large scale visual recognition challenge</title>
+		<author>
+			<persName><forename type="first">Olga</forename><surname>Russakovsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jia</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonathan</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sanjeev</forename><surname>Satheesh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sean</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhiheng</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrej</forename><surname>Karpathy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Aditya</forename><surname>Khosla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><forename type="middle">S</forename><surname>Bernstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alexander</forename><forename type="middle">C</forename><surname>Berg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Li</forename><surname>Fei-Fei</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:2930547" />
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of Computer Vision</title>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="page" from="211" to="252" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Winogrande: An adversarial winograd schema challenge at scale</title>
+		<author>
+			<persName><forename type="first">Keisuke</forename><surname>Sakaguchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Le</forename><surname>Ronan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chandra</forename><surname>Bras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yejin</forename><surname>Bhagavatula</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Choi</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2404.02112</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="m">Olawale Salaudeen and Moritz Hardt. Imagenot: A contrast with imagenet preserves model rankings</title>
+		<imprint>
+			<date type="published" when="2019">2019. 2024</date>
+			<biblScope unit="page">268857319</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<monogr>
+		<title level="m" type="main">Measurement to meaning: A validity-centered framework for ai evaluation</title>
+		<author>
+			<persName><forename type="first">Olawale</forename><surname>Salaudeen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Anka</forename><surname>Reuel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ahmed</forename><forename type="middle">M</forename><surname>Ahmed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Suhana</forename><surname>Bedi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zachary</forename><surname>Robertson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sudharsan</forename><surname>Sundar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ben</forename><surname>Domingue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Angelina</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Oluwasanmi</forename><surname>Koyejo</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2505.10573</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2025">2025</date>
+			<biblScope unit="page">278715024</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Introduction to the conll-2003 shared task: Languageindependent named entity recognition</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kim</forename><surname>Sang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fien</forename><surname>De</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Meulder</forename></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:2470716" />
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Computational Natural Language Learning</title>
+		<imprint>
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<monogr>
+		<author>
+			<persName><forename type="first">Maarten</forename><surname>Sap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hannah</forename><surname>Rashkin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Derek</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ronan</forename><surname>Lebras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yejin</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Socialiqa</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/1904.09728" />
+		<title level="m">Commonsense reasoning about social interactions</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<monogr>
+		<title level="m" type="main">Are emergent abilities of large language models a mirage?</title>
+		<author>
+			<persName><forename type="first">Rylan</forename><surname>Schaeffer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Brando</forename><surname>Miranda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Oluwasanmi</forename><surname>Koyejo</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2304.15004</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page">258418299</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b68">
+	<monogr>
+		<author>
+			<persName><forename type="first">Shivalika</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yiyang</forename><surname>Nan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alex</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D'</forename><surname>Daniel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sayash</forename><surname>Souza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ahmet</forename><surname>Kapoor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sanmi</forename><surname>Üstün</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuntian</forename><surname>Koyejo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shayne</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Noah</forename><forename type="middle">A</forename><surname>Longpre</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Smith</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2504.20879</idno>
+		<title level="m">The leaderboard illusion</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b69">
+	<analytic>
+		<title level="a" type="main">Learning classifiers that induce markets</title>
+		<author>
+			<persName><forename type="first">Yonatan</forename><surname>Sommer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ivri</forename><surname>Hikri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lotan</forename><surname>Amit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nir</forename><surname>Rosenfeld</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 42nd International Conference on Machine Learning (ICML 2025)</title>
+		<meeting>the 42nd International Conference on Machine Learning (ICML 2025)</meeting>
+		<imprint>
+			<biblScope unit="page">2025</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b70">
+	<monogr>
+		<title level="m" type="main">Commonsenseqa: A question answering challenge targeting commonsense knowledge</title>
+		<author>
+			<persName><forename type="first">Alon</forename><surname>Talmor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonathan</forename><surname>Herzig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nicholas</forename><surname>Lourie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jonathan</forename><surname>Berant</surname></persName>
+		</author>
+		<idno>ArXiv, abs/1811.00937</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:53296520" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b71">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Donald</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Topkis</surname></persName>
+		</author>
+		<ptr target="http://www.jstor.org/stable/j.ctt7s83q" />
+		<title level="m">Supermodularity and Complementarity</title>
+		<imprint>
+			<publisher>Princeton Press</publisher>
+			<date type="published" when="1998">1998</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b72">
+	<analytic>
+		<title level="a" type="main">Llama 2: Open foundation and fine-tuned chat models</title>
+		<author>
+			<persName><forename type="first">Hugo</forename><surname>Touvron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Louis</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kevin</forename><forename type="middle">R</forename><surname>Stone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Amjad</forename><surname>Almahairi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yasmine</forename><surname>Babaei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Niko</forename><surname>Lay Bashlykov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Soumya</forename><surname>Batra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Prajjwal</forename><surname>Bhargava</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shruti</forename><surname>Bhosale</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Daniel</forename><forename type="middle">M</forename><surname>Bikel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lukas</forename><surname>Blecher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cristian Canton</forename><surname>Ferrer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moya</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guillem</forename><surname>Cucurull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><surname>Esiobu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jude</forename><surname>Fernandes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeremy</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wenyin</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Brian</forename><surname>Fuller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cynthia</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Vedanuj</forename><surname>Goswami</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Naman</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Anthony</forename><forename type="middle">S</forename><surname>Hartshorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Saghar</forename><surname>Hosseini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rui</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hakan</forename><surname>Inan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marcin</forename><surname>Kardas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Viktor</forename><surname>Kerkez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Madian</forename><surname>Khabsa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Isabel</forename><forename type="middle">M</forename><surname>Kloumann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Artem</forename><surname>Korenev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Punit</forename><surname>Singh Koura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marie-Anne</forename><surname>Lachaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Thibaut</forename><surname>Lavril</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jenya</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Diana</forename><surname>Liskovich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yinghai</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuning</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xavier</forename><surname>Martinet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Todor</forename><surname>Mihaylov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pushkar</forename><surname>Mishra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Igor</forename><surname>Molybog</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yixin</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><surname>Poulton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeremy</forename><surname>Reizenstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rashi</forename><surname>Rungta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kalyan</forename><surname>Saladi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Alan</forename><surname>Schelten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ruan</forename><surname>Silva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Eric</forename><surname>Michael Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Subramanian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xia</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Binh</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ross</forename><surname>Taylor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Adina</forename><surname>Williams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jian</forename><surname>Xiang Kuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Puxin</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhengxu</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Iliyan</forename><surname>Zarov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuchen</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Angela</forename><surname>Fan</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2307.09288</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+	</analytic>
+	<monogr>
+		<title level="j">Sharan Narang, Aur&apos;elien Rodriguez</title>
+		<imprint>
+			<biblScope unit="page">259950998</biblScope>
+			<date type="published" when="2023">2023</date>
+			<publisher>Robert Stojnic, Sergey Edunov, and Thomas Scialom</publisher>
+			<pubPlace>Melissa Hall Melanie Kambadur</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b73">
+	<analytic>
+		<title level="a" type="main">Leadership games with convex strategy sets</title>
+		<author>
+			<persName><forename type="first">Von</forename><surname>Bernhard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shmuel</forename><surname>Stengel</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Zamir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Games and Economic Behavior</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="446" to="457" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b74">
+	<monogr>
+		<author>
+			<persName><forename type="first">Jason</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maarten</forename><surname>Bosma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Vincent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kelvin</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Adams</forename><forename type="middle">Wei</forename><surname>Guu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Brian</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nan</forename><surname>Lester</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><forename type="middle">M</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Quoc V</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Le</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2109.01652</idno>
+		<title level="m">Finetuned language models are zero-shot learners</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b75">
+	<analytic>
+		<title level="a" type="main">Cold case: The lost mnist digits</title>
+		<author>
+			<persName><forename type="first">Chhavi</forename><surname>Yadav</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Léon</forename><surname>Bottou</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:166227957" />
+	</analytic>
+	<monogr>
+		<title level="m">Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b76">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">An</forename><surname>Qwen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Baosong</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Beichen</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Binyuan</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bo</forename><surname>Hui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bowen</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chengyuan</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dayiheng</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fei</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guanting</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Haoran</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Huan</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jian</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jianhong</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jianwei</forename><surname>Tu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jianxin</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jiaxin</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jingren</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Junyang</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kai</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Keming</forename><surname>Dang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Keqin</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kexin</forename><surname>Bao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Le</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mei</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mingfeng</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pei</forename><surname>Xue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Qin</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Rui</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Runji</forename><surname>Men</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tianhao</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tingyu</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xingzhang</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xuancheng</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yang</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yang</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yi-Chao</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yunyang</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuqi</forename><surname>Wan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zeyu</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhenru</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zihan</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shanghaoran</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zekun</forename><surname>Quan</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Wang</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2412.15115</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:274859421" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b77">
+	<monogr>
+		<title level="m" type="main">Rethinking benchmark and contamination for language models with rephrased samples</title>
+		<author>
+			<persName><forename type="first">Shuo</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wei-Lin</forename><surname>Chiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lianmin</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joseph</forename><surname>Gonzalez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ion</forename><surname>Stoica</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2311.04850</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:265050721" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b78">
+	<analytic>
+		<title level="a" type="main">Hellaswag: Can a machine really finish your sentence</title>
+		<author>
+			<persName><forename type="first">Rowan</forename><surname>Zellers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ari</forename><surname>Holtzman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yonatan</forename><surname>Bisk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ali</forename><surname>Farhadi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yejin</forename><surname>Choi</surname></persName>
+		</author>
+		<ptr target="https://api.semanticscholar.org/CorpusID:159041722" />
+	</analytic>
+	<monogr>
+		<title level="m">Annual Meeting of the Association for Computational Linguistics</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b79">
+	<monogr>
+		<title level="m" type="main">Hellaswag: Can a machine really finish your sentence</title>
+		<author>
+			<persName><forename type="first">Rowan</forename><surname>Zellers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ari</forename><surname>Holtzman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yonatan</forename><surname>Bisk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ali</forename><surname>Farhadi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yejin</forename><surname>Choi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1905.07830</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b80">
+	<monogr>
+		<title level="m" type="main">Inherent trade-offs diversity and stability in multi-task benchmarks</title>
+		<author>
+			<persName><forename type="first">Guanhua</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2405.01719</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID" />
+		<imprint>
+			<date type="published" when="2024">2024</date>
+			<biblScope unit="page">269587753</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b81">
+	<monogr>
+		<author>
+			<persName><forename type="first">Guanhua</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ricardo</forename><surname>Dominguez-Olmedo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moritz</forename><surname>Hardt</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2507.05195</idno>
+		<title level="m">Train-before-test harmonizes language model rankings</title>
+		<imprint>
+			<date type="published" when="2025">2025</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b82">
+	<monogr>
+		<title level="m" type="main">Instruction-following evaluation for large language models</title>
+		<author>
+			<persName><forename type="first">Jeffrey</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tianjian</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Swaroop</forename><surname>Mishra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Siddhartha</forename><surname>Brahma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sujoy</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yi</forename><surname>Luan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Denny</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Le</forename><surname>Hou</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2311.07911</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:265157752" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b83">
+	<monogr>
+		<title level="m" type="main">Don&apos;t make your llm an evaluation benchmark cheater</title>
+		<author>
+			<persName><forename type="first">Kun</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yutao</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhipeng</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wentong</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wayne</forename><forename type="middle">Xin</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xu</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yankai</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ji-Rong</forename><surname>Wen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jiawei</forename><surname>Han</surname></persName>
+		</author>
+		<idno>ArXiv, abs/2311.01964</idno>
+		<ptr target="https://api.semanticscholar.org/CorpusID:265019021" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note>Qwen2.5-14B Qwen2.5-7B Qwen2.5-3B Qwen2.5-1.5B Qwen2.5-0.5B 0 500 1000 1500 2000 2500 3000 Number of post-training steps (#)</note>
+</biblStruct>
+
+<biblStruct xml:id="b84">
+	<analytic>
+		<title/>
+	</analytic>
+	<monogr>
+		<title level="j">Accuracy (%) Social-IQA Qwen</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="5" to="14" />
+		</imprint>
+	</monogr>
+	<note>B Qwen2.5-7B Qwen2.5-3B Qwen2.5-1.5B Qwen2.5-0.5B</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

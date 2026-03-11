@@ -1,0 +1,6 @@
+{
+    "grobid_server": "http://host.docker.internal:8070",
+    "batch_size": 1,
+    "sleep_time": 5,
+    "timeout": 300
+}
