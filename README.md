@@ -1,4 +1,6 @@
 [![Documentation Status](https://readthedocs.org/projects/open-science-and-ai-2026/badge/?version=latest)](https://open-science-and-ai-2026.readthedocs.io/en/latest/)
+[![DOI](https://zenodo.org/badge/1154907673.svg)](https://doi.org/10.5281/zenodo.18963664)
+
 # Open-science-and-AI-2026
 # Grobid Text Analysis
 
@@ -172,7 +174,4 @@ Tania Mobasser Aslfakouri
 Open Science and AI — 2026
 
 ## Citation
-
-If you use this project, please cite:
-
-Tania Mobasser Aslfakouri(2026).  Grobid Text Analysis. Zenodo. https://doi.org/XXXX
+Tania Mobasser Aslfakouri(2026).  Grobid Text Analysis. Zenodo. [https://doi.org/10.5281/zenodo.18963664](https://doi.org/10.5281/zenodo.18963664)
