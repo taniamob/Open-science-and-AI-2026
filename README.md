@@ -1,3 +1,4 @@
+[![Documentation Status](https://readthedocs.org/projects/open-science-and-ai-2026/badge/?version=latest)](https://open-science-and-ai-2026.readthedocs.io/en/latest/)
 # Open-science-and-AI-2026
 # Grobid Text Analysis
 
